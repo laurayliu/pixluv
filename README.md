@@ -1,6 +1,6 @@
-# Platform API — CS52 Lab 5
+# pixluv api
 
-A REST API for the blog platform built with Express 5.
+A REST API for pixluv built with Express 5.
 
 ## Setup
 
@@ -11,10 +11,3 @@ cp .env.example .env
 npm run dev
 ```
 
-## Testing
-
-```bash
-npm test
-```
-
-See the [full assignment](https://classmoji.dali.dartmouth.edu) for detailed instructions.
