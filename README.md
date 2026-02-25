@@ -1,6 +1,7 @@
-# Project Name
+# Pixluv
 
-![Team Photo](Insert a Team Photo URL here)
+<img width="2048" height="1536" alt="image" src="https://github.com/user-attachments/assets/98b9ab17-3cef-47ed-958f-60155ce63fff" />
+
 [*how?*](https://help.github.com/articles/about-readmes/#relative-links-and-image-paths-in-readme-files)
 
 TODO: short project description, some sample screenshots or mockups
@@ -19,6 +20,10 @@ TODO: how to deploy the project
 
 ## Authors
 
-TODO: list of authors
+Annie Yuan
+Bopha Um
+Claire Chang
+Laura Liu
+Syed Masrur Ahmed
 
 ## Acknowledgments
