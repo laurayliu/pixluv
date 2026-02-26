@@ -1,7 +1,18 @@
-export default function profile() {
+import React from 'react';
+import {StyleSheet, Text, View} from 'react-native';
+
+const profile = () => {
   return (
-    <div>
-      <h2>hello</h2>
-    </div>
+    <View style={styles.container}>
+      <Text>Your profile here</Text>
+    </View>
   );
-}
+};
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: 'pink',
+  },
+});
+
+export default profile;
