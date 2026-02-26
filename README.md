@@ -4,11 +4,12 @@
 
 <img width="2048" height="1536" alt="image" src="https://github.com/user-attachments/assets/98b9ab17-3cef-47ed-958f-60155ce63fff" />
 
-TODO: short project description, some sample screenshots or mockups
+A novel app that combines social media and art; for lovers of pixels and creativity!
 
 ## Architecture
 
-TODO:  descriptions of code organization and tools and libraries used
+Tools and libraries used:
+React Native
 
 ## Setup
 
@@ -16,7 +17,7 @@ npm install && npm run build
 
 ## Deployment
 
-TODO: how to deploy the project
+TBD
 
 ## Authors
 
