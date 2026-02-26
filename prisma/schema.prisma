@@ -42,3 +42,10 @@ model Chat {
   sender     User     @relation("sender", fields: [senderId], references: [id])
   receiver   User     @relation("receiver", fields: [receiverId], references: [id])
 }
+
+model DailyChallenge {
+  id        String   @id @default(cuid())
+  prompt    String
+  date      DateTime @unique
+  createdAt DateTime @default(now())
+}
