@@ -7,6 +7,18 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  posts         Post[]
+  sentMessages  Chat[] @relation("sender")
+  receivedMessages Chat[] @relation("receiver")
+}
+
 model Post {
   id        String   @id @default(cuid())
   title     String
@@ -15,4 +27,18 @@ model Post {
   coverUrl  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+}
+
+model Chat {
+  id         String   @id @default(cuid())
+  message    String
+  createdAt  DateTime @default(now())
+
+  senderId   String
+  receiverId String
+  sender     User     @relation("sender", fields: [senderId], references: [id])
+  receiver   User     @relation("receiver", fields: [receiverId], references: [id])
 }
