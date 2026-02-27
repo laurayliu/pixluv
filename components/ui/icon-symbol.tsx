@@ -1,30 +1,27 @@
-// Fallback for using MaterialIcons on Android and web.
-
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { SymbolWeight, SymbolViewProps } from 'expo-symbols';
-import { ComponentProps } from 'react';
+import { ComponentType } from 'react';
 import { OpaqueColorValue, type StyleProp, type TextStyle } from 'react-native';
 
-type IconMapping = Record<SymbolViewProps['name'], ComponentProps<typeof MaterialIcons>['name']>;
+import type { SvgProps } from 'react-native-svg';
+import HomeIcon from '../../assets/icons/home.svg';
+import MailIcon from '../../assets/icons/mail.svg';
+import PaletteIcon from '../../assets/icons/palette.svg';
+import SearchIcon from '../../assets/icons/search.svg';
+import StarIcon from '../../assets/icons/star.svg';
+import ProfileFrame from '../../assets/icons/profile_frame.svg';
+
+
+type IconMapping = Record<string, ComponentType<SvgProps>>;
 type IconSymbolName = keyof typeof MAPPING;
 
-/**
- * Add your SF Symbols to Material Icons mappings here.
- * - see Material Icons in the [Icons Directory](https://icons.expo.fyi).
- * - see SF Symbols in the [SF Symbols](https://developer.apple.com/sf-symbols/) app.
- */
 const MAPPING = {
-  'house.fill': 'home',
-  'paperplane.fill': 'send',
-  'chevron.left.forwardslash.chevron.right': 'code',
-  'chevron.right': 'chevron-right',
+  home: HomeIcon,
+  mail: MailIcon,
+  palette: PaletteIcon,
+  search: SearchIcon,
+  star: StarIcon,
+  profile_frame: ProfileFrame, 
 } as IconMapping;
 
-/**
- * An icon component that uses native SF Symbols on iOS, and Material Icons on Android and web.
- * This ensures a consistent look across platforms, and optimal resource usage.
- * Icon `name`s are based on SF Symbols and require manual mapping to Material Icons.
- */
 export function IconSymbol({
   name,
   size = 24,
@@ -35,7 +32,20 @@ export function IconSymbol({
   size?: number;
   color: string | OpaqueColorValue;
   style?: StyleProp<TextStyle>;
-  weight?: SymbolWeight;
 }) {
-  return <MaterialIcons color={color} size={size} name={MAPPING[name]} style={style} />;
+  const IconComponent = MAPPING[name];
+
+  if (!IconComponent) {
+    return null;
+  }
+
+  return (
+    <IconComponent
+      width={size}
+      height={size}
+      // choose fill or stroke depending on your SVGs
+      fill={typeof color === 'string' ? color : undefined}
+      style={style as any}
+    />
+  );
 }
