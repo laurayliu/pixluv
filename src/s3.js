@@ -17,7 +17,9 @@ export const getS3PresignedUrl = async (fileName, fileType) => {
     });
 
     const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 60 });
-    return signedUrl;
+    const publicUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+
+    return { signedUrl, publicUrl };
 }
 
 export { s3Client };
