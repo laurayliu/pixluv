@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
-import {StyleSheet, Text, View, TextInput, TouchableOpacity, Dimensions, ScrollView, Button, Pressable} from 'react-native';
+import React, { useState, useRef } from 'react';
+import {StyleSheet, Text, View, TextInput, TouchableOpacity, Dimensions, ScrollView, Button, ActivityIndicator, Pressable} from 'react-native';
 import { withDecay } from 'react-native-reanimated';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { IconSymbol } from '@/components/ui/icon-symbol';import { captureRef } from "react-native-view-shot";
+import { api } from '../../services/api';
+
 const DEFAULT_GRID = 16;
 const DEFAULT_COLOR = "#fff";
 const DEFAULT_SELECTED_COLOR = "#000"
@@ -20,7 +22,10 @@ export default function CreatePix() {
   )
 
   const [selectedColor, setSelectedColor] = useState<string>(DEFAULT_SELECTED_COLOR);
+  const [isUploading, setIsUploading] = useState(false);
   const cellSize = GRID_CONTAINER_SIZE/gridSize;
+
+  const gridRef = useRef<View>(null);
 
   const handleCellPress = (index: number) => {
     const newGrid = [...grid];
@@ -37,6 +42,29 @@ export default function CreatePix() {
   const handleClear = () => {
     setGrid(Array(gridSize * gridSize).fill(DEFAULT_COLOR))
   }
+
+  const handleSaveAndUpload = async () => {
+    if (isUploading) return;
+    setIsUploading(true);
+
+    try {
+      const uri = await captureRef(gridRef, {
+        format: "png",
+        quality: 1,
+      });
+
+      const filename = `pix.png`;
+      const { signedUrl, publicUrl } = await api.getPresignedUrl(filename);
+      await api.uploadToS3(signedUrl, uri);
+
+      alert(`Success! Your pix is live at: ${publicUrl}`);
+    } catch (error) {
+      console.error("Upload process failed:", error);
+      alert("Failed to save image. Check console.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   return (
 
@@ -98,8 +126,11 @@ export default function CreatePix() {
           <TextInput value={selectedColor} onChangeText={setSelectedColor} style={[styles.input, { borderRightWidth: 10, borderRightColor: selectedColor }]}></TextInput>
         </View>
       </View>
-
-      <View style={[styles.grid, { width: GRID_CONTAINER_SIZE, height: GRID_CONTAINER_SIZE }]}>
+      <View 
+        ref={gridRef}
+        collapsable={false}
+        style={[styles.grid, { width: GRID_CONTAINER_SIZE, height: GRID_CONTAINER_SIZE }]}
+      >
         {grid.map((color, index) => (
           <TouchableOpacity
             key={index} 
@@ -115,8 +146,14 @@ export default function CreatePix() {
           />
         ))}
       </View>
-      <View style={styles.clear}>
+      <View style={styles.actions}>
         <Button title ="clear" onPress={() => handleClear()} color='#000'></Button>
+        <View style={{ width: 20 }} />
+        {isUploading ? (
+          <ActivityIndicator color="#000" />
+        ) : (
+          <Button title ="save" onPress={handleSaveAndUpload} color='#000'></Button>
+        )}
       </View>
       </ScrollView>
   );
@@ -170,7 +207,9 @@ const styles = StyleSheet.create({
     borderColor: '#000',
     overflow: 'hidden',
   },
-  clear: {
+  actions: {
+    flexDirection: 'row',
     padding: 20,
+    alignItems: 'center',
   },
 });
