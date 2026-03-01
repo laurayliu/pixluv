@@ -24,7 +24,7 @@ model Post {
   title     String
   tags      String?
   content   String?
-  coverUrl  String?
+  imageUrl  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

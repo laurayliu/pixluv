@@ -26,4 +26,7 @@ router.route('/posts/:id')
   .put(Posts.updatePost)
   .delete(Posts.deletePost);
 
+router.route('/sign-s3')
+  .get(Posts.getSignedS3Url);
+
 export default router;

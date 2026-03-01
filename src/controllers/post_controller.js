@@ -1,17 +1,18 @@
 import prisma from '../db.js';
+import { getS3PresignedUrl } from '../s3.js';
 
 export const getPosts = async (req, res) => {
   const posts = await prisma.post.findMany({
     orderBy: { createdAt: 'desc' },
-    select: { id: true, title: true, tags: true, coverUrl: true, createdAt: true, author: { select: { username: true } } },
+    select: { id: true, title: true, tags: true, imageUrl: true, createdAt: true, author: { select: { username: true } } },
   });
   res.json(posts);
 };
 
 export const createPost = async (req, res) => {
-  const { title, tags, content, coverUrl, authorId } = req.body;
+  const { title, tags, content, imageUrl, authorId } = req.body;
   const post = await prisma.post.create({
-    data: { title, tags, content, coverUrl, authorId },
+    data: { title, tags, content, imageUrl, authorId },
   });
   res.json(post);
 };
@@ -26,10 +27,10 @@ export const getPost = async (req, res) => {
 };
 
 export const updatePost = async (req, res) => {
-  const { title, tags, content, coverUrl } = req.body;
+  const { title, tags, content, imageUrl } = req.body;
   const post = await prisma.post.update({
     where: { id: req.params.id },
-    data: { title, tags, content, coverUrl },
+    data: { title, tags, content, imageUrl },
   });
   res.json(post);
 };
@@ -37,4 +38,15 @@ export const updatePost = async (req, res) => {
 export const deletePost = async (req, res) => {
   await prisma.post.delete({ where: { id: req.params.id } });
   res.json({ message: 'Post deleted' });
+};
+
+export const getSignedS3Url = async (req, res) => {
+  const { fileName, fileType } = req.query;
+  try {
+    const uniqueFileName = `${Date.now()}-${fileName}`;
+    const { signedUrl, publicUrl } = await getS3PresignedUrl(uniqueFileName, fileType);
+    res.json({ signedUrl, publicUrl });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
