@@ -14,13 +14,13 @@ type IconMapping = Record<string, ComponentType<SvgProps>>;
 type IconSymbolName = keyof typeof MAPPING;
 
 const MAPPING = {
-  home: HomeIcon,
-  mail: MailIcon,
-  palette: PaletteIcon,
-  search: SearchIcon,
-  star: StarIcon,
-  profile_frame: ProfileFrame, 
-} as IconMapping;
+  home:        { component: HomeIcon,        fixed: true,     scale: 0.75 },
+  mail:        { component: MailIcon,        fixed: true,     scale: 0.75 },
+  palette:     { component: PaletteIcon,     fixed: true,     scale: 0.75 },
+  search:      { component: SearchIcon,      fixed: false,     scale: 1.0 },
+  star:        { component: StarIcon,        fixed: true,     scale: 0.75 },
+  profile_frame: { component: ProfileFrame,  fixed: true,     scale: 0.75 },
+} as const;
 
 export function IconSymbol({
   name,
@@ -33,7 +33,7 @@ export function IconSymbol({
   color: string | OpaqueColorValue;
   style?: StyleProp<TextStyle>;
 }) {
-  const IconComponent = MAPPING[name];
+  const { component: IconComponent, fixed, scale } = MAPPING[name];
 
   if (!IconComponent) {
     return null;
@@ -41,11 +41,11 @@ export function IconSymbol({
 
   return (
     <IconComponent
-      width={size}
-      height={size}
-      // choose fill or stroke depending on your SVGs
+      {...(!fixed && { width: size, height: size })}
       fill={typeof color === 'string' ? color : undefined}
-      style={style as any}
+      style={[
+        {transform: [{scale}]},
+      ]}
     />
   );
 }
