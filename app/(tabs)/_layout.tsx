@@ -14,27 +14,28 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
+        tabBarShowLabel: false,
         tabBarButton: HapticTab,
       }}>
       <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="home" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol name="home" color={color} />,
         }}
       />
       <Tabs.Screen
         name="challenge"
         options={{
           title: 'challenge',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="star" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol name="star" color={color} />,
         }}
       />
       <Tabs.Screen
         name="create"
         options={{
           title: 'create',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="palette" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol  name="palette" color={color} />,
         }}
       />
       
@@ -42,14 +43,14 @@ export default function TabLayout() {
         name="message"
         options={{
           title: 'message',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="mail" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol name="mail" color={color} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'profile',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="profile_frame" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol name="profile_frame" color={color} />,
         }}
       />
     </Tabs>
