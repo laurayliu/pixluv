@@ -34,7 +34,6 @@ import Erase from '../../assets/icons/editor/eraser.svg';
 import Draw from '../../assets/icons/editor/pencil.svg';
 import Dropper from '../../assets/icons/editor/dropper.svg';
 
-type IconMapping = Record<string, ComponentType<SvgProps>>;
 type IconSymbolName = keyof typeof MAPPING;
 
 const MAPPING = {
@@ -57,7 +56,7 @@ const MAPPING = {
   line:           { component: Line,            fixed: true,     scale: 1.0 },
   fill:           { component: Fill,            fixed: true,     scale: 1.0 },
   square:         { component: Square,          fixed: true,     scale: 1.0 },
-  circle:         { component: Circle,          fixed: true,     scale: 1.0 },
+  circle:         { component: Circle,          fixed: false,     scale: 1.0 },
   erase:          { component: Erase,           fixed: true,     scale: 1.0 },
   draw:           { component: Draw,            fixed: true,     scale: 1.0 },
   dropper:        { component: Dropper,         fixed: true,     scale: 1.0 },

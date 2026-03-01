@@ -1,6 +1,9 @@
 import React, { useState, useRef } from 'react';
-import {StyleSheet, Text, View, TextInput, TouchableOpacity, Dimensions, ScrollView, Button, ActivityIndicator } from 'react-native';
-import { captureRef } from "react-native-view-shot";
+import {StyleSheet, Text, View, TextInput, TouchableOpacity, Dimensions, ScrollView, Button, ActivityIndicator, Pressable} from 'react-native';
+import { withDecay } from 'react-native-reanimated';
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { IconSymbol } from '@/components/ui/icon-symbol';import { captureRef } from "react-native-view-shot";
 import { api } from '../../services/api';
 
 const DEFAULT_GRID = 16;
@@ -64,7 +67,53 @@ export default function CreatePix() {
   };
 
   return (
+
     <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.container}>
+      <Text>Post</Text>
+
+      <View style= {styles.toolsContainer}>
+        <Pressable style={styles.button}> 
+          <IconSymbol name="lasso" color={"currentColor"} />        
+        </Pressable>
+
+        <Pressable style={styles.button}> 
+          <IconSymbol name="line" color={"currentColor"} />        
+        </Pressable>
+
+        <Pressable style={styles.button}> 
+          <IconSymbol name="square" color={"currentColor"} />        
+        </Pressable>
+
+        <Pressable style={styles.button}> 
+          <IconSymbol name="circle" color={"currentColor"} />        
+        </Pressable>
+
+        <Pressable style={styles.button}> 
+          <IconSymbol name="fill" color={"currentColor"} />        
+        </Pressable>
+
+        <Pressable style={styles.button}> 
+          <IconSymbol name="dropper" color={"currentColor"} />        
+        </Pressable>
+
+        <Pressable style={styles.button}> 
+          <IconSymbol name="erase" color={"currentColor"} />        
+        </Pressable>
+
+        <Pressable style={styles.button}> 
+          <IconSymbol name="draw" color={"currentColor"} />        
+        </Pressable>
+
+        <Pressable style={styles.button}> 
+          <IconSymbol name="undo" color={"currentColor"} />        
+        </Pressable>
+
+        <Pressable style={styles.button}> 
+          <IconSymbol name="redo" color={"currentColor"} />        
+        </Pressable>
+      </View>
+    </View>
 
       <Text>new pix!</Text>
       <View style={styles.controls}>
@@ -118,6 +167,22 @@ const styles = StyleSheet.create({
     paddingVertical: 50,
     backgroundColor: '#fff',
   },
+  toolsContainer: {
+    width: 20,
+    height: 20,
+    color: 'rgb(255, 0, 255)'
+  },
+  image: {
+    height: 20,
+    width: 20,
+  },
+  button: {
+    padding: 5,
+    width: 30,
+    height: 30,
+    backgroundColor: 'rgb(175, 175, 175)'
+  },
+  
   controls: {
     marginBottom: 20,
     width: '80%',
