@@ -3,6 +3,9 @@ import { OpaqueColorValue, type StyleProp, type TextStyle } from 'react-native';
 
 import type { SvgProps } from 'react-native-svg';
 
+// PIXLUX LOGO
+import LOGO from '../../assets/logo.svg';
+
 // homescreen + navbar icons
 import HomeIcon from '../../assets/icons/home.svg';
 import MailIcon from '../../assets/icons/mail.svg';
@@ -35,6 +38,7 @@ type IconMapping = Record<string, ComponentType<SvgProps>>;
 type IconSymbolName = keyof typeof MAPPING;
 
 const MAPPING = {
+  logo:           { component: LOGO,            fixed: false,    scale: 1.0},
   home:           { component: HomeIcon,        fixed: true,     scale: 0.75 },
   mail:           { component: MailIcon,        fixed: true,     scale: 0.75 },
   palette:        { component: PaletteIcon,     fixed: true,     scale: 0.75 },
