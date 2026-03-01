@@ -10,9 +10,9 @@ export const getPosts = async (req, res) => {
 };
 
 export const createPost = async (req, res) => {
-  const { title, tags, content, imageUrl, authorId } = req.body;
+  const { title, tags, content, imageUrl } = req.body;
   const post = await prisma.post.create({
-    data: { title, tags, content, imageUrl, authorId },
+    data: { title, tags, content, imageUrl, authorId: req.user.id },
   });
   res.json(post);
 };
