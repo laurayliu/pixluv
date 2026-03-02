@@ -125,7 +125,7 @@ export default function CreatePix() {
         <View style={styles.inputGroup}>
           <Text>pick color: </Text>
           <TextInput value={selectedColor} onChangeText={setSelectedColor} style={[styles.input, { borderRightWidth: 10, borderRightColor: selectedColor }]}></TextInput>
-          <DefaultColorPanel />
+          <DefaultColorPanel value={selectedColor} onColorChange={setSelectedColor}/>
         </View>
       </View>
       <View 

@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
 import { Button, Modal, StyleSheet, View } from 'react-native';
-
 import ColorPicker, { Preview, HueSlider, BrightnessSlider,  SaturationSlider} from 'reanimated-color-picker';
+import { scheduleOnRN } from 'react-native-worklets';
 
-export default function DefaultColorPanel() {
+export default function DefaultColorPanel( {value, onColorChange} : {value: string; onColorChange: (hex: string) => void;} ) {
   const [showModal, setShowModal] = useState(false);
 
-  // Note: use `onCompleteJS` and `onChangeJS` for non-worklet functions
-  const onSelectColor = ({ hex }: { hex: string }) => {
+  const onSelectColor = (selected: { hex: string }) => {
     'worklet';
-    // do something with the selected color.
-    console.log(hex);
+    // onChangeJS deprecated
+    scheduleOnRN(onColorChange, selected.hex);
   };
 
   return (
@@ -18,7 +17,7 @@ export default function DefaultColorPanel() {
       <Button title='Color Picker' onPress={() => setShowModal(true)} />
 
       <Modal visible={showModal} animationType='slide'>
-        <ColorPicker style={{ width: '70%' }} value='red' onComplete={onSelectColor}>
+        <ColorPicker style={{ width: '70%' }} value={value} onComplete={onSelectColor}>
           <Preview />
           <HueSlider />
           <BrightnessSlider />
