@@ -37,11 +37,11 @@ import Dropper from '../../assets/icons/editor/dropper.svg';
 type IconSymbolName = keyof typeof MAPPING;
 
 const MAPPING = {
-  logo:           { component: LOGO,            fixed: false,    scale: 1.0},
+  logo:           { component: LOGO,            fixed: false,    scale: 1.0  },
   home:           { component: HomeIcon,        fixed: true,     scale: 0.75 },
   mail:           { component: MailIcon,        fixed: true,     scale: 0.75 },
   palette:        { component: PaletteIcon,     fixed: true,     scale: 0.75 },
-  search:         { component: SearchIcon,      fixed: false,    scale: 1.0 },
+  search:         { component: SearchIcon,      fixed: false,    scale: 1.0  },
   star:           { component: StarIcon,        fixed: true,     scale: 0.75 },
   profile_frame:  { component: ProfileFrame,    fixed: true,     scale: 0.75 },
   like:           { component: Like,            fixed: true,     scale: 1.0 },
@@ -56,7 +56,7 @@ const MAPPING = {
   line:           { component: Line,            fixed: true,     scale: 1.0 },
   fill:           { component: Fill,            fixed: true,     scale: 1.0 },
   square:         { component: Square,          fixed: true,     scale: 1.0 },
-  circle:         { component: Circle,          fixed: false,     scale: 1.0 },
+  circle:         { component: Circle,          fixed: false,    scale: 1.0 },
   erase:          { component: Erase,           fixed: true,     scale: 1.0 },
   draw:           { component: Draw,            fixed: true,     scale: 1.0 },
   dropper:        { component: Dropper,         fixed: true,     scale: 1.0 },

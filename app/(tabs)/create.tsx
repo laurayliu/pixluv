@@ -1,3 +1,4 @@
+import DefaultColorPanel from '../../components/color_picker';
 import React, { useState, useRef } from 'react';
 import {StyleSheet, Text, View, TextInput, TouchableOpacity, Dimensions, ScrollView, Button, ActivityIndicator, Pressable} from 'react-native';
 import { withDecay } from 'react-native-reanimated';
@@ -124,6 +125,7 @@ export default function CreatePix() {
         <View style={styles.inputGroup}>
           <Text>pick color: </Text>
           <TextInput value={selectedColor} onChangeText={setSelectedColor} style={[styles.input, { borderRightWidth: 10, borderRightColor: selectedColor }]}></TextInput>
+          <DefaultColorPanel />
         </View>
       </View>
       <View 
