@@ -17,16 +17,6 @@ export default function DefaultColorPanel( {value, onColorChange} : {value: stri
         <ColorPicker boundedThumb={false} thumbShape='triangleDown'
         style={{ width: '70%' }} value={value} onComplete={onSelectColor}>
           <HueSlider 
-            renderThumb={({ width, height, positionStyle, adaptiveColor, currentColor, initialColor }) => (
-              <CustomThumb 
-                width={width}
-                height={height}
-                positionStyle={positionStyle}
-                adaptiveColor={adaptiveColor}
-                currentColor={currentColor}
-                initialColor={initialColor}
-              />
-            )}
             style={{
               borderRadius: 0,
               overflow: 'hidden',
@@ -46,42 +36,6 @@ export default function DefaultColorPanel( {value, onColorChange} : {value: stri
           />
         </ColorPicker>
     </View>
-  );
-}
-
-function CustomThumb({ width, height, positionStyle, adaptiveColor, currentColor, initialColor }: RenderThumbProps) {
-  const animatedStyle = useAnimatedStyle(() => ({
-    borderColor: adaptiveColor.value,
-    backgroundColor: currentColor.value,
-  }));
-
-  return (
-    <Animated.View style={positionStyle as StyleProp<ViewStyle>}>
-      <Animated.View
-        style={[
-          {
-            width: width * 0.35,
-            height: height,
-            borderWidth: 2,
-            justifyContent: 'center',
-            alignItems: 'center',
-            overflow: 'hidden',
-          },
-          animatedStyle,
-        ]}
-      >
-        <View
-          style={{
-            backgroundColor: initialColor,
-            width: width * 0.2,
-            height: height * 0.8,
-            justifyContent: 'center',
-            alignItems: 'center',
-            alignSelf: 'flex-end',
-          }}
-        />
-      </Animated.View>
-    </Animated.View>
   );
 }
 
