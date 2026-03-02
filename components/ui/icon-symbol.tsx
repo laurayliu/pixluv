@@ -34,7 +34,6 @@ import Erase from '../../assets/icons/editor/eraser.svg';
 import Draw from '../../assets/icons/editor/pencil.svg';
 import Dropper from '../../assets/icons/editor/dropper.svg';
 
-type IconMapping = Record<string, ComponentType<SvgProps>>;
 type IconSymbolName = keyof typeof MAPPING;
 
 const MAPPING = {
@@ -45,22 +44,22 @@ const MAPPING = {
   search:         { component: SearchIcon,      fixed: false,    scale: 1.0  },
   star:           { component: StarIcon,        fixed: true,     scale: 0.75 },
   profile_frame:  { component: ProfileFrame,    fixed: true,     scale: 0.75 },
-  like:           { component: Like,            fixed: true,     scale: 1.0  },
-  liked:          { component: Liked,           fixed: true,     scale: 1.0  },
-  comment:        { component: Comment,         fixed: true,     scale: 1.0  },
-  commented:      { component: CommentView,     fixed: true,     scale: 1.0  },
-  save:           { component: Save,            fixed: true,     scale: 1.0  },
-  saved:          { component: Saved,           fixed: true,     scale: 1.0  },
-  undo:           { component: Undo,            fixed: true,     scale: 1.0  },
-  redo:           { component: Redo,            fixed: true,     scale: 1.0  },
-  lasso:          { component: Lasso,           fixed: true,     scale: 1.0  },
-  line:           { component: Line,            fixed: true,     scale: 1.0  },
-  fill:           { component: Fill,            fixed: true,     scale: 1.0  },
-  square:         { component: Square,          fixed: true,     scale: 1.0  },
-  circle:         { component: Circle,          fixed: true,     scale: 1.0  },
-  erase:          { component: Erase,           fixed: true,     scale: 1.0  },
-  draw:           { component: Draw,            fixed: true,     scale: 1.0  },
-  dropper:        { component: Dropper,         fixed: true,     scale: 1.0  },
+  like:           { component: Like,            fixed: true,     scale: 1.0 },
+  liked:          { component: Liked,           fixed: true,     scale: 1.0 },
+  comment:        { component: Comment,         fixed: true,     scale: 1.0 },
+  commented:      { component: CommentView,     fixed: true,     scale: 1.0 },
+  save:           { component: Save,            fixed: true,     scale: 1.0 },
+  saved:          { component: Saved,           fixed: true,     scale: 1.0 },
+  undo:           { component: Undo,            fixed: true,     scale: 1.0 },
+  redo:           { component: Redo,            fixed: true,     scale: 1.0 },
+  lasso:          { component: Lasso,           fixed: true,     scale: 1.0 },
+  line:           { component: Line,            fixed: true,     scale: 1.0 },
+  fill:           { component: Fill,            fixed: true,     scale: 1.0 },
+  square:         { component: Square,          fixed: true,     scale: 1.0 },
+  circle:         { component: Circle,          fixed: false,    scale: 1.0 },
+  erase:          { component: Erase,           fixed: true,     scale: 1.0 },
+  draw:           { component: Draw,            fixed: true,     scale: 1.0 },
+  dropper:        { component: Dropper,         fixed: true,     scale: 1.0 },
 } as const;
 
 export function IconSymbol({
