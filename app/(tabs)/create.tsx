@@ -25,6 +25,7 @@ export default function CreatePix() {
   )
 
   const [selectedColor, setSelectedColor] = useState<string>(DEFAULT_SELECTED_COLOR);
+  const [activeButton, setActiveButton] = useState<'draw' | 'erase'>('draw');
   const [isUploading, setIsUploading] = useState(false);
   const cellSize = GRID_CONTAINER_SIZE/gridSize;
 
@@ -35,9 +36,9 @@ export default function CreatePix() {
 
   const gridLayout = useRef({ x: 0, y: 0 });
 
-  // 2. Capture the grid's position on the screen when it mounts
+  // capture the grid's position on the screen when it mounts
   const onGridLayout = () => {
-    // We use measure to get the absolute page position
+    // use measure to get the absolute page position
     gridRef.current?.measure((x, y, width, height, pageX, pageY) => {
       gridLayout.current = { x: pageX, y: pageY };
     });
@@ -45,17 +46,9 @@ export default function CreatePix() {
 
 
 
-  // const handleCellPress = (index: number) => {
-  //   const newGrid = [...grid];
-  //   newGrid[index] = selectedColor;
-  //   setGrid(newGrid);
-  // }
-
-
   const colorCellAtPosition = (pageX: number, pageY: number) => {
     const relativeX = pageX - gridLayout.current.x;
     const relativeY = pageY - gridLayout.current.y;
-    
 
     const col = Math.floor(relativeX / cellSize);
     const row = Math.floor(relativeY / cellSize);
@@ -63,13 +56,17 @@ export default function CreatePix() {
     if (col >= 0 && col < gridSize && row >= 0 && row < gridSize) {
       const index = row * gridSize + col;
 
+      const drawingColor = activeButton === 'erase' ? DEFAULT_COLOR : selectedColor; // if eraser is toggled set selected color to white
+
       setGrid(prevGrid => {
         const newGrid = [...prevGrid];
-        newGrid[index] = selectedColor;
+        newGrid[index] = drawingColor;
         return newGrid;
       });
     }
   };
+
+
 
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
@@ -129,7 +126,6 @@ export default function CreatePix() {
     }
   };
 
-
   const handleUndo = () => {
     if (index.current > 0) {
       const prevIndex = index.current - 1;
@@ -137,7 +133,6 @@ export default function CreatePix() {
       index.current = prevIndex;
     }
   }
-
 
   return (
 
@@ -184,11 +179,11 @@ export default function CreatePix() {
             <IconSymbol name="dropper" color={"currentColor"} />        
           </Pressable>
 
-          <Pressable style={styles.button}> 
+          <Pressable style={activeButton === 'erase' ? styles.buttonEnabled : styles.buttonDisabled} onPress={() => setActiveButton('erase')}> 
             <IconSymbol name="erase" color={"currentColor"} />        
           </Pressable>
 
-          <Pressable style={styles.button}> 
+          <Pressable style={activeButton === 'draw' ? styles.buttonEnabled : styles.buttonDisabled} onPress={() => setActiveButton('draw')}> 
             <IconSymbol name="draw" color={"currentColor"} />        
           </Pressable>
 
@@ -254,6 +249,18 @@ const styles = StyleSheet.create({
     width: 20,
   },
   button: {
+    padding: 5,
+    width: 30,
+    height: 30,
+    backgroundColor: 'rgb(175, 175, 175)'
+  },
+  buttonEnabled: {
+    padding: 5,
+    width: 30,
+    height: 30,
+    backgroundColor: 'rgb(128, 128, 128)'
+  },
+  buttonDisabled: {
     padding: 5,
     width: 30,
     height: 30,
