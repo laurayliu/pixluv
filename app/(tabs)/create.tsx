@@ -6,6 +6,7 @@ import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { IconSymbol } from '@/components/ui/icon-symbol';import { captureRef } from "react-native-view-shot";
 import { api } from '../../services/api';
+import { useAuth } from '@/context/AuthContext';
 
 const DEFAULT_GRID = 16;
 const DEFAULT_COLOR = "#fff";
@@ -17,6 +18,7 @@ const GRID_CONTAINER_SIZE = SCREEN_WIDTH - 40;
 // https://www.youtube.com/watch?v=HN7FhKPTohA
 
 export default function CreatePix() {
+  const { token } = useAuth();
   const [gridSize, setGridSize] = useState<number>(DEFAULT_GRID);
   const[grid, setGrid] = useState<string[]>(
     Array(DEFAULT_GRID * DEFAULT_GRID).fill(DEFAULT_COLOR) // fill w white 
@@ -100,7 +102,7 @@ export default function CreatePix() {
       });
 
       const filename = `pix.png`;
-      const { signedUrl, publicUrl } = await api.getPresignedUrl(filename);
+      const { signedUrl, publicUrl } = await api.getPresignedUrl(filename, token);
       await api.uploadToS3(signedUrl, base64);
 
       alert(`Success! Your pix is live at: ${publicUrl}`);
