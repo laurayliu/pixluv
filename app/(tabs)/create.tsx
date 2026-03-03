@@ -28,7 +28,7 @@ export default function CreatePix() {
 
   const gridRef = useRef<View>(null);
 
-  const [prevGrid, setPrevGrid] = useState<string[][]>(Array(DEFAULT_GRID * DEFAULT_GRID).fill(DEFAULT_COLOR));
+  const [prevGrid, setPrevGrid] = useState<string[][]>([Array(DEFAULT_GRID * DEFAULT_GRID).fill(DEFAULT_COLOR)]); // need the brackets!!
   const index = useRef(0);
 
 
@@ -209,9 +209,6 @@ export default function CreatePix() {
         ) : (
           <Button title ="save" onPress={handleSaveAndUpload} color='#000'></Button>
         )}
-      </View>
-      <View>
-        <Button title ="undo" onPress={() => handleUndo()} color='#000'></Button>
       </View>
       <View>
         <Button title ="undo" onPress={() => handleUndo()} color='#000'></Button>
