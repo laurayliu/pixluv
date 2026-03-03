@@ -34,4 +34,32 @@ export const api = {
   getPosts: () => get('/posts'),
   createUser: (data) => post('/users', data),
   getUser: (id) => get(`/users/${id}`),
+  getPresignedUrl: (filename) =>
+    get(
+      `/sign-s3?fileName=${encodeURIComponent(filename)}&fileType=${encodeURIComponent('image/png')}`
+    ),
+  uploadToS3: async (presignedUrl, base64Data) => {
+    const binaryString = atob(base64Data);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+
+    const uploadRes = await fetch(presignedUrl, {
+      method: 'PUT',
+      body: bytes.buffer,
+      headers: {
+        'Content-Type': 'image/png',
+      },
+    });
+
+    if (!uploadRes.ok) {
+      const errorBody = await uploadRes.text().catch(() => '');
+      throw new Error(
+        `S3 Upload failed: ${uploadRes.status} ${uploadRes.statusText}${errorBody ? ` - ${errorBody}` : ''}`
+      );
+    }
+
+    return uploadRes;
+  },
 };
