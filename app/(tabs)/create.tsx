@@ -1,6 +1,6 @@
 import DefaultColorPanel from '../../components/color_picker';
 import React, { useState, useRef } from 'react';
-import {StyleSheet, Text, View, TextInput, TouchableOpacity, Dimensions, ScrollView, Button, ActivityIndicator, Pressable} from 'react-native';
+import {StyleSheet, Text, View, TextInput, Dimensions, ScrollView, Button, ActivityIndicator, Pressable, PanResponder} from 'react-native';
 import { withDecay } from 'react-native-reanimated';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -30,11 +30,55 @@ export default function CreatePix() {
 
   const gridRef = useRef<View>(null);
 
-  const handleCellPress = (index: number) => {
-    const newGrid = [...grid];
-    newGrid[index] = selectedColor;
-    setGrid(newGrid);
-  }
+  const [prevGrid, setPrevGrid] = useState<string[][]>([Array(DEFAULT_GRID * DEFAULT_GRID).fill(DEFAULT_COLOR)]); // need the brackets!!
+  const index = useRef(0);
+
+
+  // const handleCellPress = (index: number) => {
+  //   const newGrid = [...grid];
+  //   newGrid[index] = selectedColor;
+  //   setGrid(newGrid);
+  // }
+
+
+  const colorCellAtPosition = (x: number, y: number) => {
+    const col = Math.floor(x / cellSize);
+    const row = Math.floor(y / cellSize);
+
+    if (col >= 0 && col < gridSize && row >= 0 && row < gridSize) {
+      const index = row * gridSize + col;
+
+      setGrid(prevGrid => {
+        const newGrid = [...prevGrid];
+        newGrid[index] = selectedColor;
+        return newGrid;
+      });
+    }
+  };
+
+  const panResponder = PanResponder.create({
+    onStartShouldSetPanResponder: () => true,
+    onMoveShouldSetPanResponder: () => true,
+
+    onPanResponderGrant: (evt) => {
+      const { locationX, locationY } = evt.nativeEvent;
+      colorCellAtPosition(locationX, locationY);
+    },
+
+    onPanResponderMove: (evt) => {
+      const { locationX, locationY } = evt.nativeEvent;
+      colorCellAtPosition(locationX, locationY);
+    },
+
+    onPanResponderRelease: () => {
+      setPrevGrid((prevHistory) => {
+        const newGrid = prevHistory.slice(0, index.current + 1); // prevents weird things if someone undos then starts drawing again
+        const updatedGrid = [...newGrid, [...grid]] // takes saved states and adds on current grid at the end
+        index.current = updatedGrid.length - 1;
+        return updatedGrid;
+      })
+    }
+  });
 
   const handleGridChange = (text: string) => {
     const newGridSize = parseInt(text) || 0;
@@ -69,6 +113,16 @@ export default function CreatePix() {
       setIsUploading(false);
     }
   };
+
+
+  const handleUndo = () => {
+    if (index.current > 0) {
+      const prevIndex = index.current - 1;
+      setGrid(prevGrid[prevIndex]);
+      index.current = prevIndex;
+    }
+  }
+
 
   return (
 
@@ -119,7 +173,7 @@ export default function CreatePix() {
       </View>
     </View>
 
-      <Text>new pix!</Text>
+      <Text style = {{fontSize: 20, marginBottom: 10}}>new pix!</Text>
       <View style={styles.controls}>
         <View style={styles.inputGroup}>
           <Text>pick grid size: </Text>
@@ -131,18 +185,16 @@ export default function CreatePix() {
           <DefaultColorPanel />
         </View>
       </View>
-      <View 
+      <View {...panResponder.panHandlers} 
         ref={gridRef}
         collapsable={false}
         style={[styles.grid, { width: GRID_CONTAINER_SIZE, height: GRID_CONTAINER_SIZE }]}
       >
         {grid.map((color, index) => (
-          <TouchableOpacity
+          <View
             key={index} 
-            onPress={() => handleCellPress(index)}
-            activeOpacity={0.7}
             style={{
-              width: cellSize,
+              width: `${100/gridSize}%`,
               height: cellSize,
               backgroundColor: color,
               borderWidth: 0.5,
@@ -159,6 +211,9 @@ export default function CreatePix() {
         ) : (
           <Button title ="save" onPress={handleSaveAndUpload} color='#000'></Button>
         )}
+      </View>
+      <View>
+        <Button title ="undo" onPress={() => handleUndo()} color='#000'></Button>
       </View>
       </ScrollView>
   );
