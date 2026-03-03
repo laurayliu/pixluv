@@ -33,6 +33,17 @@ export default function CreatePix() {
   const [prevGrid, setPrevGrid] = useState<string[][]>([Array(DEFAULT_GRID * DEFAULT_GRID).fill(DEFAULT_COLOR)]); // need the brackets!!
   const index = useRef(0);
 
+  const gridLayout = useRef({ x: 0, y: 0 });
+
+  // 2. Capture the grid's position on the screen when it mounts
+  const onGridLayout = () => {
+    // We use measure to get the absolute page position
+    gridRef.current?.measure((x, y, width, height, pageX, pageY) => {
+      gridLayout.current = { x: pageX, y: pageY };
+    });
+  };
+
+
 
   // const handleCellPress = (index: number) => {
   //   const newGrid = [...grid];
@@ -41,9 +52,13 @@ export default function CreatePix() {
   // }
 
 
-  const colorCellAtPosition = (x: number, y: number) => {
-    const col = Math.floor(x / cellSize);
-    const row = Math.floor(y / cellSize);
+  const colorCellAtPosition = (pageX: number, pageY: number) => {
+    const relativeX = pageX - gridLayout.current.x;
+    const relativeY = pageY - gridLayout.current.y;
+    
+
+    const col = Math.floor(relativeX / cellSize);
+    const row = Math.floor(relativeY / cellSize);
 
     if (col >= 0 && col < gridSize && row >= 0 && row < gridSize) {
       const index = row * gridSize + col;
@@ -61,13 +76,13 @@ export default function CreatePix() {
     onMoveShouldSetPanResponder: () => true,
 
     onPanResponderGrant: (evt) => {
-      const { locationX, locationY } = evt.nativeEvent;
-      colorCellAtPosition(locationX, locationY);
+      const { pageX, pageY } = evt.nativeEvent;
+      colorCellAtPosition(pageX, pageY);
     },
 
     onPanResponderMove: (evt) => {
-      const { locationX, locationY } = evt.nativeEvent;
-      colorCellAtPosition(locationX, locationY);
+      const { pageX, pageY } = evt.nativeEvent;
+      colorCellAtPosition(pageX, pageY);
     },
 
     onPanResponderRelease: () => {
@@ -126,7 +141,7 @@ export default function CreatePix() {
 
   return (
 
-    <ScrollView contentContainerStyle={styles.container}>
+    <View style={styles.container}>
 
       <Text style = {{fontSize: 20, marginBottom: 10}}>new pix!</Text>
       <View style={styles.controls}>
@@ -189,6 +204,7 @@ export default function CreatePix() {
         <View {...panResponder.panHandlers} 
         ref={gridRef}
         collapsable={false}
+        onLayout={onGridLayout}
         style={[styles.grid, { width: GRID_CONTAINER_SIZE, height: GRID_CONTAINER_SIZE }]}
         >
         {grid.map((color, index) => (
@@ -216,7 +232,7 @@ export default function CreatePix() {
           <Button title ="post" onPress={handleSaveAndUpload} color='#000'></Button>
         )}
       </View>
-      </ScrollView>
+      </View>
   );
 };
 
@@ -262,6 +278,7 @@ const styles = StyleSheet.create({
   },
   gridAndTools: {
     flexDirection: 'row',
+    marginTop: 70
   },
   grid: {
     flexDirection: 'row',
