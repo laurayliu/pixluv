@@ -13,16 +13,20 @@ function getBaseUrl() {
 
 const BASE_URL = getBaseUrl();
 
-async function get(path) {
-  const res = await fetch(`${BASE_URL}${path}`);
+async function get(path, token) {
+  const headers = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(`${BASE_URL}${path}`, { headers });
   if (!res.ok) throw new Error(`GET ${path} failed: ${res.status}`);
   return res.json();
 }
 
-async function post(path, body) {
+async function post(path, body, token) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
   const res = await fetch(`${BASE_URL}${path}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error(`POST ${path} failed: ${res.status}`);
@@ -32,19 +36,27 @@ async function post(path, body) {
 export const api = {
   hello: () => get('/'),
   getPosts: () => get('/posts'),
-  createUser: (data) => post('/users', data),
   getUser: (id) => get(`/users/${id}`),
-  getPresignedUrl: (filename) =>
+
+  login: (email, password) => post('/auth/login', { email, password }),
+  signup: (username, email, password) => post('/auth/signup', { username, email, password }),
+  createPost: (data, token) => post('/posts', data, token),
+
+  getPresignedUrl: (filename, token) =>
     get(
-      `/sign-s3?fileName=${encodeURIComponent(filename)}&fileType=${encodeURIComponent('image/png')}`
+      `/sign-s3?fileName=${encodeURIComponent(filename)}&fileType=${encodeURIComponent('image/png')}`,
+      token
     ),
-  uploadToS3: async (presignedUrl, fileUri) => {
-    const response = await fetch(fileUri);
-    const blob = await response.blob();
+  uploadToS3: async (presignedUrl, base64Data) => {
+    const binaryString = atob(base64Data);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
 
     const uploadRes = await fetch(presignedUrl, {
       method: 'PUT',
-      body: blob,
+      body: bytes.buffer,
       headers: {
         'Content-Type': 'image/png',
       },
