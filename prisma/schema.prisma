@@ -45,8 +45,10 @@ model Chat {
 }
 
 model DailyChallenge {
-  id        String   @id @default(cuid())
-  prompt    String
-  date      DateTime @unique
-  createdAt DateTime @default(now())
+  id            String   @id @default(cuid())
+  prompt        String
+  date          DateTime @unique
+  allowedColors String[]
+  allowedTools  String[]
+  createdAt     DateTime @default(now())
 }

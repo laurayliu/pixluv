@@ -2,6 +2,7 @@ import { Router } from 'express';
 import * as Posts from './controllers/post_controller.js';
 import * as Users from './controllers/user_controller.js';
 import * as Auth from './controllers/auth_controller.js';
+import * as Challenges from './controllers/challenge_controller.js';
 import requireAuth from './middleware/auth.js';
 
 const router = Router();
@@ -32,5 +33,14 @@ router.route('/posts/:id')
 
 router.route('/sign-s3')
   .get(requireAuth, Posts.getSignedS3Url);
+
+router.get('/challenges/today', Challenges.getTodayChallenge);
+router.route('/challenges')
+  .get(Challenges.getChallenges)
+  .post(requireAuth, Challenges.createChallenge);
+router.route('/challenges/:id')
+  .get(Challenges.getChallenge)
+  .put(requireAuth, Challenges.updateChallenge)
+  .delete(requireAuth, Challenges.deleteChallenge);
 
 export default router;
