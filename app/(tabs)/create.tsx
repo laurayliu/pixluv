@@ -48,14 +48,15 @@ export default function CreatePix() {
     setIsUploading(true);
 
     try {
-      const uri = await captureRef(gridRef, {
+      const base64 = await captureRef(gridRef, {
         format: "png",
         quality: 1,
+        result: 'base64',
       });
 
       const filename = `pix.png`;
       const { signedUrl, publicUrl } = await api.getPresignedUrl(filename);
-      await api.uploadToS3(signedUrl, uri);
+      await api.uploadToS3(signedUrl, base64);
 
       alert(`Success! Your pix is live at: ${publicUrl}`);
     } catch (error) {
