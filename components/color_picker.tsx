@@ -1,32 +1,40 @@
-import React, { useState } from 'react';
-import { Button, Modal, StyleSheet, View } from 'react-native';
+import React from 'react';
+import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
+import ColorPicker, { HueSlider, BrightnessSlider,  SaturationSlider} from 'reanimated-color-picker';
+import type { RenderThumbProps } from 'reanimated-color-picker';
+import Animated, { useAnimatedStyle } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 
-import ColorPicker, { Preview, HueSlider, BrightnessSlider,  SaturationSlider} from 'reanimated-color-picker';
-
-export default function DefaultColorPanel() {
-  const [showModal, setShowModal] = useState(false);
-
-  // Note: use `onCompleteJS` and `onChangeJS` for non-worklet functions
-  const onSelectColor = ({ hex }: { hex: string }) => {
+export default function DefaultColorPanel( {value, onColorChange} : {value: string; onColorChange: (hex: string) => void;} ) {
+  const onSelectColor = (selected: { hex: string }) => {
     'worklet';
-    // do something with the selected color.
-    console.log(hex);
+    // onChangeJS deprecated
+    scheduleOnRN(onColorChange, selected.hex);
   };
 
   return (
     <View style={styles.container}>
-      <Button title='Color Picker' onPress={() => setShowModal(true)} />
-
-      <Modal visible={showModal} animationType='slide'>
-        <ColorPicker style={{ width: '70%' }} value='red' onComplete={onSelectColor}>
-          <Preview />
-          <HueSlider />
-          <BrightnessSlider />
-          <SaturationSlider />
+        <ColorPicker boundedThumb={false} thumbShape='triangleDown'
+        style={{ width: '70%' }} value={value} onComplete={onSelectColor}>
+          <HueSlider 
+            style={{
+              borderRadius: 0,
+              overflow: 'hidden',
+            }}
+          />
+          <BrightnessSlider 
+            style={{
+              borderRadius: 0,
+              overflow: 'hidden',
+            }}
+          />
+          <SaturationSlider 
+            style={{
+              borderRadius: 0,
+              overflow: 'hidden',
+            }}
+          />
         </ColorPicker>
-
-        <Button title='Ok' onPress={() => setShowModal(false)} />
-      </Modal>
     </View>
   );
 }
