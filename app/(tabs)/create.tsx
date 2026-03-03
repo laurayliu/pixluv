@@ -104,8 +104,8 @@ export default function CreatePix() {
       const filename = `pix.png`;
       const { signedUrl, publicUrl } = await api.getPresignedUrl(filename, token);
       await api.uploadToS3(signedUrl, base64);
-
-      alert(`Success! Your pix is live at: ${publicUrl}`);
+      await api.createPost({ title: "Post Title", imageUrl: publicUrl }, token);
+      alert(`Post Success!`);
     } catch (error) {
       console.error("Upload process failed:", error);
       alert("Failed to save image. Check console.");
@@ -213,7 +213,7 @@ export default function CreatePix() {
         {isUploading ? (
           <ActivityIndicator color="#000" />
         ) : (
-          <Button title ="save" onPress={handleSaveAndUpload} color='#000'></Button>
+          <Button title ="post" onPress={handleSaveAndUpload} color='#000'></Button>
         )}
       </View>
       </ScrollView>

@@ -40,6 +40,7 @@ export const api = {
 
   login: (email, password) => post('/auth/login', { email, password }),
   signup: (username, email, password) => post('/auth/signup', { username, email, password }),
+  createPost: (data, token) => post('/posts', data, token),
 
   getPresignedUrl: (filename, token) =>
     get(
