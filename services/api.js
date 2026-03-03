@@ -38,13 +38,16 @@ export const api = {
     get(
       `/sign-s3?fileName=${encodeURIComponent(filename)}&fileType=${encodeURIComponent('image/png')}`
     ),
-  uploadToS3: async (presignedUrl, fileUri) => {
-    const response = await fetch(fileUri);
-    const blob = await response.blob();
+  uploadToS3: async (presignedUrl, base64Data) => {
+    const binaryString = atob(base64Data);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
 
     const uploadRes = await fetch(presignedUrl, {
       method: 'PUT',
-      body: blob,
+      body: bytes.buffer,
       headers: {
         'Content-Type': 'image/png',
       },
