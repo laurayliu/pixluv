@@ -12,7 +12,7 @@ const DEFAULT_COLOR = "#fff";
 const DEFAULT_SELECTED_COLOR = "#000"
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
-const GRID_CONTAINER_SIZE = SCREEN_WIDTH - 40;
+const GRID_CONTAINER_SIZE = SCREEN_WIDTH - 100;
 
 // https://www.youtube.com/watch?v=HN7FhKPTohA
 
@@ -125,51 +125,6 @@ export default function CreatePix() {
   return (
 
     <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.container}>
-      <Text>Post</Text>
-
-      <View style= {styles.toolsContainer}>
-        <Pressable style={styles.button}> 
-          <IconSymbol name="lasso" color={"currentColor"} />        
-        </Pressable>
-
-        <Pressable style={styles.button}> 
-          <IconSymbol name="line" color={"currentColor"} />        
-        </Pressable>
-
-        <Pressable style={styles.button}> 
-          <IconSymbol name="square" color={"currentColor"} />        
-        </Pressable>
-
-        <Pressable style={styles.button}> 
-          <IconSymbol name="circle" color={"currentColor"} />        
-        </Pressable>
-
-        <Pressable style={styles.button}> 
-          <IconSymbol name="fill" color={"currentColor"} />        
-        </Pressable>
-
-        <Pressable style={styles.button}> 
-          <IconSymbol name="dropper" color={"currentColor"} />        
-        </Pressable>
-
-        <Pressable style={styles.button}> 
-          <IconSymbol name="erase" color={"currentColor"} />        
-        </Pressable>
-
-        <Pressable style={styles.button}> 
-          <IconSymbol name="draw" color={"currentColor"} />        
-        </Pressable>
-
-        <Pressable style={styles.button}> 
-          <IconSymbol name="undo" color={"currentColor"} />        
-        </Pressable>
-
-        <Pressable style={styles.button}> 
-          <IconSymbol name="redo" color={"currentColor"} />        
-        </Pressable>
-      </View>
-    </View>
 
       <Text style = {{fontSize: 20, marginBottom: 10}}>new pix!</Text>
       <View style={styles.controls}>
@@ -183,11 +138,55 @@ export default function CreatePix() {
           <DefaultColorPanel />
         </View>
       </View>
-      <View {...panResponder.panHandlers} 
+
+      <View style = {styles.gridAndTools}>
+        <View style= {styles.toolsContainer}>
+          <Pressable style={styles.button}> 
+            <IconSymbol name="lasso" color={"currentColor"} />        
+          </Pressable>
+
+          <Pressable style={styles.button}> 
+            <IconSymbol name="line" color={"currentColor"} />        
+          </Pressable>
+
+          <Pressable style={styles.button}> 
+            <IconSymbol name="square" color={"currentColor"} />        
+          </Pressable>
+
+          <Pressable style={styles.button}> 
+            <IconSymbol name="circle" color={"currentColor"} />        
+          </Pressable>
+
+          <Pressable style={styles.button}> 
+            <IconSymbol name="fill" color={"currentColor"} />        
+          </Pressable>
+
+          <Pressable style={styles.button}> 
+            <IconSymbol name="dropper" color={"currentColor"} />        
+          </Pressable>
+
+          <Pressable style={styles.button}> 
+            <IconSymbol name="erase" color={"currentColor"} />        
+          </Pressable>
+
+          <Pressable style={styles.button}> 
+            <IconSymbol name="draw" color={"currentColor"} />        
+          </Pressable>
+
+          <Pressable style={styles.button} onPress={() => handleUndo()}> 
+            <IconSymbol name="undo" color={"currentColor"} />        
+          </Pressable>
+
+          <Pressable style={styles.button}> 
+            <IconSymbol name="redo" color={"currentColor"} />        
+          </Pressable>
+        </View>
+
+        <View {...panResponder.panHandlers} 
         ref={gridRef}
         collapsable={false}
         style={[styles.grid, { width: GRID_CONTAINER_SIZE, height: GRID_CONTAINER_SIZE }]}
-      >
+        >
         {grid.map((color, index) => (
           <View
             key={index} 
@@ -200,7 +199,10 @@ export default function CreatePix() {
             }}
           />
         ))}
+        </View>
       </View>
+
+      
       <View style={styles.actions}>
         <Button title ="clear" onPress={() => handleClear()} color='#000'></Button>
         <View style={{ width: 20 }} />
@@ -209,9 +211,6 @@ export default function CreatePix() {
         ) : (
           <Button title ="save" onPress={handleSaveAndUpload} color='#000'></Button>
         )}
-      </View>
-      <View>
-        <Button title ="undo" onPress={() => handleUndo()} color='#000'></Button>
       </View>
       </ScrollView>
   );
@@ -228,7 +227,7 @@ const styles = StyleSheet.create({
   toolsContainer: {
     width: 20,
     height: 20,
-    color: 'rgb(255, 0, 255)'
+    color: 'rgb(255, 0, 255)',
   },
   image: {
     height: 20,
@@ -240,7 +239,6 @@ const styles = StyleSheet.create({
     height: 30,
     backgroundColor: 'rgb(175, 175, 175)'
   },
-  
   controls: {
     marginBottom: 20,
     width: '80%',
@@ -258,12 +256,16 @@ const styles = StyleSheet.create({
     width: 100,
     borderRadius: 5,
   },
+  gridAndTools: {
+    flexDirection: 'row',
+  },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     borderWidth: 1,
     borderColor: '#000',
     overflow: 'hidden',
+    marginLeft: 40,
   },
   actions: {
     flexDirection: 'row',
