@@ -12,20 +12,23 @@ const DEFAULT_SELECTED_COLOR = '#000';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GRID_CONTAINER_SIZE = SCREEN_WIDTH - 100;
 
-const ALL_TOOLS = [
-  { name: 'draw',    icon: 'draw' },
-  { name: 'erase',   icon: 'erase' },
+export default function Challenge() {
+  
+  const [activeButton, setActiveButton] = useState<'draw' | 'erase'>('draw');
+
+  const ALL_TOOLS = [
+  { name: 'draw',    icon: 'draw',  onPress: () => setActiveButton('draw') },
+  { name: 'erase',   icon: 'erase', onPress: () => setActiveButton('erase') },
   { name: 'fill',    icon: 'fill' },
   { name: 'lasso',   icon: 'lasso' },
   { name: 'dropper', icon: 'dropper' },
   { name: 'line',    icon: 'line' },
   { name: 'square',  icon: 'square' },
   { name: 'circle',  icon: 'circle' },
-  { name: 'undo',    icon: 'undo',    onPress: undefined as (() => void) | undefined },
+  { name: 'undo',    icon: 'undo', onPress: undefined as (() => void) | undefined },
   { name: 'redo',    icon: 'redo' },
-];
+  ];
 
-export default function Challenge() {
   const { token } = useAuth();
   const [allowedColors, setAllowedColors] = useState<string[]>([]);
   const [allowedTools, setAllowedTools] = useState<string[]>([]);
@@ -65,9 +68,10 @@ export default function Challenge() {
 
     if (col >= 0 && col < gridSize && row >= 0 && row < gridSize) {
       const i = row * gridSize + col;
+      const drawingColor = activeButton === 'erase' ? DEFAULT_COLOR : selectedColor;
       setGrid(prev => {
         const newGrid = [...prev];
-        newGrid[i] = selectedColor;
+        newGrid[i] = drawingColor;
         return newGrid;
       });
     }
@@ -158,7 +162,7 @@ export default function Challenge() {
       <View style={styles.gridAndTools}>
         <View style={styles.toolsContainer}>
           {tools.filter(t => allowedTools.includes(t.name)).map(t => (
-            <Pressable key={t.name} style={styles.button} onPress={t.onPress}>
+            <Pressable key={t.name} style={activeButton === t.name ? styles.buttonEnabled : styles.buttonDisabled} onPress={t.onPress}>
               <IconSymbol name={t.icon} color={'currentColor'} />
             </Pressable>
           ))}
@@ -217,6 +221,18 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     backgroundColor: 'rgb(175, 175, 175)',
+  },
+  buttonEnabled: {
+    padding: 5,
+    width: 30,
+    height: 30,
+    backgroundColor: 'rgb(128, 128, 128)'
+  },
+  buttonDisabled: {
+    padding: 5,
+    width: 30,
+    height: 30,
+    backgroundColor: 'rgb(175, 175, 175)'
   },
   controls: {
     marginBottom: 20,
