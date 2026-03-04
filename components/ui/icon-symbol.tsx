@@ -22,6 +22,8 @@ import CommentView from '../../assets/icons/post_actions/comment_fill.svg';
 import Save from '../../assets/icons/post_actions/save_unfill.svg';
 import Saved from '../../assets/icons/post_actions/save_fill.svg';
 
+import SendIcon from '../../assets/icons/send.svg';
+
 // editor actions
 import Undo from '../../assets/icons/editor/undo.svg';
 import Redo from '../../assets/icons/editor/redo.svg';
@@ -60,6 +62,7 @@ const MAPPING = {
   erase:          { component: Erase,           fixed: true,     scale: 1.0 },
   draw:           { component: Draw,            fixed: true,     scale: 1.0 },
   dropper:        { component: Dropper,         fixed: true,     scale: 1.0 },
+  send:           { component: SendIcon,        fixed: true,     scale: 1.0 },
 } as const;
 
 export function IconSymbol({
