@@ -35,7 +35,8 @@ model Post {
 
 model Chat {
   id         String   @id @default(cuid())
-  message    String
+  message    String?
+  imageUrl   String?
   createdAt  DateTime @default(now())
 
   senderId   String
