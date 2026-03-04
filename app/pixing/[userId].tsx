@@ -192,7 +192,6 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     marginTop: 4,
-    borderRadius: 4,
   },
   inputBar: {
     flexDirection: 'row',
@@ -211,7 +210,6 @@ const styles = StyleSheet.create({
     width: 273,
     height: 41,
     backgroundColor: '#F8F8F8',
-    borderRadius: 4,
     paddingHorizontal: 10,
     fontSize: 16,
     color: '#000',
