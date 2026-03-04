@@ -10,6 +10,7 @@ import LOGO from '../../assets/logo.svg';
 import HomeIcon from '../../assets/icons/home.svg';
 import MailIcon from '../../assets/icons/mail.svg';
 import PaletteIcon from '../../assets/icons/palette.svg';
+import PaletteImgIcon from '../../assets/icons/palette_img.svg';
 import SearchIcon from '../../assets/icons/search.svg';
 import StarIcon from '../../assets/icons/star.svg';
 import ProfileFrame from '../../assets/icons/profile_frame.svg';
@@ -43,6 +44,7 @@ const MAPPING = {
   home:           { component: HomeIcon,        fixed: true,     scale: 0.75 },
   mail:           { component: MailIcon,        fixed: true,     scale: 0.75 },
   palette:        { component: PaletteIcon,     fixed: true,     scale: 0.75 },
+  palette_img:    { component: PaletteImgIcon, fixed: true,     scale: 1.0  },
   search:         { component: SearchIcon,      fixed: false,    scale: 1.0  },
   star:           { component: StarIcon,        fixed: true,     scale: 0.75 },
   profile_frame:  { component: ProfileFrame,    fixed: true,     scale: 0.75 },
