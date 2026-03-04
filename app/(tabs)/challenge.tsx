@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { StyleSheet, Text, View, TextInput, Dimensions, Button, ActivityIndicator, Pressable, PanResponder } from 'react-native';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import { captureRef } from 'react-native-view-shot';
 import { api } from '../../services/api';
 import { useAuth } from '@/context/AuthContext';
+import Toolbar, { ToolName } from '@/components/toolbar';
 
 const DEFAULT_GRID = 16;
 const DEFAULT_COLOR = '#fff';
@@ -14,21 +14,6 @@ const GRID_CONTAINER_SIZE = SCREEN_WIDTH - 100;
 
 export default function Challenge() {
   
-  const [activeButton, setActiveButton] = useState<'draw' | 'erase'>('draw');
-
-  const ALL_TOOLS = [
-  { name: 'draw',    icon: 'draw',  onPress: () => setActiveButton('draw') },
-  { name: 'erase',   icon: 'erase', onPress: () => setActiveButton('erase') },
-  { name: 'fill',    icon: 'fill' },
-  { name: 'lasso',   icon: 'lasso' },
-  { name: 'dropper', icon: 'dropper' },
-  { name: 'line',    icon: 'line' },
-  { name: 'square',  icon: 'square' },
-  { name: 'circle',  icon: 'circle' },
-  { name: 'undo',    icon: 'undo', onPress: undefined as (() => void) | undefined },
-  { name: 'redo',    icon: 'redo' },
-  ];
-
   const { token } = useAuth();
   const [allowedColors, setAllowedColors] = useState<string[]>([]);
   const [allowedTools, setAllowedTools] = useState<string[]>([]);
@@ -40,6 +25,7 @@ export default function Challenge() {
   const [isUploading, setIsUploading] = useState(false);
   const cellSize = GRID_CONTAINER_SIZE / gridSize;
 
+  const activeTool = useRef('draw');
   const gridRef = useRef<View>(null);
   const [prevGrid, setPrevGrid] = useState<string[][]>([Array(DEFAULT_GRID * DEFAULT_GRID).fill(DEFAULT_COLOR)]);
   const index = useRef(0);
@@ -68,7 +54,7 @@ export default function Challenge() {
 
     if (col >= 0 && col < gridSize && row >= 0 && row < gridSize) {
       const i = row * gridSize + col;
-      const drawingColor = activeButton === 'erase' ? DEFAULT_COLOR : selectedColor;
+      const drawingColor = activeTool.current === 'erase' ? DEFAULT_COLOR : selectedColor;
       setGrid(prev => {
         const newGrid = [...prev];
         newGrid[i] = drawingColor;
@@ -116,8 +102,6 @@ export default function Challenge() {
     }
   };
 
-  const tools = ALL_TOOLS.map(t => t.name === 'undo' ? { ...t, onPress: handleUndo } : t);
-
   const handleSaveAndUpload = async () => {
     if (isUploading) return;
     setIsUploading(true);
@@ -160,13 +144,7 @@ export default function Challenge() {
       </View>
 
       <View style={styles.gridAndTools}>
-        <View style={styles.toolsContainer}>
-          {tools.filter(t => allowedTools.includes(t.name)).map(t => (
-            <Pressable key={t.name} style={activeButton === t.name ? styles.buttonEnabled : styles.buttonDisabled} onPress={t.onPress}>
-              <IconSymbol name={t.icon} color={'currentColor'} />
-            </Pressable>
-          ))}
-        </View>
+        <Toolbar allowedTools={allowedTools as ToolName[]} onToolChange={t => { activeTool.current = t; }} onUndo={handleUndo} />
 
         <View
           {...panResponder.panHandlers}
@@ -210,29 +188,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 50,
     backgroundColor: '#fff',
-  },
-  toolsContainer: {
-    width: 20,
-    height: 20,
-    color: 'rgb(255, 0, 255)',
-  },
-  button: {
-    padding: 5,
-    width: 30,
-    height: 30,
-    backgroundColor: 'rgb(175, 175, 175)',
-  },
-  buttonEnabled: {
-    padding: 5,
-    width: 30,
-    height: 30,
-    backgroundColor: 'rgb(128, 128, 128)'
-  },
-  buttonDisabled: {
-    padding: 5,
-    width: 30,
-    height: 30,
-    backgroundColor: 'rgb(175, 175, 175)'
   },
   controls: {
     marginBottom: 20,

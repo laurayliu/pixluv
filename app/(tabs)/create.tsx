@@ -1,12 +1,10 @@
 import DefaultColorPanel from '../../components/color_picker';
 import React, { useState, useRef } from 'react';
-import {StyleSheet, Text, View, TextInput, Dimensions, ScrollView, Button, ActivityIndicator, Pressable, PanResponder} from 'react-native';
-import { withDecay } from 'react-native-reanimated';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { IconSymbol } from '@/components/ui/icon-symbol';import { captureRef } from "react-native-view-shot";
+import {StyleSheet, Text, View, TextInput, Dimensions, Button, ActivityIndicator, PanResponder} from 'react-native';
+import { captureRef } from "react-native-view-shot";
 import { api } from '../../services/api';
 import { useAuth } from '@/context/AuthContext';
+import Toolbar, { ALL_TOOL_NAMES } from '@/components/toolbar';
 
 const DEFAULT_GRID = 16;
 const DEFAULT_COLOR = "#fff";
@@ -25,7 +23,7 @@ export default function CreatePix() {
   )
 
   const [selectedColor, setSelectedColor] = useState<string>(DEFAULT_SELECTED_COLOR);
-  const [activeButton, setActiveButton] = useState<'draw' | 'erase'>('draw');
+  const activeTool = useRef('draw');
   const [isUploading, setIsUploading] = useState(false);
   const cellSize = GRID_CONTAINER_SIZE/gridSize;
 
@@ -56,7 +54,7 @@ export default function CreatePix() {
     if (col >= 0 && col < gridSize && row >= 0 && row < gridSize) {
       const index = row * gridSize + col;
 
-      const drawingColor = activeButton === 'erase' ? DEFAULT_COLOR : selectedColor; // if eraser is toggled set selected color to white
+      const drawingColor = activeTool.current === 'erase' ? DEFAULT_COLOR : selectedColor; // if eraser is toggled set selected color to white
 
       setGrid(prevGrid => {
         const newGrid = [...prevGrid];
@@ -151,47 +149,7 @@ export default function CreatePix() {
       </View>
 
       <View style = {styles.gridAndTools}>
-        <View style= {styles.toolsContainer}>
-          <Pressable style={styles.button}> 
-            <IconSymbol name="lasso" color={"currentColor"} />        
-          </Pressable>
-
-          <Pressable style={styles.button}> 
-            <IconSymbol name="line" color={"currentColor"} />        
-          </Pressable>
-
-          <Pressable style={styles.button}> 
-            <IconSymbol name="square" color={"currentColor"} />        
-          </Pressable>
-
-          <Pressable style={styles.button}> 
-            <IconSymbol name="circle" color={"currentColor"} />        
-          </Pressable>
-
-          <Pressable style={styles.button}> 
-            <IconSymbol name="fill" color={"currentColor"} />        
-          </Pressable>
-
-          <Pressable style={styles.button}> 
-            <IconSymbol name="dropper" color={"currentColor"} />        
-          </Pressable>
-
-          <Pressable style={activeButton === 'erase' ? styles.buttonEnabled : styles.buttonDisabled} onPress={() => setActiveButton('erase')}> 
-            <IconSymbol name="erase" color={"currentColor"} />        
-          </Pressable>
-
-          <Pressable style={activeButton === 'draw' ? styles.buttonEnabled : styles.buttonDisabled} onPress={() => setActiveButton('draw')}> 
-            <IconSymbol name="draw" color={"currentColor"} />        
-          </Pressable>
-
-          <Pressable style={styles.button} onPress={() => handleUndo()}> 
-            <IconSymbol name="undo" color={"currentColor"} />        
-          </Pressable>
-
-          <Pressable style={styles.button}> 
-            <IconSymbol name="redo" color={"currentColor"} />        
-          </Pressable>
-        </View>
+        <Toolbar allowedTools={ALL_TOOL_NAMES} onToolChange={t => { activeTool.current = t; }} onUndo={handleUndo} />
 
         <View {...panResponder.panHandlers} 
         ref={gridRef}
@@ -238,33 +196,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 50,
     backgroundColor: '#ececec',
-  },
-  toolsContainer: {
-    width: 20,
-    height: 20,
-    color: 'rgb(255, 0, 255)',
-  },
-  image: {
-    height: 20,
-    width: 20,
-  },
-  button: {
-    padding: 5,
-    width: 30,
-    height: 30,
-    backgroundColor: 'rgb(175, 175, 175)'
-  },
-  buttonEnabled: {
-    padding: 5,
-    width: 30,
-    height: 30,
-    backgroundColor: 'rgb(128, 128, 128)'
-  },
-  buttonDisabled: {
-    padding: 5,
-    width: 30,
-    height: 30,
-    backgroundColor: 'rgb(175, 175, 175)'
   },
   controls: {
     marginBottom: 20,
