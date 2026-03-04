@@ -148,9 +148,6 @@ export default function CreatePix() {
           <Text>pick color: </Text>
           <TextInput value={selectedColor} onChangeText={setSelectedColor} style={[styles.input, { borderRightWidth: 10, borderRightColor: selectedColor }]}></TextInput>
         </View>
-        <View style={{ width: '100%', paddingHorizontal: 20 }}>
-          <DefaultColorPanel value={selectedColor} onColorChange={setSelectedColor}/>
-        </View>
       </View>
 
       <View style = {styles.gridAndTools}>
@@ -216,7 +213,10 @@ export default function CreatePix() {
         ))}
         </View>
       </View>
-
+      
+      <View style={{ width: '100%' }}>
+          <DefaultColorPanel value={selectedColor} onColorChange={setSelectedColor}/>
+      </View>
       
       <View style={styles.actions}>
         <Button title ="clear" onPress={() => handleClear()} color='#000'></Button>
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 50,
-    backgroundColor: '#fff',
+    backgroundColor: '#ececec',
   },
   toolsContainer: {
     width: 20,
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
   },
   gridAndTools: {
     flexDirection: 'row',
-    marginTop: 70
+    marginTop: 15
   },
   grid: {
     flexDirection: 'row',
