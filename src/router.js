@@ -3,6 +3,7 @@ import * as Posts from './controllers/post_controller.js';
 import * as Users from './controllers/user_controller.js';
 import * as Auth from './controllers/auth_controller.js';
 import * as Challenges from './controllers/challenge_controller.js';
+import * as Pixing from './controllers/pixing_controller.js';
 import requireAuth from './middleware/auth.js';
 
 const router = Router();
@@ -42,5 +43,11 @@ router.route('/challenges/:id')
   .get(Challenges.getChallenge)
   .put(requireAuth, Challenges.updateChallenge)
   .delete(requireAuth, Challenges.deleteChallenge);
+
+router.route('/pixing')
+  .get(requireAuth, Pixing.getConversations)
+  .post(requireAuth, Pixing.sendMessage);
+
+router.get('/pixing/:otherUserId', requireAuth, Pixing.getMessages);
 
 export default router;
