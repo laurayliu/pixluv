@@ -42,6 +42,7 @@ export const api = {
   signup: (username, email, password) => post('/auth/signup', { username, email, password }),
   createPost: (data, token) => post('/posts', data, token),
 
+  getTodayChallenge: () => get('/challenges/today'),
   getPresignedUrl: (filename, token) =>
     get(
       `/sign-s3?fileName=${encodeURIComponent(filename)}&fileType=${encodeURIComponent('image/png')}`,
