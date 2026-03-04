@@ -34,6 +34,14 @@ import Erase from '../../assets/icons/editor/eraser.svg';
 import Draw from '../../assets/icons/editor/pencil.svg';
 import Dropper from '../../assets/icons/editor/dropper.svg';
 
+// profile stickers
+import Profile from '../../assets/icons/profile/profile.svg'
+import Sticker1 from '../../assets/icons/profile/rabbit.svg'
+import Sticker2 from '../../assets/icons/profile/lighthouse.svg'
+
+
+
+
 type IconSymbolName = keyof typeof MAPPING;
 
 const MAPPING = {
@@ -60,6 +68,10 @@ const MAPPING = {
   erase:          { component: Erase,           fixed: true,     scale: 1.0 },
   draw:           { component: Draw,            fixed: true,     scale: 1.0 },
   dropper:        { component: Dropper,         fixed: true,     scale: 1.0 },
+  profile:        { component: Profile,         fixed: true,     scale: 1.0 },
+  sticker1:       { component: Sticker1,         fixed: true,     scale: 1.0 },
+  sticker2:       { component: Sticker2,         fixed: true,     scale: 1.0 },
+
 } as const;
 
 export function IconSymbol({
