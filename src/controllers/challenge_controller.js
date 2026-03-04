@@ -2,13 +2,12 @@ import prisma from '../db.js';
 
 export const getTodayChallenge = async (req, res) => {
   try {
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
-    const end = new Date();
-    end.setHours(23, 59, 59, 999);
+    const now = new Date();
+    const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
 
     const challenge = await prisma.dailyChallenge.findFirst({
-      where: { date: { gte: start, lte: end } },
+      where: { date: { gte: start, lt: end } },
     });
 
     if (!challenge) return res.status(404).json({ error: 'No challenge for today' });
