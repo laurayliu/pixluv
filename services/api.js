@@ -35,6 +35,7 @@ async function post(path, body, token) {
 
 export const api = {
   hello: () => get('/'),
+  getPostsByUser: (userId, token) => get(`/posts/user/${userId}`, token),
   getPosts: () => get('/posts'),
   getUser: (id) => get(`/users/${id}`),
 
