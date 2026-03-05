@@ -10,13 +10,15 @@ type Props = {
   allowedTools: ToolName[];
   onToolChange: (tool: ToolName) => void;
   onUndo: () => void;
+  onRedo: () => void;
 };
 
-export default function Toolbar({ allowedTools, onToolChange, onUndo }: Props) {
+export default function Toolbar({ allowedTools, onToolChange, onUndo, onRedo }: Props) {
   const [activeTool, setActiveTool] = useState<ToolName>('draw');
 
   const handlePress = (tool: ToolName) => {
     if (tool === 'undo') { onUndo(); return; }
+    if (tool === 'redo') { onRedo(); return; }
     setActiveTool(tool);
     onToolChange(tool);
   };
