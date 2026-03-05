@@ -28,7 +28,7 @@ export const getPost = async (req, res) => {
 
 export const getPostsByUser = async (req, res) => {
   const posts = await prisma.post.findMany({
-    where: { authorId: req.paras.userId },
+    where: { authorId: req.params.userId },
     orderBy: { createdAt: 'desc' },
     select: { id: true, title: true, tags: true, imageUrl: true, createdAt: true, author: { select: { username: true } } },
   });
