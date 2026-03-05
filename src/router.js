@@ -34,6 +34,16 @@ router.route('/posts/:id')
   .put(requireAuth, Posts.updatePost)
   .delete(requireAuth, Posts.deletePost);
 
+router.route('/posts/:id/like')
+  .post(requireAuth, Posts.toggleLike);
+
+router.route('/posts/:id/save')
+  .post(requireAuth, Posts.toggleSave);
+
+router.route('/posts/:id/comments')
+  .get(Posts.getComments)
+  .post(requireAuth, Posts.createComment);
+
 router.route('/sign-s3')
   .get(requireAuth, Posts.getSignedS3Url);
 

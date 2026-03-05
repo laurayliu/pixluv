@@ -18,6 +18,10 @@ model User {
   sentMessages  Chat[] @relation("sender")
   receivedMessages Chat[] @relation("receiver")
   password  String
+
+  likes         Like[]
+  comments      Comment[]
+  saves         Save[]
 }
 
 model Post {
@@ -31,6 +35,45 @@ model Post {
 
   authorId  String
   author    User     @relation(fields: [authorId], references: [id])
+
+  likes         Like[]
+  comments      Comment[]
+  saves         Save[]
+}
+
+model Like {
+  id         String   @id @default(cuid())
+  createdAt  DateTime @default(now())
+
+  userId     String
+  postId     String
+  user       User     @relation(fields: [userId], references: [id])
+  post       Post     @relation(fields: [postId], references: [id])
+
+  @@unique([userId, postId])
+}
+
+model Comment {
+  id         String   @id @default(cuid())
+  body       String
+  createdAt  DateTime @default(now())
+
+  userId     String
+  postId     String
+  user       User     @relation(fields: [userId], references: [id])
+  post       Post     @relation(fields: [postId], references: [id])
+}
+
+model Save {
+  id         String   @id @default(cuid())
+  createdAt  DateTime @default(now())
+
+  userId     String
+  postId     String
+  user       User     @relation(fields: [userId], references: [id])
+  post       Post     @relation(fields: [postId], references: [id])
+
+  @@unique([userId, postId])
 }
 
 model Chat {
