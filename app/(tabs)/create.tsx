@@ -132,6 +132,14 @@ export default function CreatePix() {
     }
   }
 
+  const handleRedo = () => {
+    if (index.current < prevGrid.length - 1) {
+      const nextIndex = index.current + 1;
+      setGrid(prevGrid[nextIndex]);
+      index.current = nextIndex;
+    }
+  }
+
   return (
 
     <View style={styles.container}>
@@ -149,7 +157,7 @@ export default function CreatePix() {
       </View>
 
       <View style = {styles.gridAndTools}>
-        <Toolbar allowedTools={ALL_TOOL_NAMES} onToolChange={t => { activeTool.current = t; }} onUndo={handleUndo} />
+        <Toolbar allowedTools={ALL_TOOL_NAMES} onToolChange={t => { activeTool.current = t; }} onUndo={handleUndo} onRedo={handleRedo}/>
 
         <View {...panResponder.panHandlers} 
         ref={gridRef}
