@@ -6,6 +6,7 @@ import { api } from '../../services/api';
 import { useAuth } from '@/context/AuthContext';
 import Toolbar, { ALL_TOOL_NAMES } from '@/components/toolbar';
 
+
 const DEFAULT_GRID = 16;
 const DEFAULT_COLOR = "#fff";
 const DEFAULT_SELECTED_COLOR = "#000"
