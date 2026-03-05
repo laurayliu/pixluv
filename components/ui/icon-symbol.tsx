@@ -10,6 +10,7 @@ import LOGO from '../../assets/logo.svg';
 import HomeIcon from '../../assets/icons/home.svg';
 import MailIcon from '../../assets/icons/mail.svg';
 import PaletteIcon from '../../assets/icons/palette.svg';
+import PaletteImgIcon from '../../assets/icons/palette_img.svg';
 import SearchIcon from '../../assets/icons/search.svg';
 import StarIcon from '../../assets/icons/star.svg';
 import ProfileFrame from '../../assets/icons/profile_frame.svg';
@@ -21,6 +22,8 @@ import Comment from '../../assets/icons/post_actions/comment_unfill.svg';
 import CommentView from '../../assets/icons/post_actions/comment_fill.svg';
 import Save from '../../assets/icons/post_actions/save_unfill.svg';
 import Saved from '../../assets/icons/post_actions/save_fill.svg';
+
+import SendIcon from '../../assets/icons/send.svg';
 
 // editor actions
 import Undo from '../../assets/icons/editor/undo.svg';
@@ -34,6 +37,14 @@ import Erase from '../../assets/icons/editor/eraser.svg';
 import Draw from '../../assets/icons/editor/pencil.svg';
 import Dropper from '../../assets/icons/editor/dropper.svg';
 
+// profile stickers
+import Profile from '../../assets/icons/profile/profile.svg'
+import Sticker1 from '../../assets/icons/profile/rabbit.svg'
+import Sticker2 from '../../assets/icons/profile/lighthouse.svg'
+
+
+
+
 type IconSymbolName = keyof typeof MAPPING;
 
 const MAPPING = {
@@ -41,6 +52,7 @@ const MAPPING = {
   home:           { component: HomeIcon,        fixed: true,     scale: 0.75 },
   mail:           { component: MailIcon,        fixed: true,     scale: 0.75 },
   palette:        { component: PaletteIcon,     fixed: true,     scale: 0.75 },
+  palette_img:    { component: PaletteImgIcon, fixed: true,     scale: 1.0  },
   search:         { component: SearchIcon,      fixed: false,    scale: 1.0  },
   star:           { component: StarIcon,        fixed: true,     scale: 0.75 },
   profile_frame:  { component: ProfileFrame,    fixed: true,     scale: 0.75 },
@@ -60,6 +72,10 @@ const MAPPING = {
   erase:          { component: Erase,           fixed: true,     scale: 1.0 },
   draw:           { component: Draw,            fixed: true,     scale: 1.0 },
   dropper:        { component: Dropper,         fixed: true,     scale: 1.0 },
+  profile:        { component: Profile,         fixed: true,     scale: 1.0 },
+  sticker1:       { component: Sticker1,         fixed: true,     scale: 1.0 },
+  sticker2:       { component: Sticker2,         fixed: true,     scale: 1.0 },
+  send:           { component: SendIcon,        fixed: true,     scale: 1.0 },
 } as const;
 
 export function IconSymbol({

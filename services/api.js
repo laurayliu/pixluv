@@ -42,6 +42,12 @@ export const api = {
   signup: (username, email, password) => post('/auth/signup', { username, email, password }),
   createPost: (data, token) => post('/posts', data, token),
 
+  getInbox: (token) => get('/pixing', token),
+  getConversation: (otherUserId, token) => get(`/pixing/${otherUserId}`, token),
+  sendPix: (receiverId, message, imageUrl, token) =>
+    post('/pixing', { receiverId, ...(message ? { message } : {}), ...(imageUrl ? { imageUrl } : {}) }, token),
+
+  getTodayChallenge: () => get('/challenges/today'),
   getPresignedUrl: (filename, token) =>
     get(
       `/sign-s3?fileName=${encodeURIComponent(filename)}&fileType=${encodeURIComponent('image/png')}`,
