@@ -59,3 +59,69 @@ export const getSignedS3Url = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+export const toggleLike = async (req, res) => {
+  const { id: postId } = req.params;
+  const userId = req.user.id;
+
+  const liked = await prisma.like.findUnique({
+    where: {userId_postId: { userId, postId }},
+  });
+
+  if (liked) {
+    await prisma.like.delete({where: { id : liked.id }});
+    res.json({ liked: false });
+  }
+
+  await prisma.like.create({ data: { userId, postId } });
+  return res.json({ liked: true });
+}
+
+export const toggleSave = async (req, res) => {
+  const { id: postId } = req.params;
+  const userId = req.user.id;
+
+  const saved = await prisma.save.findUnique({
+    where: {userId_postId: { userId, postId }},
+  });
+
+  if (saved) {
+    await prisma.save.delete({where: { id : saved.id }});
+    res.json({ saved: false });
+  }
+
+  await prisma.save.create({ data: { userId, postId } });
+  return res.json({ saved: true });
+}
+
+export const createComment = async (req, res) => {
+  const { id: postId } = req.params;
+  const { body } = req.body;
+  const userId = req.user.id;
+
+  const comment = await prisma.comment.create({
+    data: { body, userId, postId },
+    select: {
+      id: true,
+      body: true,
+      createdAt: true,
+      user: { select: { username: true, id: true } },
+    }
+  });
+  res.json(comment);
+};
+
+export const getComments = async (req, res) => {
+  const { id: postId } = req.params;
+  const comments = await prisma.comment.findMany({
+    where: { postId },
+    orderBy: { createdAt: 'asc' },
+    select: {
+      id: true,
+      body: true,
+      createdAt: true,
+      user: { select: {username: true, id: true } },
+    },
+  });
+  res.json(comments);
+}
