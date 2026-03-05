@@ -134,6 +134,14 @@ export default function CreatePix() {
     }
   }
 
+  const handleRedo = () => {
+    if (index.current < prevGrid.length - 1) {
+      const nextIndex = index.current + 1;
+      setGrid(prevGrid[nextIndex]);
+      index.current = nextIndex;
+    }
+  }
+
   return (
 
     <View style={styles.container}>
@@ -191,7 +199,7 @@ export default function CreatePix() {
             <IconSymbol name="undo" color={"currentColor"} />        
           </Pressable>
 
-          <Pressable style={styles.button}> 
+          <Pressable style={styles.button} onPress={() => handleRedo()}> 
             <IconSymbol name="redo" color={"currentColor"} />        
           </Pressable>
         </View>
