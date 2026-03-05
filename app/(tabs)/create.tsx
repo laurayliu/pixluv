@@ -144,7 +144,7 @@ export default function CreatePix() {
 
     <View style={styles.container}>
 
-      <Text style = {{fontSize: 20, marginBottom: 10}}>new pix!</Text>
+      <Text style = {{fontSize: 20, marginBottom: 10, marginTop: 20}}>new pix!</Text>
       <View style={styles.controls}>
         <View style={styles.inputGroup}>
           <Text>pick grid size: </Text>

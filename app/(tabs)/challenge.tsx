@@ -102,6 +102,14 @@ export default function Challenge() {
     }
   };
 
+  const handleRedo = () => {
+    if (index.current < prevGrid.length - 1) {
+      const nextIndex = index.current + 1;
+      setGrid(prevGrid[nextIndex]);
+      index.current = nextIndex;
+    }
+  }
+
   const handleSaveAndUpload = async () => {
     if (isUploading) return;
     setIsUploading(true);
@@ -144,7 +152,7 @@ export default function Challenge() {
       </View>
 
       <View style={styles.gridAndTools}>
-        <Toolbar allowedTools={allowedTools as ToolName[]} onToolChange={t => { activeTool.current = t; }} onUndo={handleUndo} />
+        <Toolbar allowedTools={allowedTools as ToolName[]} onToolChange={t => { activeTool.current = t; }} onUndo={handleUndo} onRedo={handleRedo}/>
 
         <View
           {...panResponder.panHandlers}
