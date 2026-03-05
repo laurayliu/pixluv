@@ -31,7 +31,7 @@ const Profile = () => {
 
       <View style={styles.favorite_container}>
         <View style={styles.sticker_container}>
-          <Text style={{textAlign: 'center'}}>Sticker Collection</Text>
+          <Text style={[styles.texts, {textAlign: 'center' }]}>Sticker Collection</Text>
           <View style={styles.sticker_box}>
             <View style={styles.sticker}>
               {/* use image here to display the sticker */}
@@ -47,46 +47,50 @@ const Profile = () => {
         </View>
 
         <View style={styles.main_color}>
-          <View style={styles.color_row}>
-            <View style={[
-              styles.color_box, 
-            { backgroundColor: '#a22d2d' }, // take user info to fill color
-            ]}></View>
-           <View style={[
-              styles.color_box, 
-            { backgroundColor: '#a22d2d' }, // take user info to fill color
-            ]}></View>
+          <Text style={[styles.texts, {textAlign: 'center'}]}>Favorite Colors</Text>
 
-           <View style={[
-              styles.color_box, 
-            { backgroundColor: '#a22d2d' }, // take user info to fill color
-            ]}></View>          
+          <View style={styles.pallete_box}>
+            <View style={styles.color_row}>
+              <View style={[
+                styles.color_box, 
+              { backgroundColor: '#a22d2d' }, // take user info to fill color
+              ]}></View>
+            <View style={[
+                styles.color_box, 
+              { backgroundColor: '#a22d2d' }, // take user info to fill color
+              ]}></View>
+
+            <View style={[
+                styles.color_box, 
+              { backgroundColor: '#a22d2d' }, // take user info to fill color
+              ]}></View>          
+            </View>
+
+            <View style={styles.color_row}>
+              <View style={[
+                styles.color_box, 
+              { backgroundColor: '#a22d2d' }, // take user info to fill color
+              ]}></View>
+            <View style={[
+                styles.color_box, 
+              { backgroundColor: '#a22d2d' }, // take user info to fill color
+              ]}></View>
+
+            <View style={[
+                styles.color_box, 
+              { backgroundColor: '#a22d2d' }, // take user info to fill color
+              ]}></View>          
+            </View>
           </View>
 
-          <View style={styles.color_row}>
-            <View style={[
-              styles.color_box, 
-            { backgroundColor: '#a22d2d' }, // take user info to fill color
-            ]}></View>
-           <View style={[
-              styles.color_box, 
-            { backgroundColor: '#a22d2d' }, // take user info to fill color
-            ]}></View>
-
-           <View style={[
-              styles.color_box, 
-            { backgroundColor: '#a22d2d' }, // take user info to fill color
-            ]}></View>          
-          </View>
 
           <View>
-            <Text>Edit tton</Text>
+            {/* <Text>Edit tton</Text> */}
           </View>
         </View>
       </View>
 
       <View style={styles.book_container}>
-        <View style={{height: 300, backgroundColor: '#2b7dc5'}}></View>
       </View>
     </View>
   );
@@ -138,13 +142,16 @@ const styles = StyleSheet.create({
   },
   main_color: {
     display: 'flex',
-    backgroundColor: '#c03030',
-    flexGrow: 1,
-    flexDirection: 'row',
+    flexDirection: 'column',
+    height: '100%',
+    width: 110,
+    alignContent: 'center',
+    justifyContent: 'flex-end'
   },
   color_row: {
     display: 'flex',
-    flexDirection: 'row'
+    flexDirection: 'row',
+    justifyContent: 'center'
   },
   action_button: {
     display: 'flex',
@@ -173,6 +180,7 @@ const styles = StyleSheet.create({
   },
   favorite_container: {
     display: 'flex',
+    height: 115,
     width: '80%', 
     alignSelf: 'center',
     flexDirection: 'row',
@@ -180,28 +188,43 @@ const styles = StyleSheet.create({
     alignItems: 'center' 
   },
   sticker_container: {
-    backgroundColor: '#ff6c6c',
-    width: 138
+    width: 160,
+    height: '100%',
+    marginRight: 40,
+    justifyContent: 'flex-end'
   },
   sticker_box: {
     display: 'flex',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
     flexDirection: 'row'
   },
   sticker: {
     backgroundColor: '#382979',
-    height: 65,
-    width: 65,
+    height: 75,
+    width: 75,
+  },
+  pallete_box: {
+    backgroundColor: '#d0d0d0',
+    height: 75,
+    width: 110,
+    justifyContent: 'center'
   },
   color_box: {
     height: 28,
     width: 28,
+    margin: 2,
     backgroundColor: '#a14c67',
+    justifyContent: 'center',
+    alignContent: 'center',
+    alignSelf: 'center',
   },
   book_container: {
+    display: 'flex',
+    marginTop: 15,
+    alignSelf: 'center',
     width: '90%',
-    height: '60%'
+    height: '70%'
   },
   email: {
     fontSize: 14,
