@@ -23,6 +23,8 @@ router.route('/users/:id')
   .put(requireAuth, Users.updateUser)
   .delete(requireAuth, Users.deleteUser);
 
+router.get('/posts/users/:userId', Posts.getPostsByUser);
+
 router.route('/posts')
   .get(Posts.getPosts)
   .post(requireAuth, Posts.createPost);

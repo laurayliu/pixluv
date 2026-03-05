@@ -26,6 +26,15 @@ export const getPost = async (req, res) => {
   res.json(post);
 };
 
+export const getPostsByUser = async (req, res) => {
+  const posts = await prisma.post.findMany({
+    where: { authorId: req.paras.userId },
+    orderBy: { createdAt: 'desc' },
+    select: { id: true, title: true, tags: true, imageUrl: true, createdAt: true, author: { select: { username: true } } },
+  });
+  res.json(posts);
+};
+
 export const updatePost = async (req, res) => {
   const { title, tags, content, imageUrl } = req.body;
   const post = await prisma.post.update({
