@@ -24,6 +24,7 @@ router.route('/users/:id')
   .delete(requireAuth, Users.deleteUser);
 
 router.get('/posts/user/:userId', Posts.getPostsByUser);
+router.get('/posts/challenge/today', requireAuth, Posts.getTodayChallengePosts);
 
 router.route('/posts')
   .get(Posts.getPosts)
