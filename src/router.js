@@ -16,7 +16,7 @@ router.post('/auth/signup', Auth.signup);
 router.post('/auth/login', Auth.login);
 
 router.route('/users')
-  .get(Users.getUsers);
+  .get(requireAuth, Users.getUsers);
 
 router.route('/users/:id')
   .get(Users.getUser)

@@ -17,7 +17,8 @@ model User {
   posts         Post[]
   sentMessages  Chat[] @relation("sender")
   receivedMessages Chat[] @relation("receiver")
-  password  String
+  password        String
+  profilePicture  String?
 
   likes         Like[]
   comments      Comment[]
