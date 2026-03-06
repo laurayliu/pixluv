@@ -49,6 +49,7 @@ export const api = {
     post('/pixing', { receiverId, ...(message ? { message } : {}), ...(imageUrl ? { imageUrl } : {}) }, token),
 
   getTodayChallenge: () => get('/challenges/today'),
+  getTodayChallengePosts: (token) => get('/posts/challenge/today', token),
   getPresignedUrl: (filename, token) =>
     get(
       `/sign-s3?fileName=${encodeURIComponent(filename)}&fileType=${encodeURIComponent('image/png')}`,

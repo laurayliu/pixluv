@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, Dimensions, Button, ActivityIndicator, Pressable, PanResponder } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Dimensions, Button, ActivityIndicator, Pressable, PanResponder, Image, ScrollView } from 'react-native';
 import { captureRef } from 'react-native-view-shot';
 import { api } from '../../services/api';
 import { useAuth } from '@/context/AuthContext';
@@ -15,6 +15,8 @@ const GRID_CONTAINER_SIZE = SCREEN_WIDTH - 100;
 export default function Challenge() {
   
   const { token } = useAuth();
+  const [submissions, setSubmissions] = useState<{ id: string; imageUrl: string; author: { username: string } }[]>([]);
+  const [submitted, setSubmitted] = useState(false);
   const [allowedColors, setAllowedColors] = useState<string[]>([]);
   const [allowedTools, setAllowedTools] = useState<string[]>([]);
   const [gridSize, setGridSize] = useState<number>(DEFAULT_GRID);
@@ -27,6 +29,7 @@ export default function Challenge() {
 
   const activeTool = useRef('draw');
   const gridRef = useRef<View>(null);
+  const exportRef = useRef<View>(null);
   const [prevGrid, setPrevGrid] = useState<string[][]>([Array(DEFAULT_GRID * DEFAULT_GRID).fill(DEFAULT_COLOR)]);
   const index = useRef(0);
   const gridLayout = useRef({ x: 0, y: 0 });
@@ -37,7 +40,14 @@ export default function Challenge() {
         if (c.allowedColors?.length) setAllowedColors(c.allowedColors);
         if (c.allowedTools?.length) setAllowedTools(c.allowedTools);
       })
-      .catch(() => {}); // no challenge today — no restriction
+      .catch(() => {});
+
+    api.getTodayChallengePosts(token)
+      .then(({ posts, hasSubmitted }: any) => {
+        setSubmissions(posts);
+        setSubmitted(hasSubmitted);
+      })
+      .catch(() => {});
   }, []);
 
   const onGridLayout = () => {
@@ -114,12 +124,14 @@ export default function Challenge() {
     if (isUploading) return;
     setIsUploading(true);
     try {
-      const base64 = await captureRef(gridRef, { format: 'png', quality: 1, result: 'base64' });
+      const base64 = await captureRef(exportRef, { format: 'png', quality: 1, result: 'base64' });
       const filename = `pix.png`;
       const { signedUrl, publicUrl } = await api.getPresignedUrl(filename, token);
       await api.uploadToS3(signedUrl, base64);
-      await api.createPost({ title: 'Challenge Post', imageUrl: publicUrl }, token);
-      alert('Post Success!');
+      await api.createPost({ title: 'Challenge Post', imageUrl: publicUrl, challengeDate: new Date().toISOString() }, token);
+      const { posts } = await api.getTodayChallengePosts(token);
+      setSubmissions(posts);
+      setSubmitted(true);
     } catch (error) {
       console.error('Upload process failed:', error);
       alert('Failed to save image. Check console.');
@@ -128,8 +140,27 @@ export default function Challenge() {
     }
   };
 
+  if (submitted) {
+    return (
+      <ScrollView>
+        <Text>today's submissions</Text>
+        {submissions.map(p => (
+          <View key={p.id}>
+            <Text>{p.author.username}</Text>
+            <Image source={{ uri: p.imageUrl }} style={{ width: 200, height: 200 }} />
+          </View>
+        ))}
+      </ScrollView>
+    );
+  }
+
   return (
     <View style={styles.container}>
+      <View ref={exportRef} collapsable={false} style={[styles.exportGrid, { width: GRID_CONTAINER_SIZE, height: GRID_CONTAINER_SIZE }]}>
+        {grid.map((color, i) => (
+          <View key={i} style={{ width: `${100 / gridSize}%`, height: cellSize, backgroundColor: color }} />
+        ))}
+      </View>
       <Text style={{ fontSize: 20, marginBottom: 10 }}>challenge!</Text>
       <View style={styles.controls}>
         <View style={styles.inputGroup}>
@@ -190,6 +221,12 @@ export default function Challenge() {
 }
 
 const styles = StyleSheet.create({
+  exportGrid: {
+    position: 'absolute',
+    left: -99999,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
   container: {
     flexGrow: 1,
     justifyContent: 'center',

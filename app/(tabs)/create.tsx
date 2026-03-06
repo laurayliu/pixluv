@@ -29,6 +29,7 @@ export default function CreatePix() {
   const cellSize = GRID_CONTAINER_SIZE/gridSize;
 
   const gridRef = useRef<View>(null);
+  const exportRef = useRef<View>(null);
 
   const [prevGrid, setPrevGrid] = useState<string[][]>([Array(DEFAULT_GRID * DEFAULT_GRID).fill(DEFAULT_COLOR)]); // need the brackets!!
   const index = useRef(0);
@@ -106,7 +107,7 @@ export default function CreatePix() {
     setIsUploading(true);
 
     try {
-      const base64 = await captureRef(gridRef, {
+      const base64 = await captureRef(exportRef, {
         format: "png",
         quality: 1,
         result: 'base64',
@@ -144,6 +145,11 @@ export default function CreatePix() {
   return (
 
     <View style={styles.container}>
+      <View ref={exportRef} collapsable={false} style={[styles.exportGrid, { width: GRID_CONTAINER_SIZE, height: GRID_CONTAINER_SIZE }]}>
+        {grid.map((color, index) => (
+          <View key={index} style={{ width: `${100/gridSize}%`, height: cellSize, backgroundColor: color }} />
+        ))}
+      </View>
 
       <Text style = {{fontSize: 20, marginBottom: 10, marginTop: 20}}>new pix!</Text>
       <View style={styles.controls}>
@@ -160,27 +166,27 @@ export default function CreatePix() {
       <View style = {styles.gridAndTools}>
         <Toolbar allowedTools={ALL_TOOL_NAMES} onToolChange={t => { activeTool.current = t; }} onUndo={handleUndo} onRedo={handleRedo}/>
 
-        <View {...panResponder.panHandlers} 
-        ref={gridRef}
-        collapsable={false}
-        onLayout={onGridLayout}
-        style={[styles.grid, { width: GRID_CONTAINER_SIZE, height: GRID_CONTAINER_SIZE }]}
+        <View {...panResponder.panHandlers}
+          ref={gridRef}
+          collapsable={false}
+          onLayout={onGridLayout}
+          style={[styles.grid, { width: GRID_CONTAINER_SIZE, height: GRID_CONTAINER_SIZE }]}
         >
-        {grid.map((color, index) => (
-          <View
-            key={index} 
-            style={{
-              width: `${100/gridSize}%`,
-              height: cellSize,
-              backgroundColor: color,
-              borderWidth: 0.5,
-              borderColor: '#eee'
-            }}
-          />
-        ))}
+          {grid.map((color, index) => (
+            <View
+              key={index}
+              style={{
+                width: `${100/gridSize}%`,
+                height: cellSize,
+                backgroundColor: color,
+                borderWidth: 0.5,
+                borderColor: '#eee'
+              }}
+            />
+          ))}
         </View>
       </View>
-      
+
       <View style={{ width: '100%' }}>
           <DefaultColorPanel value={selectedColor} onColorChange={setSelectedColor}/>
       </View>
@@ -199,6 +205,12 @@ export default function CreatePix() {
 };
 
 const styles = StyleSheet.create({
+  exportGrid: {
+    position: 'absolute',
+    left: -99999,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
   container: {
     flexGrow: 1,
     justifyContent: 'center',
