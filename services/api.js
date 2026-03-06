@@ -38,6 +38,7 @@ export const api = {
   getPostsByUser: (userId, token) => get(`/posts/user/${userId}`, token),
   getPosts: () => get('/posts'),
   getUser: (id) => get(`/users/${id}`),
+  searchUsers: (query, token) => get(`/users?search=${encodeURIComponent(query)}`, token),
 
   login: (email, password) => post('/auth/login', { email, password }),
   signup: (username, email, password) => post('/auth/signup', { username, email, password }),
