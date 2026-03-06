@@ -55,13 +55,12 @@ export default function PixingScreen() {
 
   return (
     <SafeAreaView style={styles.root}>
-      {/* Pink header with search bar */}
       <View style={styles.header}>
         <View style={styles.searchBar}>
           <IconSymbol name="search" size={16} color="#6B6B6B" />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search"
+            placeholder="Find your friends!"
             placeholderTextColor="#6B6B6B"
             value={searchQuery}
             onChangeText={handleSearch}
@@ -73,7 +72,7 @@ export default function PixingScreen() {
 
       {searchQuery.trim() ? (
         <>
-          <Text style={styles.sectionLabel}>People</Text>
+          <Text style={styles.sectionLabel}>Find your friends!</Text>
           {isSearching && <ActivityIndicator style={{ marginTop: 12 }} />}
           <FlatList
             data={searchResults}
@@ -83,7 +82,7 @@ export default function PixingScreen() {
               <TouchableOpacity
                 style={styles.row}
                 onPress={() =>
-                  router.push(`/pixing/${item.id}?username=${encodeURIComponent(item.username)}` as any)
+                  router.push(`/profile/${item.id}` as any)
                 }
               >
                 <View style={styles.avatarWrap}>
