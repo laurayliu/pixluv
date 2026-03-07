@@ -58,7 +58,7 @@ export default function CreatePix() {
   const [isUploading, setIsUploading] = useState(false);
   const cellSize = GRID_CONTAINER_SIZE/gridSize;
 
-  const [title, setTitle] = useState<string>('');
+  //const [title, setTitle] = useState<string>('');
   const [caption, setCaption] = useState<string>('');
 
   const gridRef = useRef<View>(null);
@@ -142,7 +142,7 @@ export default function CreatePix() {
       const filename = `pix.png`;
       const { signedUrl, publicUrl } = await api.getPresignedUrl(filename, token);
       await api.uploadToS3(signedUrl, base64);
-      await api.createPost({ title: title, content: caption, imageUrl: publicUrl }, token);
+      await api.createPost({ content: caption, imageUrl: publicUrl }, token);
       alert(`Post Success!`);
     } catch (error) {
       console.error("Upload process failed:", error);
@@ -182,7 +182,7 @@ export default function CreatePix() {
         ))}
       </View>
 
-      <TextInput value={title} onChangeText={setTitle} style = {styles.title} placeholder='enter title' placeholderTextColor='rgba(81, 116, 207, 0.5)' autoCapitalize='none'/>
+      {/* <TextInput value={title} onChangeText={setTitle} style = {styles.title} placeholder='enter title' placeholderTextColor='rgba(81, 116, 207, 0.5)' autoCapitalize='none'/> */}
        
       <View style = {styles.gridAndTools}>
         <Toolbar allowedTools={ALL_TOOL_NAMES} onToolChange={t => { activeTool.current = t; }} onUndo={handleUndo} onRedo={handleRedo}/>
