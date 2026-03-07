@@ -1,5 +1,5 @@
 import DefaultColorPanel from '../../components/color_picker';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {StyleSheet, Text, View, TextInput, Dimensions, Button, ActivityIndicator, PanResponder} from 'react-native';
 import { captureRef } from "react-native-view-shot";
 import { api } from '../../services/api';
@@ -16,6 +16,22 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const GRID_CONTAINER_SIZE = SCREEN_WIDTH - 100;
 
 // https://www.youtube.com/watch?v=HN7FhKPTohA
+
+const GridCell = React.memo(({ color, gridSize, cellSize }: { 
+  color: string, 
+  gridSize: number,
+  cellSize: number 
+}) => (
+  <View style={{
+    width: `${100 / gridSize}%`,
+    height: cellSize,
+    backgroundColor: color,
+    borderWidth: 0.25,
+    borderColor: '#eee'
+  }} />
+));
+GridCell.displayName = 'GridCell';
+
 
 export default function CreatePix() {
   const { token } = useAuth();
@@ -53,6 +69,7 @@ export default function CreatePix() {
       const cellIndex = row * gridSize + col;
       const drawingColor = activeTool.current === 'erase' ? DEFAULT_COLOR : selectedColor; // if eraser is toggled set selected color to white
       setGrid((prevGrid=> {
+        if (prevGrid[cellIndex] === drawingColor) { return prevGrid }
         const newGrid = [...prevGrid];
         newGrid[cellIndex] = drawingColor;
         return newGrid;
@@ -90,18 +107,18 @@ export default function CreatePix() {
 });
 
   const handleGridChange = (text: string) => {
-    const newGridSize = parseInt(text) || 0;
-    if (newGridSize > 64){
-      setGridSize(64);
-    }
-    else {
-      setGridSize(newGridSize);
-    }
+    const newGridSize = Math.min(parseInt(text) || 0, 64);
+    setGridSize(newGridSize);
     setGrid(Array(newGridSize * newGridSize).fill(DEFAULT_COLOR))
+
+    setPrevGrid([Array(newGridSize * newGridSize).fill(DEFAULT_COLOR)])
+    index.current = 0;
   }
 
   const handleClear = () => {
     setGrid(Array(gridSize * gridSize).fill(DEFAULT_COLOR))
+    setPrevGrid([Array(gridSize * gridSize).fill(DEFAULT_COLOR)])
+    index.current = 0;
   }
 
   const handleSaveAndUpload = async () => {
@@ -150,7 +167,8 @@ export default function CreatePix() {
     <View style={styles.container}>
       <View ref={exportRef} collapsable={false} style={[styles.exportGrid, { width: GRID_CONTAINER_SIZE, height: GRID_CONTAINER_SIZE }]}>
         {grid.map((color, index) => (
-          <View key={index} style={{ width: `${100/gridSize}%`, height: cellSize, backgroundColor: color }} />
+          //<View key={index} style={{ width: `${100/gridSize}%`, height: cellSize, backgroundColor: color }} />
+          <GridCell key={index} color={color} gridSize={gridSize} cellSize={cellSize} />
         ))}
       </View>
 
