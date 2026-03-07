@@ -21,7 +21,6 @@ model User {
 
   likes         Like[]
   comments      Comment[]
-  saves         Save[]
 }
 
 model Post {
@@ -38,7 +37,6 @@ model Post {
 
   likes         Like[]
   comments      Comment[]
-  saves         Save[]
 }
 
 model Like {
@@ -62,18 +60,6 @@ model Comment {
   postId     String
   user       User     @relation(fields: [userId], references: [id])
   post       Post     @relation(fields: [postId], references: [id])
-}
-
-model Save {
-  id         String   @id @default(cuid())
-  createdAt  DateTime @default(now())
-
-  userId     String
-  postId     String
-  user       User     @relation(fields: [userId], references: [id])
-  post       Post     @relation(fields: [postId], references: [id])
-
-  @@unique([userId, postId])
 }
 
 model Chat {
