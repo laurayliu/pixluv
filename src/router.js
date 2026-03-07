@@ -38,9 +38,6 @@ router.route('/posts/:id')
 router.route('/posts/:id/like')
   .post(requireAuth, Posts.toggleLike);
 
-router.route('/posts/:id/save')
-  .post(requireAuth, Posts.toggleSave);
-
 router.route('/posts/:id/comments')
   .get(Posts.getComments)
   .post(requireAuth, Posts.createComment);
