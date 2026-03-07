@@ -35,13 +35,22 @@ async function post(path, body, token) {
 
 export const api = {
   hello: () => get('/'),
+  getPostsByUser: (userId, token) => get(`/posts/user/${userId}`, token),
   getPosts: () => get('/posts'),
   getUser: (id) => get(`/users/${id}`),
+  searchUsers: (query, token) => get(`/users?search=${encodeURIComponent(query)}`, token),
 
   login: (email, password) => post('/auth/login', { email, password }),
   signup: (username, email, password) => post('/auth/signup', { username, email, password }),
   createPost: (data, token) => post('/posts', data, token),
 
+  getInbox: (token) => get('/pixing', token),
+  getConversation: (otherUserId, token) => get(`/pixing/${otherUserId}`, token),
+  sendPix: (receiverId, message, imageUrl, token) =>
+    post('/pixing', { receiverId, ...(message ? { message } : {}), ...(imageUrl ? { imageUrl } : {}) }, token),
+
+  getTodayChallenge: () => get('/challenges/today'),
+  getTodayChallengePosts: (token) => get('/posts/challenge/today', token),
   getPresignedUrl: (filename, token) =>
     get(
       `/sign-s3?fileName=${encodeURIComponent(filename)}&fileType=${encodeURIComponent('image/png')}`,

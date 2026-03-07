@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { FlatList, Text, View, ActivityIndicator, Image } from 'react-native';
+import { FlatList, Text, View, ActivityIndicator, Image, StyleSheet } from 'react-native';
 import { api } from '../../services/api';
 
 const HomeScreen = () => {
@@ -30,22 +30,36 @@ const HomeScreen = () => {
           <Text>test api connection: {hello}</Text>
         </View>
       )}
-      <FlatList
-        data={posts.slice(0, 5)}
-        keyExtractor={(item) => String(item.id ?? item._id)}
-        renderItem={({ item }) => (
-          <View>
-            <Text>{item.title ?? item.caption ?? JSON.stringify(item)}</Text>
-            <Image
-              source={{ uri: item.imageUrl }}
-              style={{ width: 200, height: 200 }}
-            />
-          </View>
-        )}
-        ListEmptyComponent={<Text>no posts yet</Text>}
-      />
+      <View style={styles.posts}>
+        <FlatList
+          data={posts.slice(0, 5)}
+          keyExtractor={(item) => String(item.id ?? item._id)}
+          renderItem={({ item }) => (
+            <View style={styles.post}>
+              <Text>{item.title ?? item.caption ?? JSON.stringify(item)}</Text>
+              <Image
+                source={{ uri: item.imageUrl }}
+                style={{ width: 250, height: 250 }}
+              />
+            </View>
+          )}
+          ListEmptyComponent={<Text>no posts yet</Text>}
+        />
+      </View>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  posts: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#ececec',
+    paddingTop: 50,
+  },
+  post: {
+    paddingBottom: 30,
+  },
+});
 
 export default HomeScreen;
