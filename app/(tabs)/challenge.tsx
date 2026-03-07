@@ -5,7 +5,7 @@ import { api } from '../../services/api';
 import { useAuth } from '@/context/AuthContext';
 import Toolbar, { ToolName } from '@/components/toolbar';
 
-const DEFAULT_GRID = 16;
+const GRID_SIZE = 32;
 const DEFAULT_COLOR = '#fff';
 const DEFAULT_SELECTED_COLOR = '#000';
 
@@ -19,18 +19,17 @@ export default function Challenge() {
   const [submitted, setSubmitted] = useState(false);
   const [allowedColors, setAllowedColors] = useState<string[]>([]);
   const [allowedTools, setAllowedTools] = useState<string[]>([]);
-  const [gridSize, setGridSize] = useState<number>(DEFAULT_GRID);
   const [grid, setGrid] = useState<string[]>(
-    Array(DEFAULT_GRID * DEFAULT_GRID).fill(DEFAULT_COLOR)
+    Array(GRID_SIZE * GRID_SIZE).fill(DEFAULT_COLOR)
   );
   const [selectedColor, setSelectedColor] = useState<string>(DEFAULT_SELECTED_COLOR);
   const [isUploading, setIsUploading] = useState(false);
-  const cellSize = GRID_CONTAINER_SIZE / gridSize;
+  const cellSize = GRID_CONTAINER_SIZE / GRID_SIZE;
 
   const activeTool = useRef('draw');
   const gridRef = useRef<View>(null);
   const exportRef = useRef<View>(null);
-  const [prevGrid, setPrevGrid] = useState<string[][]>([Array(DEFAULT_GRID * DEFAULT_GRID).fill(DEFAULT_COLOR)]);
+  const [prevGrid, setPrevGrid] = useState<string[][]>([Array(GRID_SIZE * GRID_SIZE).fill(DEFAULT_COLOR)]);
   const index = useRef(0);
   const gridLayout = useRef({ x: 0, y: 0 });
 
@@ -62,8 +61,8 @@ export default function Challenge() {
     const col = Math.floor(relativeX / cellSize);
     const row = Math.floor(relativeY / cellSize);
 
-    if (col >= 0 && col < gridSize && row >= 0 && row < gridSize) {
-      const i = row * gridSize + col;
+    if (col >= 0 && col < GRID_SIZE && row >= 0 && row < GRID_SIZE) {
+      const i = row * GRID_SIZE + col;
       const drawingColor = activeTool.current === 'erase' ? DEFAULT_COLOR : selectedColor;
       setGrid(prev => {
         const newGrid = [...prev];
@@ -94,14 +93,8 @@ export default function Challenge() {
     },
   });
 
-  const handleGridChange = (text: string) => {
-    const newGridSize = parseInt(text) || 0;
-    setGridSize(newGridSize);
-    setGrid(Array(newGridSize * newGridSize).fill(DEFAULT_COLOR));
-  };
-
   const handleClear = () => {
-    setGrid(Array(gridSize * gridSize).fill(DEFAULT_COLOR));
+    setGrid(Array(GRID_SIZE * GRID_SIZE).fill(DEFAULT_COLOR));
   };
 
   const handleUndo = () => {
@@ -158,15 +151,11 @@ export default function Challenge() {
     <View style={styles.container}>
       <View ref={exportRef} collapsable={false} style={[styles.exportGrid, { width: GRID_CONTAINER_SIZE, height: GRID_CONTAINER_SIZE }]}>
         {grid.map((color, i) => (
-          <View key={i} style={{ width: `${100 / gridSize}%`, height: cellSize, backgroundColor: color }} />
+          <View key={i} style={{ width: `${100 / GRID_SIZE}%`, height: cellSize, backgroundColor: color }} />
         ))}
       </View>
       <Text style={{ fontSize: 20, marginBottom: 10 }}>challenge!</Text>
       <View style={styles.controls}>
-        <View style={styles.inputGroup}>
-          <Text>pick grid size: </Text>
-          <TextInput keyboardType="numeric" value={gridSize.toString()} onChangeText={handleGridChange} style={styles.input} />
-        </View>
         <View style={styles.colorSwatches}>
           {allowedColors.map((color) => (
             <Pressable
@@ -196,7 +185,7 @@ export default function Challenge() {
             <View
               key={i}
               style={{
-                width: `${100 / gridSize}%`,
+                width: `${100 / GRID_SIZE}%`,
                 height: cellSize,
                 backgroundColor: color,
                 borderWidth: 0.5,
