@@ -1,13 +1,62 @@
 import React, { useCallback, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { FlatList, Text, View, ActivityIndicator, Image, StyleSheet } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  Image,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { api } from '../../services/api';
+import { useAuth } from '@/context/AuthContext';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useRouter } from 'expo-router';
+
+type Post = {
+  id: string;
+  title?: string;
+  caption?: string;
+  imageUrl?: string;
+  _count?: {
+    likes?: number;
+    comments?: number;
+  };
+  liked?: boolean;
+  saved?: boolean;
+};
+
+type Comment = {
+  id: string;
+  body: string;
+  createdAt: string;
+  user: {
+    username: string;
+    id: string;
+  };
+};
+
 
 const HomeScreen = () => {
   const [hello, setHello] = useState<string | null>(null);
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const { token } = useAuth();
+  const router = useRouter();
+
+  const [commentsVisible, setCommentsVisible] = useState(false);
+  const [activePost, setActivePost] = useState<Post | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [newComment, setNewComment] = useState('');
+  const [loadingComments, setLoadingComments] = useState(false);
+  const [submittingComment, setSubmittingComment] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -19,6 +68,121 @@ const HomeScreen = () => {
         .finally(() => setLoading(false));
     }, [])
   );
+
+  const handleToggleLike = async (postId: string) => {
+    if (!token) {
+      router.replace('/login');
+    }
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === postId
+          ? {
+              ...p,
+              liked: !p.liked,
+              _count: {
+                ...(p._count ?? {}),
+                likes: (p._count?.likes ?? 0) + (p.liked ? -1 : 1),
+              },
+            }
+          : p,
+      ),
+    );
+
+    try {
+      await api.likePost(postId, token);
+    } catch {
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId
+            ? {
+                ...p,
+                liked: !p.liked,
+                _count: {
+                  ...(p._count ?? {}),
+                  likes: (p._count?.likes ?? 0) + (!p.liked ? -1 : 1),
+                },
+              }
+            : p,
+        ),
+      );
+    }
+  };
+
+  const handleToggleSave = async (postId: string) => {
+    if (!token) {
+      router.replace('/login');
+    }
+
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === postId ? { ...p, saved: !p.saved } : p,
+      ),
+    );
+
+    try {
+      await api.savePost(postId, token);
+    } catch {
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId ? { ...p, saved: !p.saved } : p,
+        ),
+      );
+    }
+  };
+
+  const openComments = async (post: Post) => {
+    setActivePost(post);
+    setCommentsVisible(true);
+    setLoadingComments(true);
+    setNewComment('');
+
+    try {
+      const data = await api.getComments(post.id);
+      setComments(data);
+    } catch (err) {
+      console.error('Failed to load comments', err);
+
+    } finally {
+      setLoadingComments(false);
+    }
+  };
+
+  const closeComments = () => {
+    setCommentsVisible(false);
+    setActivePost(null);
+    setComments([]);
+    setNewComment('');
+  };
+
+  const handleSubmitComment = async () => {
+    if (!token || !activePost) return;
+    const body = newComment.trim();
+    if (!body) return;
+
+    setSubmittingComment(true);
+    try {
+      const created = await api.createComment(activePost.id, body, token);
+      setComments((prev) => [...prev, created]);
+      setNewComment('');
+
+      // optionally bump comment count on the post list
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === activePost.id
+            ? {
+                ...p,
+                _count: {
+                  ...(p._count ?? {}),
+                  comments: (p._count?.comments ?? 0) + 1,
+                },
+              }
+            : p,
+        ),
+      );
+    } finally {
+      setSubmittingComment(false);
+    }
+  };
 
   if (loading) return <ActivityIndicator size="large" />;
   if (error) return <Text>{error}</Text>;
@@ -41,11 +205,86 @@ const HomeScreen = () => {
                 source={{ uri: item.imageUrl }}
                 style={{ width: 250, height: 250 }}
               />
+              <View style={styles.actionsRow}>
+                <TouchableOpacity onPress={() => handleToggleLike(item.id)} style={styles.actionButton}>
+                  <IconSymbol
+                    name={item.liked ? 'liked' : 'like'}
+                    color={'currentColor'}
+                    size={24}
+                  />
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={() => openComments(item)} style={styles.actionButton}>
+                  <IconSymbol
+                    name={'comment'}
+                    color={'currentColor'}
+                    size={24}
+                  />
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={() => handleToggleSave(item.id)} style={styles.actionButton}>
+                  <IconSymbol
+                    name={item.saved ? 'saved' : 'save'}
+                    color={'currentColor'}
+                    size={24}
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
           )}
           ListEmptyComponent={<Text>no posts yet</Text>}
         />
       </View>
+            <Modal visible={commentsVisible} animationType="slide" onRequestClose={closeComments}>
+        <KeyboardAvoidingView
+          style={styles.commentsContainer}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+          <View style={styles.commentsHeader}>
+            <Text style={styles.commentsTitle}>
+              Comments{activePost ? ` for "${activePost.title ?? ''}"` : ''}
+            </Text>
+            <TouchableOpacity onPress={closeComments}>
+              <Text style={styles.closeText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+
+          {loadingComments ? (
+            <ActivityIndicator size="large" />
+          ) : (
+            <FlatList
+              data={comments}
+              keyExtractor={(c) => c.id}
+              contentContainerStyle={styles.commentsList}
+              renderItem={({ item }) => (
+                <View style={styles.commentRow}>
+                  <Text style={styles.commentAuthor}>{item.user.username}</Text>
+                  <Text style={styles.commentBody}>{item.body}</Text>
+                </View>
+              )}
+              ListEmptyComponent={<Text>No comments yet</Text>}
+            />
+          )}
+
+          <View style={styles.commentInputRow}>
+            <TextInput
+              style={styles.commentInput}
+              placeholder="Add a comment..."
+              value={newComment}
+              onChangeText={setNewComment}
+            />
+            <TouchableOpacity
+              onPress={handleSubmitComment}
+              disabled={submittingComment || !newComment.trim()}
+              style={styles.commentSendButton}
+            >
+              <Text style={styles.commentSendText}>
+                {submittingComment ? '...' : 'Send'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   );
 };
@@ -59,6 +298,48 @@ const styles = StyleSheet.create({
   },
   post: {
     paddingBottom: 30,
+  },
+  actionsRow: {
+
+  },
+  actionButton: {
+
+  },
+  commentsContainer: {
+
+  },
+  commentsHeader: {
+
+  },
+  commentsTitle: {
+
+  },
+  closeText: {
+
+  },
+  commentsList: {
+
+  },
+  commentRow: {
+
+  },
+  commentAuthor: {
+
+  },
+  commentBody: {
+
+  },
+  commentInputRow: {
+
+  },
+  commentInput: {
+
+  },
+  commentSendButton: {
+
+  },
+  commentSendText: {
+
   },
 });
 
