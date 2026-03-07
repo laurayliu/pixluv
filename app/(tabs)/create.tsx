@@ -11,41 +11,35 @@ export default function ChooseSize() {
 
       <Text style = {{fontSize: 30, marginBottom: 70, marginTop: 100, color:'#5174cf'}}>pick canvas size:</Text>
       <View style = {styles.buttons}>
-        <View style = {styles.gridButton}>
+        <TouchableOpacity style = {styles.gridButton} onPress={() => router.push({
+            pathname: '/drawing',
+            params: {
+              size: 16,
+            },
+          })}>
           <Image style = {styles.image} source={require('../../assets/images/16x16-grid.png')}/>
-          <TouchableOpacity onPress={() => router.push({
-          pathname: '/drawing',
-          params: {
-            size: 16,
-          },
-        })}>
           <Text style = {{color:'#5174cf', fontSize: 18}}>16 x 16</Text>
         </TouchableOpacity>
-        </View>
-        
-        <View style = {styles.gridButton}>
-          <Image style = {styles.image} source={require('../../assets/images/32x32-grid.png')}/>
-          <TouchableOpacity onPress={() => router.push({
+
+         <TouchableOpacity style = {styles.gridButton} onPress={() => router.push({
             pathname: '/drawing',
             params: {
               size: 32,
             },
           })}>
+          <Image style = {styles.image} source={require('../../assets/images/32x32-grid.png')}/>
           <Text style = {{color:'#5174cf', fontSize: 18}}>32 x 32</Text>
         </TouchableOpacity>
-        </View>
         
-        <View style = {styles.gridButton}>
+        <TouchableOpacity style = {styles.gridButton} onPress={() => router.push({
+            pathname: '/drawing',
+            params: {
+              size: 64,
+            },
+          })}>
           <Image style = {styles.image} source={require('../../assets/images/64x64-grid.png')}/>
-           <TouchableOpacity onPress={() => router.push({
-              pathname: '/drawing',
-              params: {
-                size: 64,
-              },
-            })}>
-            <Text style = {{color:'#5174cf', fontSize: 18}}>64 x 64</Text>
-          </TouchableOpacity>
-        </View>  
+          <Text style = {{color:'#5174cf', fontSize: 18}}>64 x 64</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -65,7 +59,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 45,
+    gap: 50,
   },
   nextButton: {
     width: 200,
