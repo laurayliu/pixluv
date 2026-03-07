@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import {ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { router } from 'expo-router';
@@ -12,11 +12,16 @@ type InboxEntry = {
   latestMessage: { message?: string; imageUrl?: string; createdAt: string };
 };
 
+type UserResult = { id: string; username: string; profilePicture?: string };
+
 export default function PixingScreen() {
   const { token } = useAuth();
   const [inbox, setInbox] = useState<InboxEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<UserResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -29,6 +34,19 @@ export default function PixingScreen() {
     }, [token])
   );
 
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    setIsSearching(true);
+    api.searchUsers(query, token)
+      .then(setSearchResults)
+      .catch(() => setSearchResults([]))
+      .finally(() => setIsSearching(false));
+  };
+
   const preview = (entry: InboxEntry) => {
     if (entry.latestMessage.message) return entry.latestMessage.message;
     if (entry.latestMessage.imageUrl) return 'pixel art';
@@ -37,45 +55,80 @@ export default function PixingScreen() {
 
   return (
     <SafeAreaView style={styles.root}>
-      {/* Pink header with search bar */}
       <View style={styles.header}>
         <View style={styles.searchBar}>
           <IconSymbol name="search" size={16} color="#6B6B6B" />
-          <Text style={styles.searchText}>Search</Text>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Find your friends!"
+            placeholderTextColor="#6B6B6B"
+            value={searchQuery}
+            onChangeText={handleSearch}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
         </View>
       </View>
 
-      <Text style={styles.sectionLabel}>Pixing</Text>
-
-      {loading && <ActivityIndicator style={{ marginTop: 24 }} />}
-      {error && <Text style={styles.errorText}>{error}</Text>}
-
-      <FlatList
-        data={inbox}
-        keyExtractor={(item) => item.user.id}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.row}
-            onPress={() =>
-              router.push(`/pixing/${item.user.id}?username=${encodeURIComponent(item.user.username)}` as any)
+      {searchQuery.trim() ? (
+        <>
+          <Text style={styles.sectionLabel}>Find your friends!</Text>
+          {isSearching && <ActivityIndicator style={{ marginTop: 12 }} />}
+          <FlatList
+            data={searchResults}
+            keyExtractor={(item) => item.id}
+            ItemSeparatorComponent={() => <View style={styles.separator} />}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.row}
+                onPress={() =>
+                  router.push(`/profile/${item.id}` as any)
+                }
+              >
+                <View style={styles.avatarWrap}>
+                  <IconSymbol name="profile_frame" size={50} color="#5F574F" />
+                </View>
+                <Text style={styles.username}>{item.username}</Text>
+              </TouchableOpacity>
+            )}
+            ListEmptyComponent={
+              !isSearching ? <Text style={styles.emptyText}>No users found</Text> : null
             }
-          >
-            <View style={styles.avatarWrap}>
-              <IconSymbol name="profile_frame" size={50} color="#5F574F" />
-            </View>
-            <View style={styles.textCol}>
-              <Text style={styles.username}>{item.user.username}</Text>
-              <Text style={styles.previewText} numberOfLines={1}>
-                {preview(item)}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        )}
-        ListEmptyComponent={
-          !loading ? <Text style={styles.emptyText}>No pixs yet</Text> : null
-        }
-      />
+          />
+        </>
+      ) : (
+        <>
+          <Text style={styles.sectionLabel}>Pixing</Text>
+          {loading && <ActivityIndicator style={{ marginTop: 24 }} />}
+          {error && <Text style={styles.errorText}>{error}</Text>}
+          <FlatList
+            data={inbox}
+            keyExtractor={(item) => item.user.id}
+            ItemSeparatorComponent={() => <View style={styles.separator} />}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.row}
+                onPress={() =>
+                  router.push(`/pixing/${item.user.id}?username=${encodeURIComponent(item.user.username)}` as any)
+                }
+              >
+                <View style={styles.avatarWrap}>
+                  <IconSymbol name="profile_frame" size={50} color="#5F574F" />
+                </View>
+                <View style={styles.textCol}>
+                  <Text style={styles.username}>{item.user.username}</Text>
+                  <Text style={styles.previewText} numberOfLines={1}>
+                    {preview(item)}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            )}
+            ListEmptyComponent={
+              !loading ? <Text style={styles.emptyText}>No pixs yet</Text> : null
+            }
+          />
+        </>
+      )}
     </SafeAreaView>
   );
 }
@@ -100,9 +153,11 @@ const styles = StyleSheet.create({
     gap: 6,
     alignSelf: 'center',
   },
-  searchText: {
-    color: '#6B6B6B',
+  searchInput: {
+    flex: 1,
+    color: '#000',
     fontSize: 15,
+    padding: 0,
   },
   sectionLabel: {
     color: '#000',

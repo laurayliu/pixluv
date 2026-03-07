@@ -38,6 +38,7 @@ export const api = {
   getPostsByUser: (userId, token) => get(`/posts/user/${userId}`, token),
   getPosts: () => get('/posts'),
   getUser: (id) => get(`/users/${id}`),
+  searchUsers: (query, token) => get(`/users?search=${encodeURIComponent(query)}`, token),
 
   login: (email, password) => post('/auth/login', { email, password }),
   signup: (username, email, password) => post('/auth/signup', { username, email, password }),
@@ -49,6 +50,7 @@ export const api = {
     post('/pixing', { receiverId, ...(message ? { message } : {}), ...(imageUrl ? { imageUrl } : {}) }, token),
 
   getTodayChallenge: () => get('/challenges/today'),
+  getTodayChallengePosts: (token) => get('/posts/challenge/today', token),
   getPresignedUrl: (filename, token) =>
     get(
       `/sign-s3?fileName=${encodeURIComponent(filename)}&fileType=${encodeURIComponent('image/png')}`,
