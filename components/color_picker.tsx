@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { StyleProp, StyleSheet, View, ViewStyle, TouchableOpacity, Modal, Text } from 'react-native';
+import { StyleProp, StyleSheet, View, ViewStyle, TouchableOpacity, Modal, Text, TouchableWithoutFeedback } from 'react-native';
 import ColorPicker, { HueSlider, BrightnessSlider,  SaturationSlider, Panel2,} from 'reanimated-color-picker';
 import type { RenderThumbProps } from 'reanimated-color-picker';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
@@ -57,31 +57,35 @@ export default function DefaultColorPanel( {value, onColorChange} : {value: stri
           <Modal 
             transparent={true}
             visible={showModal} 
-            animationType='fade'>
-            <View style={styles.modalOverlay}>
-              <View style={styles.modalContent}>
-                <ColorPicker value={value} onChange={onSelectColor} style={{width: '100%',}}>
-                  <Panel2
-                    verticalChannel='saturation'
-                    thumbScaleUpValue={1}
-                    renderThumb={({ width, height, positionStyle, adaptiveColor, currentColor, initialColor }) => (
-                      <PanelThumb
-                        width={width}
-                        height={height}
-                        positionStyle={positionStyle}
-                        adaptiveColor={adaptiveColor}
-                        currentColor={currentColor}
-                        initialColor={initialColor}
-                      />
-                    )} 
-                    style={[BORDER_FRAME]}
-                  />
-                </ColorPicker>
-                <TouchableOpacity style={styles.closePanel} onPress={() => setShowModal(false)}>
-                  <Text>done</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+            animationType='fade'
+          >
+            <TouchableOpacity 
+              style={styles.modalOverlay}
+              activeOpacity={1}
+              onPressOut={() => setShowModal(false)}
+              >
+              <TouchableWithoutFeedback>
+                <View style={styles.modalContent}>
+                  <ColorPicker value={value} onChange={onSelectColor} style={{width: '100%'}}>
+                    <Panel2
+                      verticalChannel='saturation'
+                      thumbScaleUpValue={1}
+                      renderThumb={({ width, height, positionStyle, adaptiveColor, currentColor, initialColor }) => (
+                        <PanelThumb
+                          width={width}
+                          height={height}
+                          positionStyle={positionStyle}
+                          adaptiveColor={adaptiveColor}
+                          currentColor={currentColor}
+                          initialColor={initialColor}
+                        />
+                      )} 
+                      style={[BORDER_FRAME]}
+                    />
+                  </ColorPicker>
+                </View>
+              </TouchableWithoutFeedback>
+            </TouchableOpacity>
         </Modal>
         </SafeAreaView>
       </SafeAreaProvider>
@@ -141,11 +145,12 @@ const styles = StyleSheet.create({
 
   modalContent: {
     position:'absolute',
-    backgroundColor:'rgb(175, 175, 175)',
+    backgroundColor: '#ececec',
     padding: 10,
     width: '55%',
-    marginTop: 70,
-    marginRight: 30,
+    marginTop: 80,
+    marginRight: 33,
+    borderStyle: 'solid'
   },
 
   modalOverlay: {
@@ -154,9 +159,4 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     
   },
-
-  closePanel: {
-    alignSelf: 'center',
-  },
-
 });
