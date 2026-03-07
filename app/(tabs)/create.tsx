@@ -1,300 +1,85 @@
-import DefaultColorPanel from '../../components/color_picker';
-import React, { useState, useRef, useEffect } from 'react';
-import {StyleSheet, Text, View, TextInput, Dimensions, Button, ActivityIndicator, PanResponder} from 'react-native';
-import { captureRef } from "react-native-view-shot";
-import { api } from '../../services/api';
-import { useAuth } from '@/context/AuthContext';
-import Toolbar, { ALL_TOOL_NAMES } from '@/components/toolbar';
-import { ReactNativeZoomableView } from '@openspacelabs/react-native-zoomable-view';
+import React, { useState, useRef } from 'react';
+import {StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
+import { useRouter } from 'expo-router';
 
 
-const DEFAULT_GRID = 16;
-const DEFAULT_COLOR = "#fff";
-const DEFAULT_SELECTED_COLOR = "#000"
-
-const SCREEN_WIDTH = Dimensions.get('window').width;
-const GRID_CONTAINER_SIZE = SCREEN_WIDTH - 100;
-
-// https://www.youtube.com/watch?v=HN7FhKPTohA
-
-const GridCell = React.memo(({ color, gridSize, cellSize }: { 
-  color: string, 
-  gridSize: number,
-  cellSize: number 
-}) => (
-  <View style={{
-    width: `${100 / gridSize}%`,
-    height: cellSize,
-    backgroundColor: color,
-    borderWidth: 0.25,
-    borderColor: '#eee'
-  }} />
-));
-GridCell.displayName = 'GridCell';
-
-
-export default function CreatePix() {
-  const { token } = useAuth();
-  const [gridSize, setGridSize] = useState<number>(DEFAULT_GRID);
-  const[grid, setGrid] = useState<string[]>(
-    Array(DEFAULT_GRID * DEFAULT_GRID).fill(DEFAULT_COLOR) // fill w white 
-  )
-
-  const [selectedColor, setSelectedColor] = useState<string>(DEFAULT_SELECTED_COLOR);
-  const activeTool = useRef('draw');
-  const [isUploading, setIsUploading] = useState(false);
-  const cellSize = GRID_CONTAINER_SIZE/gridSize;
-
-  const gridRef = useRef<View>(null);
-  const exportRef = useRef<View>(null);
-
-  const [prevGrid, setPrevGrid] = useState<string[][]>([Array(DEFAULT_GRID * DEFAULT_GRID).fill(DEFAULT_COLOR)]); // need the brackets!!
-  const index = useRef(0);
-
-  const zoomState = useRef({
-    level: 1,
-  });
-
-  const colorCellAtPosition = (pageX: number, pageY: number, gridOriginX: number, gridOriginY: number) => {
-    // pageX/pageY: where you clicked on screen; gridOriginX/gridOriginY: where the current origin of the grid is
-    const { level } = zoomState.current;
-
-    const xInGrid = (pageX - gridOriginX) / level; // 
-    const yInGrid = (pageY - gridOriginY) / level;
-
-    const col = Math.floor(xInGrid / cellSize);
-    const row = Math.floor(yInGrid / cellSize);
-
-    if (col >= 0 && col < gridSize && row >= 0 && row < gridSize) {
-      const cellIndex = row * gridSize + col;
-      const drawingColor = activeTool.current === 'erase' ? DEFAULT_COLOR : selectedColor; // if eraser is toggled set selected color to white
-      setGrid((prevGrid=> {
-        if (prevGrid[cellIndex] === drawingColor) { return prevGrid }
-        const newGrid = [...prevGrid];
-        newGrid[cellIndex] = drawingColor;
-        return newGrid;
-      }));
-    }
-  };
-
-  const panResponder = PanResponder.create({
-  onStartShouldSetPanResponder: (evt) => evt.nativeEvent.touches.length === 1,
-  onMoveShouldSetPanResponder: (evt) => evt.nativeEvent.touches.length === 1,
-
-  onPanResponderGrant: (evt) => { // runs once you touch screen for the first time
-    const { pageX, pageY } = evt.nativeEvent; // capture whatever pageX/pageY is
-    gridRef.current?.measure((x, y, width, height, gridOriginX, gridOriginY) => { // gives updated gridOriginX/gridOriginyY
-      colorCellAtPosition(pageX, pageY, gridOriginX, gridOriginY); // callback with updated values 
-    });
-  },
-
-  onPanResponderMove: (evt) => {
-    const { pageX, pageY } = evt.nativeEvent;
-    gridRef.current?.measure((x, y, width, height, gridOriginX, gridOriginY) => {
-      colorCellAtPosition(pageX, pageY, gridOriginX, gridOriginY);
-    });
-  },
-
-  onPanResponderRelease: (evt) => {
-    if (evt.nativeEvent.touches.length > 0) return; 
-    setPrevGrid((prevHistory) => {
-      const newGrid = prevHistory.slice(0, index.current + 1); // prevents weird things if someone undos then starts drawing again
-      const updatedGrid = [...newGrid, [...grid]];  // takes saved states and adds on current grid at the end
-      index.current = updatedGrid.length - 1;
-      return updatedGrid;
-    });
-  }
-});
-
-  const handleGridChange = (text: string) => {
-    const newGridSize = Math.min(parseInt(text) || 0, 64);
-    setGridSize(newGridSize);
-    setGrid(Array(newGridSize * newGridSize).fill(DEFAULT_COLOR))
-
-    setPrevGrid([Array(newGridSize * newGridSize).fill(DEFAULT_COLOR)])
-    index.current = 0;
-  }
-
-  const handleClear = () => {
-    setGrid(Array(gridSize * gridSize).fill(DEFAULT_COLOR))
-    setPrevGrid([Array(gridSize * gridSize).fill(DEFAULT_COLOR)])
-    index.current = 0;
-  }
-
-  const handleSaveAndUpload = async () => {
-    if (isUploading) return;
-    setIsUploading(true);
-
-    try {
-      const base64 = await captureRef(exportRef, {
-        format: "png",
-        quality: 1,
-        result: 'base64',
-      });
-
-      const filename = `pix.png`;
-      const { signedUrl, publicUrl } = await api.getPresignedUrl(filename, token);
-      await api.uploadToS3(signedUrl, base64);
-      await api.createPost({ title: "Post Title", imageUrl: publicUrl }, token);
-      alert(`Post Success!`);
-    } catch (error) {
-      console.error("Upload process failed:", error);
-      alert("Failed to save image. Check console.");
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const handleUndo = () => {
-    if (index.current > 0) {
-      const prevIndex = index.current - 1;
-      setGrid(prevGrid[prevIndex]);
-      index.current = prevIndex;
-    }
-  }
-
-  const handleRedo = () => {
-    if (index.current < prevGrid.length - 1) {
-      const nextIndex = index.current + 1;
-      setGrid(prevGrid[nextIndex]);
-      index.current = nextIndex;
-    }
-  }
-
-
+export default function ChooseSize() {
+  const router = useRouter()
+  
   return (
-
     <View style={styles.container}>
-      <View ref={exportRef} collapsable={false} style={[styles.exportGrid, { width: GRID_CONTAINER_SIZE, height: GRID_CONTAINER_SIZE }]}>
-        {grid.map((color, index) => (
-          //<View key={index} style={{ width: `${100/gridSize}%`, height: cellSize, backgroundColor: color }} />
-          <GridCell key={index} color={color} gridSize={gridSize} cellSize={cellSize} />
-        ))}
-      </View>
 
-      <Text style = {{fontSize: 20, marginBottom: 10, marginTop: 20}}>new pix!</Text>
-      <View style={styles.controls}>
-        <View style={styles.inputGroup}>
-          <Text>pick grid size: </Text>
-          <TextInput keyboardType="numeric" value={gridSize.toString()} onChangeText={handleGridChange} style={styles.input}/>
-        </View>
-        <View style={styles.inputGroup}>
-          <Text>pick color: </Text>
-          <TextInput value={selectedColor} onChangeText={setSelectedColor} style={[styles.input, { borderRightWidth: 10, borderRightColor: selectedColor }]}></TextInput>
-        </View>
-      </View>
+      <Text style = {{fontSize: 30, marginBottom: 70, marginTop: 100, color:'#5174cf'}}>pick canvas size:</Text>
+      <View style = {styles.buttons}>
+        <TouchableOpacity style = {styles.gridButton1} onPress={() => router.push({
+            pathname: '/drawing',
+            params: {
+              size: 16,
+            },
+          })}>
+          <Image style = {styles.image} source={require('../../assets/images/16x16-grid.png')}/>
+          <Text style = {{color:'#5174cf', fontSize: 18}}>16 x 16</Text>
+        </TouchableOpacity>
 
-       
-      <View style = {styles.gridAndTools}>
-        <Toolbar allowedTools={ALL_TOOL_NAMES} onToolChange={t => { activeTool.current = t; }} onUndo={handleUndo} onRedo={handleRedo}/>
-
-          <View style = {styles.zoomable}>
-          <ReactNativeZoomableView
-            maxZoom={4} 
-            minZoom={1} 
-            initialZoom={1} 
-            bindToBorders={true}
-            contentWidth={GRID_CONTAINER_SIZE}
-            contentHeight={GRID_CONTAINER_SIZE}
-            panEnabled={true}
-            onTransform={(data: any) => {
-            zoomState.current = {
-              level: data.zoomLevel,
-            };
-            }}>
-          <View {...panResponder.panHandlers} 
-          ref={gridRef}
-          collapsable={false}
-          style={[styles.grid, { width: GRID_CONTAINER_SIZE, height: GRID_CONTAINER_SIZE }]}
-          >
-          {grid.map((color, index) => (
-            <View
-              key={index} 
-              style={{
-                width: `${100/gridSize}%`,
-                height: cellSize,
-                backgroundColor: color,
-                borderWidth: 0.25,
-                borderColor: '#eee'
-              }}
-            />
-          ))}
-          </View>
-          </ReactNativeZoomableView>
-          </View>
+         <TouchableOpacity style = {styles.gridButton} onPress={() => router.push({
+            pathname: '/drawing',
+            params: {
+              size: 32,
+            },
+          })}>
+          <Image style = {styles.image} source={require('../../assets/images/32x32-grid.png')}/>
+          <Text style = {{color:'#5174cf', fontSize: 18}}>32 x 32</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity style = {styles.gridButton} onPress={() => router.push({
+            pathname: '/drawing',
+            params: {
+              size: 64,
+            },
+          })}>
+          <Image style = {styles.image} source={require('../../assets/images/64x64-grid.png')}/>
+          <Text style = {{color:'#5174cf', fontSize: 18}}>64 x 64</Text>
+        </TouchableOpacity>
       </View>
-      
-      
-
-      <View style={{ width: '100%' }}>
-          <DefaultColorPanel value={selectedColor} onColorChange={setSelectedColor}/>
-      </View>
-      
-      <View style={styles.actions}>
-        <Button title ="clear" onPress={() => handleClear()} color='#000'></Button>
-        <View style={{ width: 20 }} />
-        {isUploading ? (
-          <ActivityIndicator color="#000" />
-        ) : (
-          <Button title ="post" onPress={handleSaveAndUpload} color='#000'></Button>
-        )}
-      </View>
-      </View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  exportGrid: {
-    position: 'absolute',
-    left: -99999,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
   container: {
-    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 50,
-    backgroundColor: '#ececec',
   },
-  controls: {
-    marginBottom: 20,
-    width: '80%',
-  },
-  inputGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 5,
-    width: 100,
-    borderRadius: 5,
-  },
-  gridAndTools: {
-    flexDirection: 'row',
-    marginTop: 15,
+  buttons: {
+    width: '70%',
+    alignItems: 'flex-end',
     gap: 30,
   },
-  zoomable: {
-    overflow: 'hidden',
-    width: GRID_CONTAINER_SIZE,
-    height: GRID_CONTAINER_SIZE,
-  },
-  grid: {
+  gridButton: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    borderWidth: 1,
-    borderColor: '#000',
-    overflow: 'hidden',
-  },
-  actions: {
-    flexDirection: 'row',
-    padding: 20,
+    justifyContent: 'center',
     alignItems: 'center',
+    gap: 50,
+    backgroundColor: '#310e0e'
   },
-});
+  gridButton1: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 53,
+  },
+  nextButton: {
+    width: 200,
+    height: 40,
+    backgroundColor: '#5174cf',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: 4,
+    marginTop: 150,
+  },
+  image: {
+    width: 150,
+    height: 150,
+  },
 
+});
