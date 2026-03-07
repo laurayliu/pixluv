@@ -1,9 +1,10 @@
 import React, {useState} from 'react';
 import { StyleProp, StyleSheet, View, ViewStyle, TouchableOpacity, Modal, Text } from 'react-native';
-import ColorPicker, { HueSlider, BrightnessSlider,  SaturationSlider, Panel1,} from 'reanimated-color-picker';
+import ColorPicker, { HueSlider, BrightnessSlider,  SaturationSlider, Panel2,} from 'reanimated-color-picker';
 import type { RenderThumbProps } from 'reanimated-color-picker';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
+import { IconSymbol } from './ui/icon-symbol';
 
 const BORDER_FRAME = {
   borderRadius: 0,
@@ -42,10 +43,10 @@ export default function DefaultColorPanel( {value, onColorChange} : {value: stri
             style={[BORDER_FRAME, { marginTop: 15, marginBottom: 2 }]}
           />
           <SaturationSlider 
-            style={[BORDER_FRAME, { marginTop: 2, marginBottom: 15 }]}
+            style={[BORDER_FRAME, { marginTop: 2, marginBottom: 2 }]}
           />
           <BrightnessSlider 
-            style={[BORDER_FRAME, { marginTop: 2, marginBottom: 2 }]}
+            style={[BORDER_FRAME, { marginTop: 2, marginBottom: 15 }]}
           />
         </ColorPicker>
       </View>
@@ -53,7 +54,21 @@ export default function DefaultColorPanel( {value, onColorChange} : {value: stri
       <Modal visible={showModal} animationType='slide'>
         <View style={styles.modalContent}>
           <ColorPicker value={value} onChange={onSelectColor} style={{width: '90%',}}>
-            <View style={[BORDER_FRAME]}><Panel1/></View>
+              <Panel2
+                verticalChannel='saturation'
+                thumbScaleUpValue={1}
+                renderThumb={({ width, height, positionStyle, adaptiveColor, currentColor, initialColor }) => (
+                  <PanelThumb
+                    width={width}
+                    height={height}
+                    positionStyle={positionStyle}
+                    adaptiveColor={adaptiveColor}
+                    currentColor={currentColor}
+                    initialColor={initialColor}
+                  />
+                )} 
+                style={[BORDER_FRAME]}
+              />
           </ColorPicker>
           <TouchableOpacity style={styles.closePanel} onPress={() => setShowModal(false)}>
             <Text>done</Text>
@@ -62,6 +77,31 @@ export default function DefaultColorPanel( {value, onColorChange} : {value: stri
       </Modal>
         
     </View>
+  );
+}
+
+function PanelThumb({ width, height, positionStyle, adaptiveColor, currentColor, initialColor }: RenderThumbProps) {
+  // const animatedStyle = useAnimatedStyle(() => ({
+  //   backgroundColor: currentColor.value,
+  // }));
+
+  return (
+    <Animated.View style={positionStyle as StyleProp<ViewStyle>}>
+      <Animated.View
+        style={[
+          {
+            width: width,
+            height: height,
+            justifyContent: 'center',
+            alignItems: 'center',
+            overflow: 'hidden',
+          },
+          //animatedStyle,
+        ]}
+      >
+        <IconSymbol name='thumb' color='#000000' size={0.75*width} />
+      </Animated.View>
+    </Animated.View>
   );
 }
 
@@ -85,13 +125,15 @@ const styles = StyleSheet.create({
 
   slidersColumn: {
     flex: 1,
+    flexDirection: 'column',
+    gap: 20,
   },
 
   modalContent: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-
+    backgroundColor:'#ececec',
   },
 
   closePanel: {

@@ -34,6 +34,9 @@ import Erase from '../../assets/icons/editor/eraser.svg';
 import Draw from '../../assets/icons/editor/pencil.svg';
 import Dropper from '../../assets/icons/editor/dropper.svg';
 
+// color panel thumb
+import Thumb from '../../assets/icons/editor/thumb.svg';
+
 type IconSymbolName = keyof typeof MAPPING;
 
 const MAPPING = {
@@ -60,6 +63,7 @@ const MAPPING = {
   erase:          { component: Erase,           fixed: true,     scale: 1.0 },
   draw:           { component: Draw,            fixed: true,     scale: 1.0 },
   dropper:        { component: Dropper,         fixed: true,     scale: 1.0 },
+  thumb:          { component: Thumb,           fixed: false,    scale: 1.0 },
 } as const;
 
 export function IconSymbol({
