@@ -41,11 +41,11 @@ export default function DefaultColorPanel( {value, onColorChange} : {value: stri
           <HueSlider 
             style={[BORDER_FRAME, { marginTop: 15, marginBottom: 2 }]}
           />
-          <BrightnessSlider 
-            style={[BORDER_FRAME, { marginTop: 2, marginBottom: 2 }]}
-          />
           <SaturationSlider 
             style={[BORDER_FRAME, { marginTop: 2, marginBottom: 15 }]}
+          />
+          <BrightnessSlider 
+            style={[BORDER_FRAME, { marginTop: 2, marginBottom: 2 }]}
           />
         </ColorPicker>
       </View>
