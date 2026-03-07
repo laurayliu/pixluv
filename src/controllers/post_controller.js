@@ -11,6 +11,7 @@ export const getPosts = async (req, res) => {
       tags: true, 
       imageUrl: true, 
       createdAt: true, 
+      showLikes: true,
       author: { select: { username: true } } ,
       _count: { select: { likes: true } },
       ...(userId && {
@@ -31,9 +32,17 @@ export const getPosts = async (req, res) => {
 };
 
 export const createPost = async (req, res) => {
-  const { title, tags, content, imageUrl, challengeDate } = req.body;
+  const { title, tags, content, imageUrl, challengeDate, showLikes } = req.body;
   const post = await prisma.post.create({
-    data: { title, tags, content, imageUrl, authorId: req.user.id, challengeDate: challengeDate ? new Date(challengeDate) : null },
+    data: { 
+      title, 
+      tags, 
+      content, 
+      imageUrl, 
+      authorId: 
+      req.user.id, 
+      challengeDate: challengeDate ? new Date(challengeDate) : null, 
+      showLikes: (showLikes !== undefined && { showLikes: Boolean(showLikes) }), },
   });
   res.json(post);
 };
@@ -86,6 +95,7 @@ export const getPostsByUser = async (req, res) => {
       tags: true, 
       imageUrl: true, 
       createdAt: true, 
+      showLikes: true,
       author: { select: { username: true } } ,
       _count: { select: { likes: true } },
       ...(userId && {
