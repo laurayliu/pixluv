@@ -37,12 +37,13 @@ import Erase from '../../assets/icons/editor/eraser.svg';
 import Draw from '../../assets/icons/editor/pencil.svg';
 import Dropper from '../../assets/icons/editor/dropper.svg';
 
+// color panel thumb
+import Thumb from '../../assets/icons/editor/thumb.svg';
+
 // profile stickers
 import Profile from '../../assets/icons/profile/profile.svg'
 import Sticker1 from '../../assets/icons/profile/rabbit.svg'
 import Sticker2 from '../../assets/icons/profile/lighthouse.svg'
-
-
 
 
 type IconSymbolName = keyof typeof MAPPING;
@@ -52,30 +53,31 @@ const MAPPING = {
   home:           { component: HomeIcon,        fixed: true,     scale: 0.75 },
   mail:           { component: MailIcon,        fixed: true,     scale: 0.75 },
   palette:        { component: PaletteIcon,     fixed: true,     scale: 0.75 },
-  palette_img:    { component: PaletteImgIcon, fixed: true,     scale: 1.0  },
+  palette_img:    { component: PaletteImgIcon,  fixed: true,     scale: 1.0  },
   search:         { component: SearchIcon,      fixed: false,    scale: 1.0  },
   star:           { component: StarIcon,        fixed: true,     scale: 0.75 },
   profile_frame:  { component: ProfileFrame,    fixed: true,     scale: 0.75 },
-  like:           { component: Like,            fixed: true,     scale: 1.0 },
-  liked:          { component: Liked,           fixed: true,     scale: 1.0 },
-  comment:        { component: Comment,         fixed: true,     scale: 1.0 },
-  commented:      { component: CommentView,     fixed: true,     scale: 1.0 },
-  save:           { component: Save,            fixed: true,     scale: 1.0 },
-  saved:          { component: Saved,           fixed: true,     scale: 1.0 },
-  undo:           { component: Undo,            fixed: true,     scale: 1.0 },
-  redo:           { component: Redo,            fixed: true,     scale: 1.0 },
-  lasso:          { component: Lasso,           fixed: true,     scale: 1.0 },
-  line:           { component: Line,            fixed: true,     scale: 1.0 },
-  fill:           { component: Fill,            fixed: true,     scale: 1.0 },
-  square:         { component: Square,          fixed: true,     scale: 1.0 },
-  circle:         { component: Circle,          fixed: false,    scale: 1.0 },
-  erase:          { component: Erase,           fixed: true,     scale: 1.0 },
-  draw:           { component: Draw,            fixed: true,     scale: 1.0 },
-  dropper:        { component: Dropper,         fixed: true,     scale: 1.0 },
-  profile:        { component: Profile,         fixed: true,     scale: 1.0 },
-  sticker1:       { component: Sticker1,         fixed: true,     scale: 1.0 },
-  sticker2:       { component: Sticker2,         fixed: true,     scale: 1.0 },
-  send:           { component: SendIcon,        fixed: true,     scale: 1.0 },
+  like:           { component: Like,            fixed: true,     scale: 1.0  },
+  liked:          { component: Liked,           fixed: true,     scale: 1.0  },
+  comment:        { component: Comment,         fixed: true,     scale: 1.0  },
+  commented:      { component: CommentView,     fixed: true,     scale: 1.0  },
+  save:           { component: Save,            fixed: true,     scale: 1.0  },
+  saved:          { component: Saved,           fixed: true,     scale: 1.0  },
+  undo:           { component: Undo,            fixed: true,     scale: 1.0  },
+  redo:           { component: Redo,            fixed: true,     scale: 1.0  },
+  lasso:          { component: Lasso,           fixed: true,     scale: 1.0  },
+  line:           { component: Line,            fixed: true,     scale: 1.0  },
+  fill:           { component: Fill,            fixed: true,     scale: 1.0  },
+  square:         { component: Square,          fixed: true,     scale: 1.0  },
+  circle:         { component: Circle,          fixed: false,    scale: 1.0  },
+  erase:          { component: Erase,           fixed: true,     scale: 1.0  },
+  draw:           { component: Draw,            fixed: true,     scale: 1.0  },
+  dropper:        { component: Dropper,         fixed: true,     scale: 1.0  },
+  thumb:          { component: Thumb,           fixed: false,    scale: 1.0  },
+  profile:        { component: Profile,         fixed: true,     scale: 1.0  },
+  sticker1:       { component: Sticker1,        fixed: true,     scale: 1.0  },
+  sticker2:       { component: Sticker2,        fixed: true,     scale: 1.0  },
+  send:           { component: SendIcon,        fixed: true,     scale: 1.0  },
 } as const;
 
 export function IconSymbol({
