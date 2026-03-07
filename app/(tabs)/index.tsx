@@ -41,6 +41,7 @@ const HomeScreen = () => {
                 source={{ uri: item.imageUrl }}
                 style={{ width: 250, height: 250 }}
               />
+              <Text>{item.content ?? JSON.stringify(item)}</Text>
             </View>
           )}
           ListEmptyComponent={<Text>no posts yet</Text>}

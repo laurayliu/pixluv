@@ -1,12 +1,14 @@
 import DefaultColorPanel from '../components/color_picker';
 import React, { useState, useRef, useEffect } from 'react';
-import {StyleSheet, Text, View, TextInput, Dimensions, Button, ActivityIndicator, PanResponder} from 'react-native';
+import {StyleSheet, Text, View, TextInput, Dimensions, Button, ActivityIndicator, PanResponder, Pressable } from 'react-native';
 import { captureRef } from "react-native-view-shot";
 import { api } from '../services/api';
 import { useAuth } from '@/context/AuthContext';
 import Toolbar, { ALL_TOOL_NAMES } from '@/components/toolbar';
 import { ReactNativeZoomableView } from '@openspacelabs/react-native-zoomable-view';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams , useRouter } from 'expo-router';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+
 
 const DEFAULT_COLOR = "#fff";
 const DEFAULT_SELECTED_COLOR = "#000"
@@ -16,17 +18,18 @@ const GRID_CONTAINER_SIZE = SCREEN_WIDTH - 100;
 
 // https://www.youtube.com/watch?v=HN7FhKPTohA
 
-const GridCell = React.memo(({ color, gridSize, cellSize }: { 
+const GridCell = React.memo(({ color, gridSize, cellSize, noBorder }: { 
   color: string, 
   gridSize: number,
-  cellSize: number 
+  cellSize: number,
+  noBorder?: boolean
 }) => (
   <View style={{
     width: `${100 / gridSize}%`,
     height: cellSize,
     backgroundColor: color,
-    borderWidth: 0.25,
-    borderColor: '#eee'
+    borderWidth: noBorder ? 0 : 0.25,
+    borderColor: noBorder ? 'transparent' : '#eee'
   }} />
 ));
 GridCell.displayName = 'GridCell';
@@ -35,8 +38,10 @@ GridCell.displayName = 'GridCell';
 export default function CreatePix() {
   const { token } = useAuth();
 
+  const router = useRouter()
   const params = useLocalSearchParams();
   const { size } = params;
+
   const [gridSize, setGridSize] = useState<number>(Number(size));
   
   useEffect(() => {
@@ -52,6 +57,9 @@ export default function CreatePix() {
   const activeTool = useRef('draw');
   const [isUploading, setIsUploading] = useState(false);
   const cellSize = GRID_CONTAINER_SIZE/gridSize;
+
+  const [title, setTitle] = useState<string>('');
+  const [caption, setCaption] = useState<string>('');
 
   const gridRef = useRef<View>(null);
   const exportRef = useRef<View>(null);
@@ -114,15 +122,6 @@ export default function CreatePix() {
   }
 });
 
-//   const handleGridChange = (text: string) => {
-//     const newGridSize = Math.min(parseInt(text) || 0, 64);
-//     setGridSize(newGridSize);
-//     setGrid(Array(newGridSize * newGridSize).fill(DEFAULT_COLOR))
-
-//     setPrevGrid([Array(newGridSize * newGridSize).fill(DEFAULT_COLOR)])
-//     index.current = 0;
-//   }
-
   const handleClear = () => {
     setGrid(Array(gridSize * gridSize).fill(DEFAULT_COLOR))
     setPrevGrid([Array(gridSize * gridSize).fill(DEFAULT_COLOR)])
@@ -143,7 +142,7 @@ export default function CreatePix() {
       const filename = `pix.png`;
       const { signedUrl, publicUrl } = await api.getPresignedUrl(filename, token);
       await api.uploadToS3(signedUrl, base64);
-      await api.createPost({ title: "Post Title", imageUrl: publicUrl }, token);
+      await api.createPost({ title: title, content: caption, imageUrl: publicUrl }, token);
       alert(`Post Success!`);
     } catch (error) {
       console.error("Upload process failed:", error);
@@ -172,25 +171,18 @@ export default function CreatePix() {
 
   return (
     <View style={styles.container}>
+      <Pressable style={styles.backButton} onPress={() => router.back()}>
+        <IconSymbol name="undo" size={24} color="#ffffff" />
+      </Pressable>
+
       <View ref={exportRef} collapsable={false} style={[styles.exportGrid, { width: GRID_CONTAINER_SIZE, height: GRID_CONTAINER_SIZE }]}>
         {grid.map((color, index) => (
           //<View key={index} style={{ width: `${100/gridSize}%`, height: cellSize, backgroundColor: color }} />
-          <GridCell key={index} color={color} gridSize={gridSize} cellSize={cellSize} />
+          <GridCell key={index} color={color} gridSize={gridSize} cellSize={cellSize} noBorder={true}/>
         ))}
       </View>
 
-      <Text style = {{fontSize: 20, marginBottom: 10, marginTop: 20}}>new pix!</Text>
-      <View style={styles.controls}>
-        {/* <View style={styles.inputGroup}>
-          <Text>pick grid size: </Text>
-          <TextInput keyboardType="numeric" value={gridSize.toString()} onChangeText={handleGridChange} style={styles.input}/>
-        </View> */}
-        <View style={styles.inputGroup}>
-          <Text>pick color: </Text>
-          <TextInput value={selectedColor} onChangeText={setSelectedColor} style={[styles.input, { borderRightWidth: 10, borderRightColor: selectedColor }]}></TextInput>
-        </View>
-      </View>
-
+      <TextInput value={title} onChangeText={setTitle} style = {styles.title} placeholder='enter title' placeholderTextColor='rgba(81, 116, 207, 0.5)' autoCapitalize='none'/>
        
       <View style = {styles.gridAndTools}>
         <Toolbar allowedTools={ALL_TOOL_NAMES} onToolChange={t => { activeTool.current = t; }} onUndo={handleUndo} onRedo={handleRedo}/>
@@ -215,16 +207,7 @@ export default function CreatePix() {
           style={[styles.grid, { width: GRID_CONTAINER_SIZE, height: GRID_CONTAINER_SIZE }]}
           >
           {grid.map((color, index) => (
-            <View
-              key={index} 
-              style={{
-                width: `${100/gridSize}%`,
-                height: cellSize,
-                backgroundColor: color,
-                borderWidth: 0.25,
-                borderColor: '#eee'
-              }}
-            />
+            <GridCell key={index} color={color} gridSize={gridSize} cellSize={cellSize} noBorder={false}/>
           ))}
           </View>
           </ReactNativeZoomableView>
@@ -236,6 +219,11 @@ export default function CreatePix() {
       <View style={{ width: '100%' }}>
           <DefaultColorPanel value={selectedColor} onColorChange={setSelectedColor}/>
       </View>
+      <View style={styles.inputGroup}>
+          <Text>pick color: </Text>
+          <TextInput value={selectedColor} onChangeText={setSelectedColor} style={[styles.input, { borderRightWidth: 10, borderRightColor: selectedColor }]}></TextInput>
+      </View>
+      <TextInput value={caption} onChangeText={setCaption} style = {styles.title} multiline placeholder='enter caption' placeholderTextColor='rgba(81, 116, 207, 0.5)' autoCapitalize='none'/>
       
       <View style={styles.actions}>
         <Button title ="clear" onPress={() => handleClear()} color='#000'></Button>
@@ -264,15 +252,23 @@ const styles = StyleSheet.create({
     paddingVertical: 50,
     backgroundColor: '#ececec',
   },
-  controls: {
-    marginBottom: 20,
-    width: '80%',
+  title: {
+    fontSize: 20, 
+    marginBottom: 10, 
+    marginTop: 20, 
+    borderWidth: 0.25, 
+    paddingVertical: 6, 
+    paddingHorizontal: 10,
+    width: 275,
+    borderRadius: 5,
+    color: '#5174cf'
   },
   inputGroup: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 10,
+    width: '80%',
   },
   input: {
     borderWidth: 1,
@@ -295,7 +291,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     borderWidth: 1,
-    borderColor: '#000',
+    borderColor: '#5174cf',
     overflow: 'hidden',
   },
   actions: {
@@ -303,5 +299,10 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: 'center',
   },
+  backButton: {
+    marginTop: 10,
+    marginLeft: 15,
+    alignSelf: 'flex-start',
+  }
 });
 

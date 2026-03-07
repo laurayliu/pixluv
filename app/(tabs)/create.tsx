@@ -2,7 +2,6 @@ import React, { useState, useRef } from 'react';
 import {StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 
-
 export default function ChooseSize() {
   const router = useRouter()
   
@@ -11,7 +10,7 @@ export default function ChooseSize() {
 
       <Text style = {{fontSize: 30, marginBottom: 70, marginTop: 100, color:'#5174cf'}}>pick canvas size:</Text>
       <View style = {styles.buttons}>
-        <TouchableOpacity style = {styles.gridButton} onPress={() => router.push({
+        <TouchableOpacity style = {styles.gridButton1} onPress={() => router.push({
             pathname: '/drawing',
             params: {
               size: 16,
@@ -61,6 +60,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 50,
   },
+  gridButton1: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 53,
+  },
   nextButton: {
     width: 200,
     height: 40,
@@ -73,6 +78,6 @@ const styles = StyleSheet.create({
   image: {
     width: 150,
     height: 150,
-  }
+  },
 
 });
