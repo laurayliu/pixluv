@@ -5,6 +5,7 @@ import { captureRef } from "react-native-view-shot";
 import { api } from '../../services/api';
 import { useAuth } from '@/context/AuthContext';
 import Toolbar, { ALL_TOOL_NAMES } from '@/components/toolbar';
+import { ReactNativeZoomableView } from '@openspacelabs/react-native-zoomable-view';
 
 
 const DEFAULT_GRID = 16;
@@ -34,67 +35,68 @@ export default function CreatePix() {
   const [prevGrid, setPrevGrid] = useState<string[][]>([Array(DEFAULT_GRID * DEFAULT_GRID).fill(DEFAULT_COLOR)]); // need the brackets!!
   const index = useRef(0);
 
-  const gridLayout = useRef({ x: 0, y: 0 });
+  const zoomState = useRef({
+    level: 1,
+  });
 
-  // capture the grid's position on the screen when it mounts
-  const onGridLayout = () => {
-    // use measure to get the absolute page position
-    gridRef.current?.measure((x, y, width, height, pageX, pageY) => {
-      gridLayout.current = { x: pageX, y: pageY };
-    });
-  };
+  const colorCellAtPosition = (pageX: number, pageY: number, gridOriginX: number, gridOriginY: number) => {
+    // pageX/pageY: where you clicked on screen; gridOriginX/gridOriginY: where the current origin of the grid is
+    const { level } = zoomState.current;
 
+    const xInGrid = (pageX - gridOriginX) / level; // 
+    const yInGrid = (pageY - gridOriginY) / level;
 
-
-  const colorCellAtPosition = (pageX: number, pageY: number) => {
-    const relativeX = pageX - gridLayout.current.x;
-    const relativeY = pageY - gridLayout.current.y;
-
-    const col = Math.floor(relativeX / cellSize);
-    const row = Math.floor(relativeY / cellSize);
+    const col = Math.floor(xInGrid / cellSize);
+    const row = Math.floor(yInGrid / cellSize);
 
     if (col >= 0 && col < gridSize && row >= 0 && row < gridSize) {
-      const index = row * gridSize + col;
-
+      const cellIndex = row * gridSize + col;
       const drawingColor = activeTool.current === 'erase' ? DEFAULT_COLOR : selectedColor; // if eraser is toggled set selected color to white
-
-      setGrid(prevGrid => {
+      setGrid((prevGrid=> {
         const newGrid = [...prevGrid];
-        newGrid[index] = drawingColor;
+        newGrid[cellIndex] = drawingColor;
         return newGrid;
-      });
+      }));
     }
   };
 
-
-
   const panResponder = PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onMoveShouldSetPanResponder: () => true,
+  onStartShouldSetPanResponder: (evt) => evt.nativeEvent.touches.length === 1,
+  onMoveShouldSetPanResponder: (evt) => evt.nativeEvent.touches.length === 1,
 
-    onPanResponderGrant: (evt) => {
-      const { pageX, pageY } = evt.nativeEvent;
-      colorCellAtPosition(pageX, pageY);
-    },
+  onPanResponderGrant: (evt) => { // runs once you touch screen for the first time
+    const { pageX, pageY } = evt.nativeEvent; // capture whatever pageX/pageY is
+    gridRef.current?.measure((x, y, width, height, gridOriginX, gridOriginY) => { // gives updated gridOriginX/gridOriginyY
+      colorCellAtPosition(pageX, pageY, gridOriginX, gridOriginY); // callback with updated values 
+    });
+  },
 
-    onPanResponderMove: (evt) => {
-      const { pageX, pageY } = evt.nativeEvent;
-      colorCellAtPosition(pageX, pageY);
-    },
+  onPanResponderMove: (evt) => {
+    const { pageX, pageY } = evt.nativeEvent;
+    gridRef.current?.measure((x, y, width, height, gridOriginX, gridOriginY) => {
+      colorCellAtPosition(pageX, pageY, gridOriginX, gridOriginY);
+    });
+  },
 
-    onPanResponderRelease: () => {
-      setPrevGrid((prevHistory) => {
-        const newGrid = prevHistory.slice(0, index.current + 1); // prevents weird things if someone undos then starts drawing again
-        const updatedGrid = [...newGrid, [...grid]] // takes saved states and adds on current grid at the end
-        index.current = updatedGrid.length - 1;
-        return updatedGrid;
-      })
-    }
-  });
+  onPanResponderRelease: (evt) => {
+    if (evt.nativeEvent.touches.length > 0) return; 
+    setPrevGrid((prevHistory) => {
+      const newGrid = prevHistory.slice(0, index.current + 1); // prevents weird things if someone undos then starts drawing again
+      const updatedGrid = [...newGrid, [...grid]];  // takes saved states and adds on current grid at the end
+      index.current = updatedGrid.length - 1;
+      return updatedGrid;
+    });
+  }
+});
 
   const handleGridChange = (text: string) => {
     const newGridSize = parseInt(text) || 0;
-    setGridSize(newGridSize);
+    if (newGridSize > 64){
+      setGridSize(64);
+    }
+    else {
+      setGridSize(newGridSize);
+    }
     setGrid(Array(newGridSize * newGridSize).fill(DEFAULT_COLOR))
   }
 
@@ -142,6 +144,7 @@ export default function CreatePix() {
     }
   }
 
+
   return (
 
     <View style={styles.container}>
@@ -163,29 +166,47 @@ export default function CreatePix() {
         </View>
       </View>
 
+       
       <View style = {styles.gridAndTools}>
         <Toolbar allowedTools={ALL_TOOL_NAMES} onToolChange={t => { activeTool.current = t; }} onUndo={handleUndo} onRedo={handleRedo}/>
 
-        <View {...panResponder.panHandlers}
+          <View style = {styles.zoomable}>
+          <ReactNativeZoomableView
+            maxZoom={4} 
+            minZoom={1} 
+            initialZoom={1} 
+            bindToBorders={true}
+            contentWidth={GRID_CONTAINER_SIZE}
+            contentHeight={GRID_CONTAINER_SIZE}
+            panEnabled={true}
+            onTransform={(data: any) => {
+            zoomState.current = {
+              level: data.zoomLevel,
+            };
+            }}>
+          <View {...panResponder.panHandlers} 
           ref={gridRef}
           collapsable={false}
-          onLayout={onGridLayout}
           style={[styles.grid, { width: GRID_CONTAINER_SIZE, height: GRID_CONTAINER_SIZE }]}
-        >
+          >
           {grid.map((color, index) => (
             <View
-              key={index}
+              key={index} 
               style={{
                 width: `${100/gridSize}%`,
                 height: cellSize,
                 backgroundColor: color,
-                borderWidth: 0.5,
+                borderWidth: 0.25,
                 borderColor: '#eee'
               }}
             />
           ))}
-        </View>
+          </View>
+          </ReactNativeZoomableView>
+          </View>
       </View>
+      
+      
 
       <View style={{ width: '100%' }}>
           <DefaultColorPanel value={selectedColor} onColorChange={setSelectedColor}/>
@@ -237,7 +258,13 @@ const styles = StyleSheet.create({
   },
   gridAndTools: {
     flexDirection: 'row',
-    marginTop: 15
+    marginTop: 15,
+    gap: 30,
+  },
+  zoomable: {
+    overflow: 'hidden',
+    width: GRID_CONTAINER_SIZE,
+    height: GRID_CONTAINER_SIZE,
   },
   grid: {
     flexDirection: 'row',
@@ -245,7 +272,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#000',
     overflow: 'hidden',
-    marginLeft: 40,
   },
   actions: {
     flexDirection: 'row',
@@ -253,3 +279,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
+
