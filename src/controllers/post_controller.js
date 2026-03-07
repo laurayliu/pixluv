@@ -10,11 +10,27 @@ export const getPosts = async (req, res) => {
 };
 
 export const createPost = async (req, res) => {
-  const { title, tags, content, imageUrl } = req.body;
+  const { title, tags, content, imageUrl, challengeDate } = req.body;
   const post = await prisma.post.create({
-    data: { title, tags, content, imageUrl, authorId: req.user.id },
+    data: { title, tags, content, imageUrl, authorId: req.user.id, challengeDate: challengeDate ? new Date(challengeDate) : null },
   });
   res.json(post);
+};
+
+export const getTodayChallengePosts = async (req, res) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const posts = await prisma.post.findMany({
+    where: { challengeDate: { gte: today, lt: tomorrow } },
+    orderBy: { createdAt: 'desc' },
+    select: { id: true, imageUrl: true, authorId: true, author: { select: { username: true } } },
+  });
+
+  const hasSubmitted = posts.some(p => p.authorId === req.user.id);
+  res.json({ posts, hasSubmitted });
 };
 
 export const getPost = async (req, res) => {

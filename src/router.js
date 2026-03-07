@@ -16,7 +16,7 @@ router.post('/auth/signup', Auth.signup);
 router.post('/auth/login', Auth.login);
 
 router.route('/users')
-  .get(Users.getUsers);
+  .get(requireAuth, Users.getUsers);
 
 router.route('/users/:id')
   .get(Users.getUser)
@@ -24,6 +24,7 @@ router.route('/users/:id')
   .delete(requireAuth, Users.deleteUser);
 
 router.get('/posts/user/:userId', Posts.getPostsByUser);
+router.get('/posts/challenge/today', requireAuth, Posts.getTodayChallengePosts);
 
 router.route('/posts')
   .get(Posts.getPosts)
