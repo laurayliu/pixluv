@@ -5,6 +5,7 @@ import type { RenderThumbProps } from 'reanimated-color-picker';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import { IconSymbol } from './ui/icon-symbol';
+import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
 
 const BORDER_FRAME = {
   borderRadius: 0,
@@ -51,30 +52,40 @@ export default function DefaultColorPanel( {value, onColorChange} : {value: stri
         </ColorPicker>
       </View>
 
-      <Modal visible={showModal} animationType='slide'>
-        <View style={styles.modalContent}>
-          <ColorPicker value={value} onChange={onSelectColor} style={{width: '90%',}}>
-              <Panel2
-                verticalChannel='saturation'
-                thumbScaleUpValue={1}
-                renderThumb={({ width, height, positionStyle, adaptiveColor, currentColor, initialColor }) => (
-                  <PanelThumb
-                    width={width}
-                    height={height}
-                    positionStyle={positionStyle}
-                    adaptiveColor={adaptiveColor}
-                    currentColor={currentColor}
-                    initialColor={initialColor}
+      <SafeAreaProvider>
+        <SafeAreaView>
+          <Modal 
+            transparent={true}
+            visible={showModal} 
+            animationType='fade'>
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <ColorPicker value={value} onChange={onSelectColor} style={{width: '100%',}}>
+                  <Panel2
+                    verticalChannel='saturation'
+                    thumbScaleUpValue={1}
+                    renderThumb={({ width, height, positionStyle, adaptiveColor, currentColor, initialColor }) => (
+                      <PanelThumb
+                        width={width}
+                        height={height}
+                        positionStyle={positionStyle}
+                        adaptiveColor={adaptiveColor}
+                        currentColor={currentColor}
+                        initialColor={initialColor}
+                      />
+                    )} 
+                    style={[BORDER_FRAME]}
                   />
-                )} 
-                style={[BORDER_FRAME]}
-              />
-          </ColorPicker>
-          <TouchableOpacity style={styles.closePanel} onPress={() => setShowModal(false)}>
-            <Text>done</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
+                </ColorPicker>
+                <TouchableOpacity style={styles.closePanel} onPress={() => setShowModal(false)}>
+                  <Text>done</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+        </Modal>
+        </SafeAreaView>
+      </SafeAreaProvider>
+      
         
     </View>
   );
@@ -126,14 +137,22 @@ const styles = StyleSheet.create({
   slidersColumn: {
     flex: 1,
     flexDirection: 'column',
-    gap: 20,
   },
 
   modalContent: {
+    position:'absolute',
+    backgroundColor:'rgb(175, 175, 175)',
+    padding: 10,
+    width: '55%',
+    marginTop: 70,
+    marginRight: 30,
+  },
+
+  modalOverlay: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor:'#ececec',
+    alignItems: 'flex-end',
+    
   },
 
   closePanel: {
