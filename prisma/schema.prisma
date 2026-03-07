@@ -26,7 +26,7 @@ model User {
 
 model Post {
   id            String    @id @default(cuid())
-  title         String
+  title         String?
   tags          String?
   content       String?
   imageUrl      String?
