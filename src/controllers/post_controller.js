@@ -42,7 +42,8 @@ export const createPost = async (req, res) => {
       authorId: 
       req.user.id, 
       challengeDate: challengeDate ? new Date(challengeDate) : null, 
-      showLikes: (showLikes !== undefined && { showLikes: Boolean(showLikes) }), },
+      showLikes: Boolean(showLikes), 
+    },
   });
   res.json(post);
 };
