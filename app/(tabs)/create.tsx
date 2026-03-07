@@ -2,7 +2,6 @@ import React, { useState, useRef } from 'react';
 import {StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 
-
 export default function ChooseSize() {
   const router = useRouter()
   
@@ -60,7 +59,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: 50,
-    backgroundColor: '#310e0e'
   },
   gridButton1: {
     flexDirection: 'row',

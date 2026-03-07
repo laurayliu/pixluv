@@ -18,17 +18,18 @@ const GRID_CONTAINER_SIZE = SCREEN_WIDTH - 100;
 
 // https://www.youtube.com/watch?v=HN7FhKPTohA
 
-const GridCell = React.memo(({ color, gridSize, cellSize }: { 
+const GridCell = React.memo(({ color, gridSize, cellSize, noBorder }: { 
   color: string, 
   gridSize: number,
-  cellSize: number 
+  cellSize: number,
+  noBorder?: boolean
 }) => (
   <View style={{
     width: `${100 / gridSize}%`,
     height: cellSize,
     backgroundColor: color,
-    borderWidth: 0.25,
-    borderColor: '#eee'
+    borderWidth: noBorder ? 0 : 0.25,
+    borderColor: noBorder ? 'transparent' : '#eee'
   }} />
 ));
 GridCell.displayName = 'GridCell';
@@ -58,6 +59,7 @@ export default function CreatePix() {
   const cellSize = GRID_CONTAINER_SIZE/gridSize;
 
   const [title, setTitle] = useState<string>('');
+  const [caption, setCaption] = useState<string>('');
 
   const gridRef = useRef<View>(null);
   const exportRef = useRef<View>(null);
@@ -140,7 +142,7 @@ export default function CreatePix() {
       const filename = `pix.png`;
       const { signedUrl, publicUrl } = await api.getPresignedUrl(filename, token);
       await api.uploadToS3(signedUrl, base64);
-      await api.createPost({ title: title, imageUrl: publicUrl }, token);
+      await api.createPost({ title: title, content: caption, imageUrl: publicUrl }, token);
       alert(`Post Success!`);
     } catch (error) {
       console.error("Upload process failed:", error);
@@ -176,11 +178,11 @@ export default function CreatePix() {
       <View ref={exportRef} collapsable={false} style={[styles.exportGrid, { width: GRID_CONTAINER_SIZE, height: GRID_CONTAINER_SIZE }]}>
         {grid.map((color, index) => (
           //<View key={index} style={{ width: `${100/gridSize}%`, height: cellSize, backgroundColor: color }} />
-          <GridCell key={index} color={color} gridSize={gridSize} cellSize={cellSize} />
+          <GridCell key={index} color={color} gridSize={gridSize} cellSize={cellSize} noBorder={true}/>
         ))}
       </View>
 
-      <TextInput value={title} onChangeText={setTitle} style = {styles.title} placeholder='enter title' placeholderTextColor='rgba(81, 116, 207, 0.5)'/>
+      <TextInput value={title} onChangeText={setTitle} style = {styles.title} placeholder='enter title' placeholderTextColor='rgba(81, 116, 207, 0.5)' autoCapitalize='none'/>
        
       <View style = {styles.gridAndTools}>
         <Toolbar allowedTools={ALL_TOOL_NAMES} onToolChange={t => { activeTool.current = t; }} onUndo={handleUndo} onRedo={handleRedo}/>
@@ -205,16 +207,7 @@ export default function CreatePix() {
           style={[styles.grid, { width: GRID_CONTAINER_SIZE, height: GRID_CONTAINER_SIZE }]}
           >
           {grid.map((color, index) => (
-            <View
-              key={index} 
-              style={{
-                width: `${100/gridSize}%`,
-                height: cellSize,
-                backgroundColor: color,
-                borderWidth: 0.25,
-                borderColor: '#eee'
-              }}
-            />
+            <GridCell key={index} color={color} gridSize={gridSize} cellSize={cellSize} noBorder={false}/>
           ))}
           </View>
           </ReactNativeZoomableView>
@@ -226,10 +219,11 @@ export default function CreatePix() {
       <View style={{ width: '100%' }}>
           <DefaultColorPanel value={selectedColor} onColorChange={setSelectedColor}/>
       </View>
-       <View style={styles.inputGroup}>
+      <View style={styles.inputGroup}>
           <Text>pick color: </Text>
           <TextInput value={selectedColor} onChangeText={setSelectedColor} style={[styles.input, { borderRightWidth: 10, borderRightColor: selectedColor }]}></TextInput>
-        </View>
+      </View>
+      <TextInput value={caption} onChangeText={setCaption} style = {styles.title} multiline placeholder='enter caption' placeholderTextColor='rgba(81, 116, 207, 0.5)' autoCapitalize='none'/>
       
       <View style={styles.actions}>
         <Button title ="clear" onPress={() => handleClear()} color='#000'></Button>
@@ -306,7 +300,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   backButton: {
-    marginTop: 56,
+    marginTop: 10,
     marginLeft: 15,
     alignSelf: 'flex-start',
   }
