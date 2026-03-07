@@ -8,6 +8,7 @@ export const getPosts = async (req, res) => {
     select: { 
       id: true, 
       title: true, 
+      content: true,
       tags: true, 
       imageUrl: true, 
       createdAt: true, 
