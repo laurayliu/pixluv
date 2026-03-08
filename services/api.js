@@ -49,6 +49,7 @@ export const api = {
   sendPix: (receiverId, message, imageUrl, token) =>
     post('/pixing', { receiverId, ...(message ? { message } : {}), ...(imageUrl ? { imageUrl } : {}) }, token),
 
+  getChallenges: () => get('/challenges'),
   getTodayChallenge: () => get('/challenges/today'),
   getTodayChallengePosts: (token) => get('/posts/challenge/today', token),
   getPresignedUrl: (filename, token) =>
