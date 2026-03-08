@@ -3,13 +3,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { FlatList, Text, View, ActivityIndicator, Image, StyleSheet } from 'react-native';
 import { api } from '../../services/api';
 
-const HomeScreen = () => {
-  const [hello, setHello] = useState<string | null>(null);
-  const [posts, setPosts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const BORDER_FRAME = {
+const BORDER_FRAME = {
   borderRadius: 0,
   borderTopColor: '#c4c4c4',
   borderLeftColor: '#c4c4c4',
@@ -21,6 +15,13 @@ const HomeScreen = () => {
   borderRightWidth: 3,
   overflow: 'hidden',
 } as const;
+
+
+const HomeScreen = () => {
+  const [hello, setHello] = useState<string | null>(null);
+  const [posts, setPosts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useFocusEffect(
     useCallback(() => {

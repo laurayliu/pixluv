@@ -8,7 +8,7 @@ export default function ChooseSize() {
   return (
     <View style={styles.container}>
 
-      <Text style = {{fontSize: 30, marginBottom: 70, marginTop: 100, color:'#5174cf'}}>pick canvas size:</Text>
+      <Text style = {{fontSize: 25, marginBottom: 45, marginTop: 100, color:'#5174cf'}}>pick canvas size:</Text>
       <View style = {styles.buttons}>
         <TouchableOpacity style = {styles.gridButton1} onPress={() => router.push({
             pathname: '/drawing',
