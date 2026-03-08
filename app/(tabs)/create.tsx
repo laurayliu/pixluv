@@ -78,6 +78,7 @@ const styles = StyleSheet.create({
   image: {
     width: 150,
     height: 150,
+    borderWidth: 0.25,
+    borderColor: '#000',
   },
-
 });
