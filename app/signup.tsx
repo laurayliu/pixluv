@@ -46,7 +46,7 @@ export default function SignupScreen() {
       <TextInput
         style={styles.input}
         placeholder="username"
-        placeholderTextColor="#f9a8c9"
+        placeholderTextColor="#c090a0"
         autoCapitalize="none"
         value={username}
         onChangeText={setUsername}
@@ -54,7 +54,7 @@ export default function SignupScreen() {
       <TextInput
         style={styles.input}
         placeholder="email"
-        placeholderTextColor="#f9a8c9"
+        placeholderTextColor="#c090a0"
         autoCapitalize="none"
         keyboardType="email-address"
         value={email}
@@ -63,7 +63,7 @@ export default function SignupScreen() {
       <TextInput
         style={styles.input}
         placeholder="password"
-        placeholderTextColor="#f9a8c9"
+        placeholderTextColor="#c090a0"
         secureTextEntry
         value={password}
         onChangeText={setPassword}
@@ -72,13 +72,13 @@ export default function SignupScreen() {
       {loading ? (
         <ActivityIndicator color="#ee708f" style={styles.button} />
       ) : (
-        <TouchableOpacity style={styles.button} onPress={handleSignup}>
+        <TouchableOpacity style={styles.button} onPress={handleSignup} activeOpacity={0.8}>
           <Text style={styles.buttonText}>sign up</Text>
         </TouchableOpacity>
       )}
 
       <TouchableOpacity onPress={() => router.replace('/login')}>
-        <Text style={styles.link}>Already have a Pixluv account? Log in!</Text>
+        <Text style={styles.link}>already have an account? log in!</Text>
       </TouchableOpacity>
     </View>
   );
@@ -97,15 +97,20 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    color: '#ee708f',
+    color: '#cd477a',
     marginBottom: 32,
     letterSpacing: 1,
   },
   input: {
     width: '100%',
-    borderWidth: 2,
-    borderColor: '#ffb3c6',
-    borderRadius: 4,
+    borderTopWidth: 2,
+    borderLeftWidth: 2,
+    borderRightWidth: 2,
+    borderBottomWidth: 2,
+    borderTopColor: '#9d687c',
+    borderLeftColor: '#9d687c',
+    borderRightColor: '#ffffff',
+    borderBottomColor: '#ffffff',
     padding: 12,
     marginBottom: 14,
     fontSize: 15,
@@ -114,22 +119,28 @@ const styles = StyleSheet.create({
   },
   button: {
     width: '100%',
-    backgroundColor: '#ee708f',
-    borderRadius: 4,
-    padding: 14,
+    backgroundColor: '#f3dde8',
+    borderTopWidth: 2,
+    borderLeftWidth: 2,
+    borderRightWidth: 2,
+    borderBottomWidth: 2,
+    borderTopColor: '#ffffff',
+    borderLeftColor: '#ffffff',
+    borderRightColor: '#ac6f86',
+    borderBottomColor: '#9d687c',
+    padding: 12,
     alignItems: 'center',
-    marginBottom: 20,
-    marginTop: 4,
+    marginBottom: 12,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 15,
+    color: '#1d2b53',
+    fontSize: 14,
     fontWeight: '700',
     letterSpacing: 1,
   },
   link: {
-    textAlign: 'center',
-    color: '#ee708f',
+    color: '#cd477a',
     fontSize: 13,
+    letterSpacing: 1,
   },
 });
