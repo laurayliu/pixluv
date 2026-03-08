@@ -232,21 +232,17 @@ export default function CreatePix() {
       <View style={{ width: '100%' }}>
           <DefaultColorPanel value={selectedColor} onColorChange={setSelectedColor}/>
       </View>
-      <View style={styles.inputGroup}>
-          <Text>pick color: </Text>
-          <TextInput value={selectedColor} onChangeText={setSelectedColor} style={[styles.input, { borderRightWidth: 10, borderRightColor: selectedColor }]}></TextInput>
-      </View>
-      <TextInput value={caption} onChangeText={setCaption} style = {styles.caption} multiline placeholder='enter caption' placeholderTextColor='rgba(81, 116, 207, 0.5)' autoCapitalize='none'/>
+      <TextInput value={caption} onChangeText={setCaption} style = {[styles.caption, BORDER_FRAME]} multiline placeholder='enter caption!' placeholderTextColor='rgba(81, 116, 207, 0.5)' autoCapitalize='none'/>
       
       <View style={styles.actions}>
-        <TouchableOpacity onPress={() => handleClear()} style={{borderWidth: 0.25, borderColor: '#000', paddingVertical: 5, paddingHorizontal: 10}}>
+        <TouchableOpacity onPress={() => handleClear()} style={[{borderWidth: 0.25, borderColor: '#000', paddingVertical: 5, paddingHorizontal: 10}, BORDER_FRAME]}>
             <Text>clear</Text>
         </TouchableOpacity>
         <View style={{ width: 20 }} />
         {isUploading ? (
           <ActivityIndicator color="#000" />
         ) : (
-          <TouchableOpacity onPress={handleSaveAndUpload} style={{borderWidth: 0.25, borderColor: '#000', paddingVertical: 5, paddingHorizontal: 10}}>
+          <TouchableOpacity onPress={handleSaveAndUpload} style={[{borderWidth: 0.25, borderColor: '#000', paddingVertical: 5, paddingHorizontal: 10}, BORDER_FRAME]}>
             <Text>post</Text>
           </TouchableOpacity>
         )}
@@ -272,14 +268,14 @@ const styles = StyleSheet.create({
   caption: {
     fontSize: 15, 
     marginBottom: 10, 
-    marginTop: 20, 
     borderWidth: 0.25, 
     paddingTop: 10,
     paddingBottom: 100, 
     paddingHorizontal: 15,
-    width: 300,
+    width: '85%',
     borderRadius: 5,
-    color: '#5174cf'
+    color: '#5174cf',
+    backgroundColor: 'white',
   },
   inputGroup: {
     flexDirection: 'row',
@@ -297,7 +293,7 @@ const styles = StyleSheet.create({
   },
   gridAndTools: {
     flexDirection: 'row',
-    marginTop: 15,
+    marginTop: 40,
     gap: 30,
   },
   zoomable: {
