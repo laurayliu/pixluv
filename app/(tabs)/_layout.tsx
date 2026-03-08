@@ -14,9 +14,11 @@ export default function TabLayout() {
   if (!token) return <Redirect href="/login" />;
 
   return (
+    
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarStyle: {backgroundColor: '#ff77a8'},
         headerShown: false,
         tabBarShowLabel: false,
         tabBarButton: HapticTab,
