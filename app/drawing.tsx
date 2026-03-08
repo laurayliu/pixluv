@@ -11,7 +11,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 
 
 const DEFAULT_COLOR = "#fff";
-const DEFAULT_SELECTED_COLOR = "#000"
+const DEFAULT_SELECTED_COLOR = "#ff0000"
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GRID_CONTAINER_SIZE = SCREEN_WIDTH - 100;
