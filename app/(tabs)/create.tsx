@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 53,
+    gap: 54,
   },
   nextButton: {
     width: 200,
