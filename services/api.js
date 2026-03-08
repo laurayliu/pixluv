@@ -45,7 +45,6 @@ export const api = {
   createPost: (data, token) => post('/posts', data, token),
 
   likePost: (postId, token) => post(`/posts/${postId}/like`, {}, token),
-  savePost: (postId, token) => post(`/posts/${postId}/save`, {}, token),
 
   getComments: (postId) => get(`/posts/${postId}/comments`),
   createComment: (postId, body, token) => post(`/posts/${postId}/comments`, {body}, token),

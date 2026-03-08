@@ -28,7 +28,7 @@ type Post = {
     comments?: number;
   };
   liked?: boolean;
-  saved?: boolean;
+  likedByMe?: boolean;
 };
 
 type Comment = {
@@ -122,28 +122,6 @@ const HomeScreen = () => {
     }
   };
 
-  const handleToggleSave = async (postId: string) => {
-    if (!token) {
-      router.replace('/login');
-    }
-
-    setPosts((prev) =>
-      prev.map((p) =>
-        p.id === postId ? { ...p, saved: !p.saved } : p,
-      ),
-    );
-
-    try {
-      await api.savePost(postId, token);
-    } catch {
-      setPosts((prev) =>
-        prev.map((p) =>
-          p.id === postId ? { ...p, saved: !p.saved } : p,
-        ),
-      );
-    }
-  };
-
   const openComments = async (post: Post) => {
     setActivePost(post);
     setCommentsVisible(true);
@@ -231,14 +209,6 @@ const HomeScreen = () => {
                 <TouchableOpacity onPress={() => openComments(item)} style={styles.actionButton}>
                   <IconSymbol
                     name={'comment'}
-                    color={'currentColor'}
-                    size={24}
-                  />
-                </TouchableOpacity>
-
-                <TouchableOpacity onPress={() => handleToggleSave(item.id)} style={styles.actionButton}>
-                  <IconSymbol
-                    name={item.saved ? 'saved' : 'save'}
                     color={'currentColor'}
                     size={24}
                   />
