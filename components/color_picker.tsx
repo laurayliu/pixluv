@@ -1,10 +1,11 @@
 import React, {useState} from 'react';
-import { StyleProp, StyleSheet, View, ViewStyle, TouchableOpacity, Modal, Text } from 'react-native';
+import { StyleProp, StyleSheet, View, ViewStyle, TouchableOpacity, Modal, Text, TouchableWithoutFeedback } from 'react-native';
 import ColorPicker, { HueSlider, BrightnessSlider,  SaturationSlider, Panel2,} from 'reanimated-color-picker';
 import type { RenderThumbProps } from 'reanimated-color-picker';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import { IconSymbol } from './ui/icon-symbol';
+import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
 
 const BORDER_FRAME = {
   borderRadius: 0,
@@ -36,46 +37,53 @@ export default function DefaultColorPanel( {value, onColorChange} : {value: stri
         onPress={() => setShowModal(true)}
       />
 
-      <View style={styles.slidersColumn}>
+      <View style={[styles.slidersColumn]}>
         <ColorPicker boundedThumb={false} thumbShape='triangleDown'
         style={{ width: '90%', marginBottom: 20, marginTop: 20}} value={value} onComplete={onSelectColor}>
           <HueSlider 
             style={[BORDER_FRAME, { marginTop: 15, marginBottom: 2 }]}
           />
           <SaturationSlider 
-            style={[BORDER_FRAME, { marginTop: 2, marginBottom: 2 }]}
+            reverse={true} style={[BORDER_FRAME, { marginTop: 2, marginBottom: 2 }]}
           />
           <BrightnessSlider 
-            style={[BORDER_FRAME, { marginTop: 2, marginBottom: 15 }]}
+            reverse={true} style={[BORDER_FRAME, { marginTop: 2, marginBottom: 15 }]}
           />
         </ColorPicker>
       </View>
-
-      <Modal visible={showModal} animationType='slide'>
-        <View style={styles.modalContent}>
-          <ColorPicker value={value} onChange={onSelectColor} style={{width: '90%',}}>
-              <Panel2
-                verticalChannel='saturation'
-                thumbScaleUpValue={1}
-                renderThumb={({ width, height, positionStyle, adaptiveColor, currentColor, initialColor }) => (
-                  <PanelThumb
-                    width={width}
-                    height={height}
-                    positionStyle={positionStyle}
-                    adaptiveColor={adaptiveColor}
-                    currentColor={currentColor}
-                    initialColor={initialColor}
-                  />
-                )} 
-                style={[BORDER_FRAME]}
-              />
-          </ColorPicker>
-          <TouchableOpacity style={styles.closePanel} onPress={() => setShowModal(false)}>
-            <Text>done</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
-        
+      <Modal 
+        transparent={true}
+        visible={showModal} 
+        animationType='fade'
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPressOut={() => setShowModal(false)}
+          >
+          <TouchableWithoutFeedback>
+            <View style={styles.modalContent}>
+              <ColorPicker value={value} onChange={onSelectColor} style={{width: '100%'}}>
+                <Panel2
+                  verticalChannel='saturation'
+                  thumbScaleUpValue={1}
+                  renderThumb={({ width, height, positionStyle, adaptiveColor, currentColor, initialColor }) => (
+                    <PanelThumb
+                      width={width}
+                      height={height}
+                      positionStyle={positionStyle}
+                      adaptiveColor={adaptiveColor}
+                      currentColor={currentColor}
+                      initialColor={initialColor}
+                    />
+                  )} 
+                  style={[BORDER_FRAME]}
+                />
+              </ColorPicker>
+            </View>
+          </TouchableWithoutFeedback>
+        </TouchableOpacity>
+      </Modal> 
     </View>
   );
 }
@@ -112,6 +120,7 @@ const styles = StyleSheet.create({
   },
 
   row: {
+    display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -124,20 +133,26 @@ const styles = StyleSheet.create({
   },
 
   slidersColumn: {
+    display: 'flex',
     flex: 1,
     flexDirection: 'column',
-    gap: 20,
+    width: '80%'
   },
 
   modalContent: {
+    position:'absolute',
+    backgroundColor: '#ececec',
+    padding: 10,
+    width: '55%',
+    marginTop: 80,
+    marginRight: 33,
+    borderStyle: 'solid'
+  },
+
+  modalOverlay: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor:'#ececec',
+    alignItems: 'flex-end',
+    
   },
-
-  closePanel: {
-    alignSelf: 'center',
-  },
-
 });
