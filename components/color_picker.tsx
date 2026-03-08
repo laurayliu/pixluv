@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { StyleProp, StyleSheet, View, ViewStyle, TouchableOpacity, Modal, Text, TouchableWithoutFeedback } from 'react-native';
+import { StyleProp, StyleSheet, View, ViewStyle, TouchableOpacity, Modal, Text, TouchableWithoutFeedback, TextInput } from 'react-native';
 import ColorPicker, { HueSlider, BrightnessSlider,  SaturationSlider, Panel2,} from 'reanimated-color-picker';
 import type { RenderThumbProps } from 'reanimated-color-picker';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
@@ -31,11 +31,16 @@ export default function DefaultColorPanel( {value, onColorChange} : {value: stri
 
   return (
     <View style={styles.row}>
-      <TouchableOpacity
-        style={[BORDER_FRAME, styles.previewBox, {backgroundColor: value}]}
-        activeOpacity={0.8}
-        onPress={() => setShowModal(true)}
-      />
+      <View style={styles.previewColumn}>
+        <TouchableOpacity
+          style={[BORDER_FRAME, styles.previewBox, {backgroundColor: value}]}
+          activeOpacity={0.8}
+          onPress={() => setShowModal(true)}
+        />
+        <View style={[styles.inputGroup, BORDER_FRAME]}>
+          <TextInput value={value} onChangeText={onColorChange}></TextInput>
+        </View>
+      </View>
 
       <View style={[styles.slidersColumn]}>
         <ColorPicker boundedThumb={false} thumbShape='triangleDown'
@@ -127,16 +132,26 @@ const styles = StyleSheet.create({
 
   previewBox: {
     width: 75,
-    height: 75,
+    height: 55,
+  },
+
+  previewColumn: {
+    flexDirection: 'column',
     marginLeft: 20,
     marginRight: 20,
+  },
+
+  inputGroup: {
+    flex: 0.2,
+    width: 75,
+    padding: 3,
   },
 
   slidersColumn: {
     display: 'flex',
     flex: 1,
     flexDirection: 'column',
-    width: '80%'
+    width: '100%'
   },
 
   modalContent: {
@@ -144,15 +159,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#ececec',
     padding: 10,
     width: '55%',
-    marginTop: 80,
-    marginRight: 33,
+    marginTop: 207,
+    marginRight: 32,
     borderStyle: 'solid'
   },
 
   modalOverlay: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'flex-end',
-    
   },
 });

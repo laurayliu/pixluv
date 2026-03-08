@@ -232,10 +232,6 @@ export default function CreatePix() {
       <View style={{ width: '100%' }}>
           <DefaultColorPanel value={selectedColor} onColorChange={setSelectedColor}/>
       </View>
-      <View style={styles.inputGroup}>
-          <Text>pick color: </Text>
-          <TextInput value={selectedColor} onChangeText={setSelectedColor} style={[styles.input, { borderRightWidth: 10, borderRightColor: selectedColor }]}></TextInput>
-      </View>
       <TextInput value={caption} onChangeText={setCaption} style = {styles.caption} multiline placeholder='enter caption' placeholderTextColor='rgba(81, 116, 207, 0.5)' autoCapitalize='none'/>
       
       <View style={styles.actions}>
@@ -297,7 +293,7 @@ const styles = StyleSheet.create({
   },
   gridAndTools: {
     flexDirection: 'row',
-    marginTop: 15,
+    marginTop: 40,
     gap: 30,
   },
   zoomable: {
