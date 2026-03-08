@@ -1,6 +1,6 @@
 import DefaultColorPanel from '../components/color_picker';
 import React, { useState, useRef, useEffect } from 'react';
-import {StyleSheet, Text, View, TextInput, Dimensions, Button, ActivityIndicator, PanResponder, Pressable } from 'react-native';
+import {StyleSheet, Text, View, TextInput, Dimensions, Button, ActivityIndicator, PanResponder, Pressable, TouchableOpacity } from 'react-native';
 import { captureRef } from "react-native-view-shot";
 import { api } from '../services/api';
 import { useAuth } from '@/context/AuthContext';
@@ -34,6 +34,19 @@ const GridCell = React.memo(({ color, gridSize, cellSize, noBorder }: {
 ));
 GridCell.displayName = 'GridCell';
 
+const BORDER_FRAME = {
+  borderRadius: 0,
+  borderTopColor: '#c4c4c4',
+  borderLeftColor: '#c4c4c4',
+  borderBottomColor: '#ffffff',
+  borderRightColor: '#ffffff',
+  borderTopWidth: 3,
+  borderLeftWidth: 3,
+  borderBottomWidth: 3,
+  borderRightWidth: 3,
+  overflow: 'hidden',
+} as const;
+
 
 export default function CreatePix() {
   const { token } = useAuth();
@@ -58,7 +71,7 @@ export default function CreatePix() {
   const [isUploading, setIsUploading] = useState(false);
   const cellSize = GRID_CONTAINER_SIZE/gridSize;
 
-  const [title, setTitle] = useState<string>('');
+  //const [title, setTitle] = useState<string>('');
   const [caption, setCaption] = useState<string>('');
 
   const gridRef = useRef<View>(null);
@@ -142,7 +155,7 @@ export default function CreatePix() {
       const filename = `pix.png`;
       const { signedUrl, publicUrl } = await api.getPresignedUrl(filename, token);
       await api.uploadToS3(signedUrl, base64);
-      await api.createPost({ title: title, content: caption, imageUrl: publicUrl }, token);
+      await api.createPost({ content: caption, imageUrl: publicUrl }, token);
       alert(`Post Success!`);
     } catch (error) {
       console.error("Upload process failed:", error);
@@ -182,7 +195,7 @@ export default function CreatePix() {
         ))}
       </View>
 
-      <TextInput value={title} onChangeText={setTitle} style = {styles.title} placeholder='enter title' placeholderTextColor='rgba(81, 116, 207, 0.5)' autoCapitalize='none'/>
+      {/* <TextInput value={title} onChangeText={setTitle} style = {styles.title} placeholder='enter title' placeholderTextColor='rgba(81, 116, 207, 0.5)' autoCapitalize='none'/> */}
        
       <View style = {styles.gridAndTools}>
         <Toolbar allowedTools={ALL_TOOL_NAMES} onToolChange={t => { activeTool.current = t; }} onUndo={handleUndo} onRedo={handleRedo}/>
@@ -204,7 +217,7 @@ export default function CreatePix() {
           <View {...panResponder.panHandlers} 
           ref={gridRef}
           collapsable={false}
-          style={[styles.grid, { width: GRID_CONTAINER_SIZE, height: GRID_CONTAINER_SIZE }]}
+          style={[BORDER_FRAME, styles.grid, { width: GRID_CONTAINER_SIZE, height: GRID_CONTAINER_SIZE }]}
           >
           {grid.map((color, index) => (
             <GridCell key={index} color={color} gridSize={gridSize} cellSize={cellSize} noBorder={false}/>
@@ -223,15 +236,19 @@ export default function CreatePix() {
           <Text>pick color: </Text>
           <TextInput value={selectedColor} onChangeText={setSelectedColor} style={[styles.input, { borderRightWidth: 10, borderRightColor: selectedColor }]}></TextInput>
       </View>
-      <TextInput value={caption} onChangeText={setCaption} style = {styles.title} multiline placeholder='enter caption' placeholderTextColor='rgba(81, 116, 207, 0.5)' autoCapitalize='none'/>
+      <TextInput value={caption} onChangeText={setCaption} style = {styles.caption} multiline placeholder='enter caption' placeholderTextColor='rgba(81, 116, 207, 0.5)' autoCapitalize='none'/>
       
       <View style={styles.actions}>
-        <Button title ="clear" onPress={() => handleClear()} color='#000'></Button>
+        <TouchableOpacity onPress={() => handleClear()} style={{borderWidth: 0.25, borderColor: '#000', paddingVertical: 5, paddingHorizontal: 10}}>
+            <Text>clear</Text>
+        </TouchableOpacity>
         <View style={{ width: 20 }} />
         {isUploading ? (
           <ActivityIndicator color="#000" />
         ) : (
-          <Button title ="post" onPress={handleSaveAndUpload} color='#000'></Button>
+          <TouchableOpacity onPress={handleSaveAndUpload} style={{borderWidth: 0.25, borderColor: '#000', paddingVertical: 5, paddingHorizontal: 10}}>
+            <Text>post</Text>
+          </TouchableOpacity>
         )}
       </View>
       </View>
@@ -252,14 +269,15 @@ const styles = StyleSheet.create({
     paddingVertical: 50,
     backgroundColor: '#ececec',
   },
-  title: {
-    fontSize: 20, 
+  caption: {
+    fontSize: 15, 
     marginBottom: 10, 
     marginTop: 20, 
     borderWidth: 0.25, 
-    paddingVertical: 6, 
-    paddingHorizontal: 10,
-    width: 275,
+    paddingTop: 10,
+    paddingBottom: 100, 
+    paddingHorizontal: 15,
+    width: 300,
     borderRadius: 5,
     color: '#5174cf'
   },
@@ -298,6 +316,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 20,
     alignItems: 'center',
+    alignSelf: 'flex-end',
+    marginRight: 32,
   },
   backButton: {
     marginTop: 10,
