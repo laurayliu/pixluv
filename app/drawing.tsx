@@ -1,6 +1,6 @@
 import DefaultColorPanel from '../components/color_picker';
 import React, { useState, useRef, useEffect } from 'react';
-import {StyleSheet, Text, View, TextInput, Dimensions, Button, ActivityIndicator, PanResponder, Pressable, TouchableOpacity } from 'react-native';
+import {StyleSheet, Text, View, TextInput, Dimensions, Button, ActivityIndicator, PanResponder, Pressable, TouchableOpacity, Alert } from 'react-native';
 import { captureRef } from "react-native-view-shot";
 import { api } from '../services/api';
 import { useAuth } from '@/context/AuthContext';
@@ -46,7 +46,6 @@ const BORDER_FRAME = {
   borderRightWidth: 3,
   overflow: 'hidden',
 } as const;
-
 
 export default function CreatePix() {
   const { token } = useAuth();
@@ -181,6 +180,20 @@ export default function CreatePix() {
     }
   }
 
+  const clearAlert = () => {
+    Alert.alert(
+      "alert!",
+      "are you sure you want to clear the canvas?",
+      [
+        { text: "cancel" },
+        { text: "clear",
+          onPress: handleClear
+        }
+      ],
+      { cancelable: false }
+    )
+  }
+
 
   return (
     <View style={styles.container}>
@@ -235,14 +248,14 @@ export default function CreatePix() {
       <TextInput value={caption} onChangeText={setCaption} style = {[styles.caption, BORDER_FRAME]} multiline placeholder='enter caption!' placeholderTextColor='rgba(81, 116, 207, 0.5)' autoCapitalize='none'/>
       
       <View style={styles.actions}>
-        <TouchableOpacity onPress={() => handleClear()} style={[{borderWidth: 0.25, borderColor: '#000', paddingVertical: 5, paddingHorizontal: 10}, BORDER_FRAME]}>
+        <TouchableOpacity onPress={clearAlert} style={[styles.clearButton, {borderWidth: 0.25, borderColor: '#000', paddingVertical: 5, paddingHorizontal: 10}, BORDER_FRAME]}>
             <Text>clear</Text>
         </TouchableOpacity>
-        <View style={{ width: 20 }} />
+        {/* <View style={{ width: 20 }} /> */}
         {isUploading ? (
           <ActivityIndicator color="#000" />
         ) : (
-          <TouchableOpacity onPress={handleSaveAndUpload} style={[{borderWidth: 0.25, borderColor: '#000', paddingVertical: 5, paddingHorizontal: 10}, BORDER_FRAME]}>
+          <TouchableOpacity onPress={handleSaveAndUpload} style={[styles.postButton, {borderWidth: 0.25, borderColor: '#000', paddingVertical: 5, paddingHorizontal: 10}, BORDER_FRAME]}>
             <Text>post</Text>
           </TouchableOpacity>
         )}
@@ -309,11 +322,17 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   actions: {
+    display: 'flex',
     flexDirection: 'row',
     padding: 20,
-    alignItems: 'center',
-    alignSelf: 'flex-end',
-    marginRight: 32,
+    width: '95%',
+    gap: 230,
+  },
+  clearButton: {
+    alignSelf: 'flex-start'
+  },
+  postButton: {
+    alignSelf: 'flex-end'
   },
   backButton: {
     marginTop: 10,
