@@ -42,6 +42,20 @@ type Comment = {
 };
 
 
+const BORDER_FRAME = {
+  borderRadius: 0,
+  borderTopColor: '#c4c4c4',
+  borderLeftColor: '#c4c4c4',
+  borderBottomColor: '#ffffff',
+  borderRightColor: '#ffffff',
+  borderTopWidth: 3,
+  borderLeftWidth: 3,
+  borderBottomWidth: 3,
+  borderRightWidth: 3,
+  overflow: 'hidden',
+} as const;
+
+
 const HomeScreen = () => {
   const [hello, setHello] = useState<string | null>(null);
   const [posts, setPosts] = useState<any[]>([]);
@@ -199,11 +213,11 @@ const HomeScreen = () => {
           data={posts.slice(0, 5)}
           keyExtractor={(item) => String(item.id ?? item._id)}
           renderItem={({ item }) => (
-            <View style={styles.post}>
-              <Text>{item.title ?? item.caption ?? JSON.stringify(item)}</Text>
+            <View style={[BORDER_FRAME, styles.post]}>
+              {/* <Text style = {styles.title}>{item.title ?? item.caption ?? JSON.stringify(item)}</Text> */}
               <Image
                 source={{ uri: item.imageUrl }}
-                style={{ width: 250, height: 250 }}
+                style={[BORDER_FRAME, { width: 250, height: 250, marginTop: 15 }]}
               />
               <View style={styles.actionsRow}>
                 <TouchableOpacity onPress={() => handleToggleLike(item.id)} style={styles.actionButton}>
@@ -230,6 +244,7 @@ const HomeScreen = () => {
                   />
                 </TouchableOpacity>
               </View>
+              <Text style={styles.caption}>{item.content ?? JSON.stringify(item)}</Text>
             </View>
           )}
           ListEmptyComponent={<Text>no posts yet</Text>}
@@ -293,54 +308,27 @@ const styles = StyleSheet.create({
   posts: {
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#ececec',
-    paddingTop: 50,
+    marginTop: 60,
   },
   post: {
     paddingBottom: 30,
+    paddingHorizontal: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
+    width: '80%',
+    marginBottom: 20,
   },
-  actionsRow: {
-
+  title: {
+    paddingTop: 5,
+    paddingBottom: 5,
+    fontSize: 15,
   },
-  actionButton: {
-
-  },
-  commentsContainer: {
-
-  },
-  commentsHeader: {
-
-  },
-  commentsTitle: {
-
-  },
-  closeText: {
-
-  },
-  commentsList: {
-
-  },
-  commentRow: {
-
-  },
-  commentAuthor: {
-
-  },
-  commentBody: {
-
-  },
-  commentInputRow: {
-
-  },
-  commentInput: {
-
-  },
-  commentSendButton: {
-
-  },
-  commentSendText: {
-
-  },
+  caption: {
+    paddingTop: 15,
+    marginLeft: -30,
+    alignSelf: 'flex-start',
+  }
 });
 
 export default HomeScreen;

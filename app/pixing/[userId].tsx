@@ -1,10 +1,14 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Image, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Animated, Dimensions, FlatList, Image, KeyboardAvoidingView, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { api } from '@/services/api';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const ITEM_SIZE = (SCREEN_WIDTH - 48) / 3;
+const SHEET_HEIGHT = SCREEN_HEIGHT * 0.5;
 
 type Message = {
   id: string;
@@ -25,7 +29,11 @@ export default function PixingThread() {
   const [loading, setLoading] = useState(true);
   const [inputText, setInputText] = useState('');
   const [sending, setSending] = useState(false);
+  const [pickerVisible, setPickerVisible] = useState(false);
+  const [userPosts, setUserPosts] = useState<{ id: string; imageUrl: string }[]>([]);
+  const [postsLoading, setPostsLoading] = useState(false);
   const listRef = useRef<FlatList>(null);
+  const slideAnim = useRef(new Animated.Value(SHEET_HEIGHT)).current;
 
   const fetchMessages = useCallback(async () => {
     if (!userId) return;
@@ -41,6 +49,32 @@ export default function PixingThread() {
   useEffect(() => {
     fetchMessages();
   }, [fetchMessages]);
+
+  const openPicker = async () => {
+    setPickerVisible(true);
+    Animated.timing(slideAnim, { toValue: 0, duration: 300, useNativeDriver: true }).start();
+    setPostsLoading(true);
+    try {
+      const posts = await api.getPostsByUser(user?.id, token);
+      setUserPosts(posts);
+    } catch {
+    } finally {
+      setPostsLoading(false);
+    }
+  };
+
+  const closePicker = () => {
+    Animated.timing(slideAnim, { toValue: SHEET_HEIGHT, duration: 250, useNativeDriver: true }).start(() => {
+      setPickerVisible(false);
+    });
+  };
+
+  const handleSelectDrawing = async (imageUrl: string) => {
+    closePicker();
+    await api.sendPix(userId, undefined, imageUrl, token);
+    await fetchMessages();
+    setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 100);
+  };
 
   const handleSend = async () => {
     const text = inputText.trim();
@@ -96,7 +130,7 @@ export default function PixingThread() {
                       {showAvatar && <IconSymbol name="profile_frame" size={24} color="#5F574F" />}
                     </View>
                   )}
-                  <View style={[styles.bubble, mine ? styles.bubbleMine : styles.bubbleTheirs]}>
+                  <View style={[styles.bubble, !item.imageUrl && styles.bubbleWithText, !item.imageUrl && (mine ? styles.bubbleMine : styles.bubbleTheirs)]}>
                     {item.message ? <Text style={styles.bubbleText}>{item.message}</Text> : null}
                     {item.imageUrl ? (
                       <Image source={{ uri: item.imageUrl }} style={styles.pixelArtImage} />
@@ -109,7 +143,7 @@ export default function PixingThread() {
         )}
 
         <View style={styles.inputBar}>
-          <TouchableOpacity style={styles.paletteBtn}>
+          <TouchableOpacity style={styles.paletteBtn} onPress={openPicker}>
             <IconSymbol name="palette_img" size={28} color="#FF77A8" />
           </TouchableOpacity>
           <TextInput
@@ -127,6 +161,42 @@ export default function PixingThread() {
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
+
+      <Modal
+        visible={pickerVisible}
+        animationType="none"
+        transparent={true}
+        onRequestClose={closePicker}
+      >
+        <View style={{ flex: 1, justifyContent: 'flex-end' }}>
+        <TouchableOpacity style={[StyleSheet.absoluteFillObject, styles.modalBackdrop]} activeOpacity={1} onPress={closePicker} />
+        <Animated.View style={[styles.modalSheet, { transform: [{ translateY: slideAnim }] }]}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Send your pix!</Text>
+            <TouchableOpacity onPress={closePicker} style={styles.closeBtn}>
+              <Text style={styles.closeBtnText}>✕</Text>
+            </TouchableOpacity>
+          </View>
+          {postsLoading ? (
+            <ActivityIndicator style={{ marginTop: 24 }} />
+          ) : userPosts.length === 0 ? (
+            <Text style={styles.emptyText}>No drawings yet</Text>
+          ) : (
+            <FlatList
+              data={userPosts}
+              keyExtractor={(item) => item.id}
+              numColumns={3}
+              contentContainerStyle={styles.gridContent}
+              renderItem={({ item }) => (
+                <TouchableOpacity onPress={() => handleSelectDrawing(item.imageUrl)}>
+                  <Image source={{ uri: item.imageUrl }} style={styles.gridItem} />
+                </TouchableOpacity>
+              )}
+            />
+          )}
+        </Animated.View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -176,6 +246,8 @@ const styles = StyleSheet.create({
   bubble: {
     maxWidth: '70%',
     borderRadius: 8,
+  },
+  bubbleWithText: {
     padding: 8,
   },
   bubbleMine: {
@@ -216,5 +288,50 @@ const styles = StyleSheet.create({
   },
   sendBtn: {
     padding: 4,
+  },
+  modalBackdrop: {
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+  modalSheet: {
+    height: '50%',
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#000',
+  },
+  closeBtn: {
+    padding: 4,
+  },
+  closeBtnText: {
+    fontSize: 18,
+    color: '#666',
+  },
+  gridContent: {
+    gap: 4,
+  },
+  gridItem: {
+    width: ITEM_SIZE,
+    height: ITEM_SIZE,
+    margin: 2,
+    borderWidth: 1,
+    borderColor: '#eee',
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 24,
+    color: '#888',
+    fontSize: 14,
   },
 });

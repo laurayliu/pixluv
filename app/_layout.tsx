@@ -22,6 +22,9 @@ export default function RootLayout() {
           <Stack.Screen name="signup" options={{ headerShown: false }} />
           <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
           <Stack.Screen name="pixing/[userId]" options={{ headerShown: false }} />
+          <Stack.Screen name="drawing" options={{ headerShown: false }} />
+          <Stack.Screen name="profile/[userId]" options={{ headerShown: false }} />
+          <Stack.Screen name="drawing_challenge" options={{ headerShown: false }} />
         </Stack>
         <StatusBar style="auto" />
       </ThemeProvider>
