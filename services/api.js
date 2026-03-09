@@ -36,13 +36,18 @@ async function post(path, body, token) {
 export const api = {
   hello: () => get('/'),
   getPostsByUser: (userId, token) => get(`/posts/user/${userId}`, token),
-  getPosts: () => get('/posts'),
+  getPosts: (userId, token) => get(`/posts${userId ? `?userId=${encodeURIComponent(userId)}` : ''}`, token),
   getUser: (id) => get(`/users/${id}`),
   searchUsers: (query, token) => get(`/users?search=${encodeURIComponent(query)}`, token),
 
   login: (email, password) => post('/auth/login', { email, password }),
   signup: (username, email, password) => post('/auth/signup', { username, email, password }),
   createPost: (data, token) => post('/posts', data, token),
+
+  likePost: (postId, token) => post(`/posts/${postId}/like`, {}, token),
+
+  getComments: (postId) => get(`/posts/${postId}/comments`),
+  createComment: (postId, body, token) => post(`/posts/${postId}/comments`, {body}, token),
 
   getInbox: (token) => get('/pixing', token),
   getConversation: (otherUserId, token) => get(`/pixing/${otherUserId}`, token),
