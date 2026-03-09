@@ -324,14 +324,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
   commentsContainer: {
-    height: '50%',
+    height: '40%',
     backgroundColor: '#ececec',
     padding: 30,
   },
   commentsList: {
-
-  },
-  closeText: {
 
   },
   commentRow: {
@@ -358,9 +355,6 @@ const styles = StyleSheet.create({
   commentSendButton: {
     flex: 0.15,
   },
-  commentSendText: {
-  },
-
 });
 
 export default HomeScreen;
