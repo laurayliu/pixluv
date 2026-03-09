@@ -244,7 +244,7 @@ const HomeScreen = () => {
                               <Text style={styles.commentBody}>{item.body}</Text>
                             </View>
                           )}
-                          ListEmptyComponent={<Text style={{fontFamily:'ms',}} >be the first comment!</Text>}
+                          ListEmptyComponent={<Text style={{fontFamily:'ms',}}>be the first comment!</Text>}
                         />
                       )}
 
