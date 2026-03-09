@@ -38,7 +38,11 @@ export default function UserProfile() {
       </Pressable>
       <View style={styles.profile_header}>
         <View style={styles.profile_box}>
-          <IconSymbol name="profile" color="currentColor" />
+          {profile?.profilePicture ? (
+            <Image source={{ uri: profile.profilePicture }} style={{ width: 92, height: 92 }} />
+          ) : (
+            <IconSymbol name="profile" color="currentColor" />
+          )}
         </View>
 
         <View style={styles.info_container}>
@@ -104,6 +108,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
   },
   info_container: {
     flex: 1,
