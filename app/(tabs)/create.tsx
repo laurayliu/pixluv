@@ -4,6 +4,19 @@ import { useRouter } from 'expo-router';
 
 export default function ChooseSize() {
   const router = useRouter()
+
+  const BORDER_FRAME = {
+  borderRadius: 0,
+  borderTopColor: '#c4c4c4',
+  borderLeftColor: '#c4c4c4',
+  borderBottomColor: '#ffffff',
+  borderRightColor: '#ffffff',
+  borderTopWidth: 3,
+  borderLeftWidth: 3,
+  borderBottomWidth: 3,
+  borderRightWidth: 3,
+  overflow: 'hidden',
+} as const;
   
   return (
     <View style={styles.container}>
@@ -16,7 +29,7 @@ export default function ChooseSize() {
               size: 16,
             },
           })}>
-          <Image style = {styles.image} source={require('../../assets/images/16x16-grid.png')}/>
+          <Image style = {[BORDER_FRAME, styles.image]} source={require('../../assets/images/16x16-grid.png')}/>
           <Text style = {{color:'#5174cf', fontSize: 18}}>16 x 16</Text>
         </TouchableOpacity>
 
@@ -26,7 +39,7 @@ export default function ChooseSize() {
               size: 32,
             },
           })}>
-          <Image style = {styles.image} source={require('../../assets/images/32x32-grid.png')}/>
+          <Image style = {[BORDER_FRAME, styles.image]} source={require('../../assets/images/32x32-grid.png')}/>
           <Text style = {{color:'#5174cf', fontSize: 18}}>32 x 32</Text>
         </TouchableOpacity>
         
@@ -36,7 +49,7 @@ export default function ChooseSize() {
               size: 64,
             },
           })}>
-          <Image style = {styles.image} source={require('../../assets/images/64x64-grid.png')}/>
+          <Image style = {[BORDER_FRAME, styles.image]} source={require('../../assets/images/64x64-grid.png')}/>
           <Text style = {{color:'#5174cf', fontSize: 18}}>64 x 64</Text>
         </TouchableOpacity>
       </View>
@@ -78,6 +91,7 @@ const styles = StyleSheet.create({
   image: {
     width: 150,
     height: 150,
+    borderWidth: 0.25,
+    borderColor: '#000',
   },
-
 });
