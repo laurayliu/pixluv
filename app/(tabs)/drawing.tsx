@@ -306,17 +306,17 @@ export default function CreatePix() {
       <View style={{ width: '100%' }}>
           <DefaultColorPanel value={selectedColor} onColorChange={setSelectedColor}/>
       </View>
-      <TextInput value={caption} onChangeText={setCaption} style = {[styles.caption, BORDER_FRAME]} multiline placeholder='enter caption!' placeholderTextColor='rgba(81, 116, 207, 0.5)' autoCapitalize='none'/>
+      <TextInput value={caption} onChangeText={setCaption} style = {[styles.caption, BORDER_FRAME, {fontFamily:'ms'}]} multiline placeholder='enter caption!' placeholderTextColor='rgba(81, 116, 207, 0.5)' autoCapitalize='none'/>
       
       <View style={styles.actions}>
         <TouchableOpacity onPress={clearAlert} style={[styles.clearButton, {borderWidth: 0.25, borderColor: '#000', paddingVertical: 5, paddingHorizontal: 10}, BORDER_FRAME]}>
-            <Text>clear</Text>
+            <Text style={{fontFamily:'ms'}} >clear</Text>
         </TouchableOpacity>
         {isUploading ? (
           <ActivityIndicator color="#000" />
         ) : (
           <TouchableOpacity onPress={handleSaveAndUpload} style={[styles.postButton, {borderWidth: 0.25, borderColor: '#000', paddingVertical: 5, paddingHorizontal: 10}, BORDER_FRAME]}>
-            <Text>post</Text>
+            <Text style={{fontFamily:'ms'}} >post</Text>
           </TouchableOpacity>
         )}
       </View>

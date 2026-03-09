@@ -231,6 +231,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: '#000',
+    fontFamily:'ms',
   },
   messageList: {
     padding: 12,
@@ -276,6 +277,7 @@ const styles = StyleSheet.create({
   bubbleText: {
     fontSize: 16,
     color: '#000',
+    fontFamily:'ms',
   },
   pixelArtImage: {
     width: 200,
@@ -309,6 +311,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F8F8',
     paddingHorizontal: 10,
     fontSize: 16,
+    fontFamily:'ms',
     color: '#000',
     borderTopWidth: 2,
     borderLeftWidth: 2,
@@ -348,6 +351,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#fff',
     letterSpacing: 1,
+    fontFamily:'ms',
   },
   closeBtn: {
     borderTopWidth: 2,
@@ -366,6 +370,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#fff',
     fontWeight: '700',
+    fontFamily:'ms',
   },
   gridContent: {
     gap: 4,
@@ -382,5 +387,6 @@ const styles = StyleSheet.create({
     marginTop: 24,
     color: '#888',
     fontSize: 14,
+    fontFamily:'ms',
   },
 });
