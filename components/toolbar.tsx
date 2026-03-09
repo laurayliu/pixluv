@@ -45,13 +45,13 @@ const styles = StyleSheet.create({
     color: 'rgb(255, 0, 255)',
   },
   buttonEnabled: {
-    padding: 5,
+    padding: 4,
     width: 30,
     height: 30,
-    backgroundColor: 'rgb(128, 128, 128)',
+    backgroundColor: 'rgb(135, 135, 135)',
   },
   buttonDisabled: {
-    padding: 5,
+    padding: 4,
     width: 30,
     height: 30,
     backgroundColor: 'rgb(175, 175, 175)',

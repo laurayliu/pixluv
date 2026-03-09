@@ -51,12 +51,6 @@ export default function Challenge() {
       .catch(() => {});
   }, []);
 
-  const onGridLayout = () => {
-    gridRef.current?.measure((x, y, width, height, pageX, pageY) => {
-      gridLayout.current = { x: pageX, y: pageY };
-    });
-  };
-
   const colorCellAtPosition = (pageX: number, pageY: number) => {
     const relativeX = pageX - gridLayout.current.x;
     const relativeY = pageY - gridLayout.current.y;
@@ -204,7 +198,6 @@ export default function Challenge() {
           {...panResponder.panHandlers}
           ref={gridRef}
           collapsable={false}
-          onLayout={onGridLayout}
           style={[styles.grid, { width: GRID_CONTAINER_SIZE, height: GRID_CONTAINER_SIZE }]}
         >
           {grid.map((color, i) => (

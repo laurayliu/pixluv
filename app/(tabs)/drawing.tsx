@@ -54,11 +54,12 @@ export default function CreatePix() {
   const params = useLocalSearchParams();
   const { size } = params;
 
-  const [gridSize, setGridSize] = useState<number>(Number(size));
+  const gridSize = Number(size)
   
   useEffect(() => {
-    setGridSize(Number(size))
     setGrid(Array(Number(size) * Number(size)).fill(DEFAULT_COLOR))
+    setPrevGrid([Array(Number(size) * Number(size)).fill(DEFAULT_COLOR)])
+    index.current = 0
   }, [size])
 
   const[grid, setGrid] = useState<string[]>(
