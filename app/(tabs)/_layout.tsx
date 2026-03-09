@@ -59,6 +59,12 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol name="profile_frame" color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="drawing"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

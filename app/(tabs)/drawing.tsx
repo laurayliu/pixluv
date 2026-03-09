@@ -1,8 +1,8 @@
-import DefaultColorPanel from '../components/color_picker';
+import DefaultColorPanel from '../../components/color_picker';
 import React, { useState, useRef, useEffect } from 'react';
-import {StyleSheet, Text, View, TextInput, Dimensions, Button, ActivityIndicator, PanResponder, Pressable, TouchableOpacity, Alert } from 'react-native';
+import {StyleSheet, Text, View, TextInput, Dimensions, ActivityIndicator, PanResponder, Pressable, TouchableOpacity, Alert } from 'react-native';
 import { captureRef } from "react-native-view-shot";
-import { api } from '../services/api';
+import { api } from '../../services/api';
 import { useAuth } from '@/context/AuthContext';
 import Toolbar, { ALL_TOOL_NAMES } from '@/components/toolbar';
 import { ReactNativeZoomableView } from '@openspacelabs/react-native-zoomable-view';
@@ -83,7 +83,8 @@ export default function CreatePix() {
     level: 1,
   });
 
-  const colorCellAtPosition = (pageX: number, pageY: number, gridOriginX: number, gridOriginY: number) => {
+
+  const getCellIndex = (pageX: number, pageY: number, gridOriginX: number, gridOriginY: number) => {
     // pageX/pageY: where you clicked on screen; gridOriginX/gridOriginY: where the current origin of the grid is
     const { level } = zoomState.current;
 
@@ -94,16 +95,31 @@ export default function CreatePix() {
     const row = Math.floor(yInGrid / cellSize);
 
     if (col >= 0 && col < gridSize && row >= 0 && row < gridSize) {
-      const cellIndex = row * gridSize + col;
-      const drawingColor = activeTool.current === 'erase' ? DEFAULT_COLOR : selectedColor; // if eraser is toggled set selected color to white
-      setGrid((prevGrid=> {
-        if (prevGrid[cellIndex] === drawingColor) { return prevGrid }
-        const newGrid = [...prevGrid];
+      return row * gridSize + col;
+    }
+    return null;
+  }
+
+
+  const colorCellAtPosition = (pageX: number, pageY: number, gridOriginX: number, gridOriginY: number) => {
+    const cellIndex = getCellIndex(pageX, pageY, gridOriginX, gridOriginY);
+    if (cellIndex === null) return;
+    
+    if (activeTool.current === 'fill') {
+      handleFill(cellIndex, grid[cellIndex]);
+      return;
+    }
+
+    const drawingColor = activeTool.current === 'erase' ? DEFAULT_COLOR : selectedColor; // if eraser is toggled set selected color to white
+    setGrid((currentGrid) => {
+      if (currentGrid[cellIndex] === drawingColor) { return currentGrid }
+        const newGrid = [...currentGrid];
         newGrid[cellIndex] = drawingColor;
         return newGrid;
-      }));
-    }
+    });
+    
   };
+
 
   const panResponder = PanResponder.create({
   onStartShouldSetPanResponder: (evt) => evt.nativeEvent.touches.length === 1,
@@ -111,7 +127,7 @@ export default function CreatePix() {
 
   onPanResponderGrant: (evt) => { // runs once you touch screen for the first time
     const { pageX, pageY } = evt.nativeEvent; // capture whatever pageX/pageY is
-    gridRef.current?.measure((x, y, width, height, gridOriginX, gridOriginY) => { // gives updated gridOriginX/gridOriginyY
+    gridRef.current?.measure((x, y, width, height, gridOriginX, gridOriginY) => { // gives updated gridOriginX/gridOriginY
       colorCellAtPosition(pageX, pageY, gridOriginX, gridOriginY); // callback with updated values 
     });
   },
@@ -180,6 +196,55 @@ export default function CreatePix() {
     }
   }
 
+  const handleFill = (cellIndex: number, cellColor: string) => {
+    if (cellColor === selectedColor) return;
+
+    setGrid((currentGrid)=> {
+      const newGrid = [...currentGrid];
+      const neighborCells = [cellIndex];
+
+      while (neighborCells.length > 0) {
+        const currentCell = neighborCells.pop()!;
+
+        if (newGrid[currentCell] !== cellColor) continue; // if fill finds a color that is different (boundary)
+
+        newGrid[currentCell] = selectedColor;
+
+        const row = Math.floor(currentCell / gridSize);
+        const col = currentCell % gridSize;
+
+        // make sure neighbors are within bounds
+        if (col > 0 && row > 0) {
+          neighborCells.push(currentCell - 1 - gridSize); // upper left neighbor cell
+        }
+        if (col > 0) {
+          neighborCells.push(currentCell - 1); // left neighbor cell
+        }
+        if (col > 0 && row < gridSize - 1) {
+          neighborCells.push(currentCell - 1 + gridSize); // lower left neighbor cell
+        }
+        if (row > 0){
+          neighborCells.push(currentCell - gridSize); // up neighbor cell
+        } 
+        if (row < gridSize - 1){
+          neighborCells.push(currentCell + gridSize); // down neighbor cell
+        }
+        if (col < gridSize - 1 && row > 0){
+          neighborCells.push(currentCell + 1 - gridSize); // upper right neighbor cell
+        } 
+        if (col < gridSize - 1){
+          neighborCells.push(currentCell + 1); // right neighbor cell
+        } 
+        if (col < gridSize - 1 && row < gridSize - 1){
+          neighborCells.push(currentCell + 1 + gridSize); // lower right neighbor cell
+        } 
+
+      }
+      return newGrid;
+    });
+
+  }
+
   const clearAlert = () => {
     Alert.alert(
       "alert!",
@@ -207,11 +272,9 @@ export default function CreatePix() {
           <GridCell key={index} color={color} gridSize={gridSize} cellSize={cellSize} noBorder={true}/>
         ))}
       </View>
-
-      {/* <TextInput value={title} onChangeText={setTitle} style = {styles.title} placeholder='enter title' placeholderTextColor='rgba(81, 116, 207, 0.5)' autoCapitalize='none'/> */}
        
       <View style = {styles.gridAndTools}>
-        <Toolbar allowedTools={ALL_TOOL_NAMES} onToolChange={t => { activeTool.current = t; }} onUndo={handleUndo} onRedo={handleRedo}/>
+        <Toolbar allowedTools={ALL_TOOL_NAMES} onToolChange={t => { activeTool.current = t; }} onUndo={handleUndo} onRedo={handleRedo} />
 
           <View style = {styles.zoomable}>
           <ReactNativeZoomableView
