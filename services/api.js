@@ -36,7 +36,7 @@ async function post(path, body, token) {
 export const api = {
   hello: () => get('/'),
   getPostsByUser: (userId, token) => get(`/posts/user/${userId}`, token),
-  getPosts: () => get('/posts'),
+  getPosts: (userId, token) => get(`/posts${userId ? `?userId=${encodeURIComponent(userId)}` : ''}`, token),
   getUser: (id) => get(`/users/${id}`),
   searchUsers: (query, token) => get(`/users?search=${encodeURIComponent(query)}`, token),
 

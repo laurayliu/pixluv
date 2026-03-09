@@ -27,7 +27,6 @@ type Post = {
     likes?: number;
     comments?: number;
   };
-  liked?: boolean;
   likedByMe?: boolean;
 };
 
@@ -62,7 +61,7 @@ const HomeScreen = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const router = useRouter();
 
   const [commentsVisible, setCommentsVisible] = useState(false);
@@ -76,11 +75,11 @@ const HomeScreen = () => {
     useCallback(() => {
       setLoading(true);
       api.hello().then((data: any) => setHello(data.message ?? JSON.stringify(data)));
-      api.getPosts()
+      api.getPosts(user?.id ?? null, token)
         .then(setPosts)
         .catch((err: Error) => setError(err.message))
         .finally(() => setLoading(false));
-    }, [])
+    }, [user?.id, token])
   );
 
   const handleToggleLike = async (postId: string) => {
@@ -92,10 +91,10 @@ const HomeScreen = () => {
         p.id === postId
           ? {
               ...p,
-              liked: !p.liked,
+              likedByMe: !p.likedByMe,
               _count: {
                 ...(p._count ?? {}),
-                likes: (p._count?.likes ?? 0) + (p.liked ? -1 : 1),
+                likes: (p._count?.likes ?? 0) + (p.likedByMe ? -1 : 1),
               },
             }
           : p,
@@ -110,10 +109,10 @@ const HomeScreen = () => {
           p.id === postId
             ? {
                 ...p,
-                liked: !p.liked,
+                likedByMe: !p.likedByMe,
                 _count: {
                   ...(p._count ?? {}),
-                  likes: (p._count?.likes ?? 0) + (!p.liked ? -1 : 1),
+                  likes: (p._count?.likes ?? 0) + (!p.likedByMe ? -1 : 1),
                 },
               }
             : p,
@@ -200,7 +199,7 @@ const HomeScreen = () => {
               <View style={styles.actionsRow}>
                 <TouchableOpacity onPress={() => handleToggleLike(item.id)} style={styles.actionButton}>
                   <IconSymbol
-                    name={item.liked ? 'liked' : 'like'}
+                    name={item.likedByMe ? 'liked' : 'like'}
                     color={'currentColor'}
                     size={24}
                   />
@@ -223,7 +222,6 @@ const HomeScreen = () => {
             <Modal visible={commentsVisible} animationType="slide" onRequestClose={closeComments}>
         <KeyboardAvoidingView
           style={styles.commentsContainer}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
           <View style={styles.commentsHeader}>
             <Text style={styles.commentsTitle}>
@@ -298,7 +296,50 @@ const styles = StyleSheet.create({
     paddingTop: 15,
     marginLeft: -30,
     alignSelf: 'flex-start',
+  },
+  actionsRow: {
+    flexDirection: 'row',
+  },
+  actionButton: {
+    margin: 5,
+  },
+  commentsContainer: {
+
+  },
+  commentsHeader: {
+
+  },
+  commentsTitle: {
+
+  },
+  commentsList: {
+
+  },
+  closeText: {
+
+  },
+  commentRow: {
+
+  },
+  commentAuthor: {
+
+  },
+  commentBody: {
+
+  },
+  commentInputRow: {
+
+  },
+  commentInput: {
+
+  },
+  commentSendButton: {
+
+  },
+  commentSendText: {
+
   }
+
 });
 
 export default HomeScreen;
