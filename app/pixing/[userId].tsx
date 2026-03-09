@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
   avatarSlot: {
     width: 28,
     alignItems: 'center',
-    marginRight: 4,
+    marginRight: 12,
   },
   bubble: {
     maxWidth: '70%',
