@@ -244,7 +244,7 @@ const HomeScreen = () => {
                               <Text style={styles.commentBody}>{item.body}</Text>
                             </View>
                           )}
-                          ListEmptyComponent={<Text>be the first comment!</Text>}
+                          ListEmptyComponent={<Text style={{fontFamily:'ms',}} >be the first comment!</Text>}
                         />
                       )}
 
@@ -305,6 +305,7 @@ const styles = StyleSheet.create({
     paddingTop: 15,
     marginLeft: -30,
     alignSelf: 'flex-start',
+    fontFamily:'ms',
   },
   actionsRow: {
     marginTop: 10,
@@ -336,10 +337,11 @@ const styles = StyleSheet.create({
     gap: 40,
   },
   commentAuthor: {
-    fontWeight: '800'
+    fontWeight: '800',
+    fontFamily:'ms',
   },
   commentBody: {
-
+    fontFamily:'ms'
   },
   commentInputRow: {
     flexDirection: 'row',
@@ -351,6 +353,7 @@ const styles = StyleSheet.create({
     padding: 8,
     flex: 0.8,
     backgroundColor: 'white',
+    fontFamily:'ms',
   },
   commentSendButton: {
     flex: 0.15,

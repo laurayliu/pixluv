@@ -386,17 +386,19 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     justifyContent: 'center',
     alignContent: 'center',
-    textAlign: 'center'
+    textAlign: 'center',
+    fontFamily:'ms',
   },
   username: {
     fontSize: 25,
-    fontWeight: '700',
+    fontFamily: 'PixelifySans_700Bold',
     color: '#ffffff',
   },
   texts: {
     fontSize: 15,
     color: '#ffffff',
     marginBottom: 5,
+    fontFamily:'ms',
   },
   favorite_container: {
     display: 'flex',
