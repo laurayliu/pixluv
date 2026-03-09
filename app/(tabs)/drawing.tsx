@@ -70,7 +70,6 @@ export default function CreatePix() {
   const [isUploading, setIsUploading] = useState(false);
   const cellSize = GRID_CONTAINER_SIZE/gridSize;
 
-  //const [title, setTitle] = useState<string>('');
   const [caption, setCaption] = useState<string>('');
 
   const gridRef = useRef<View>(null);
@@ -117,7 +116,6 @@ export default function CreatePix() {
         newGrid[cellIndex] = drawingColor;
         return newGrid;
     });
-    
   };
 
 
@@ -214,30 +212,30 @@ export default function CreatePix() {
         const col = currentCell % gridSize;
 
         // make sure neighbors are within bounds
-        if (col > 0 && row > 0) {
-          neighborCells.push(currentCell - 1 - gridSize); // upper left neighbor cell
-        }
+        // if (col > 0 && row > 0) {
+        //   neighborCells.push(currentCell - 1 - gridSize); // upper left neighbor cell
+        // }
         if (col > 0) {
           neighborCells.push(currentCell - 1); // left neighbor cell
         }
-        if (col > 0 && row < gridSize - 1) {
-          neighborCells.push(currentCell - 1 + gridSize); // lower left neighbor cell
-        }
+        // if (col > 0 && row < gridSize - 1) {
+        //   neighborCells.push(currentCell - 1 + gridSize); // lower left neighbor cell
+        // }
         if (row > 0){
           neighborCells.push(currentCell - gridSize); // up neighbor cell
         } 
         if (row < gridSize - 1){
           neighborCells.push(currentCell + gridSize); // down neighbor cell
         }
-        if (col < gridSize - 1 && row > 0){
-          neighborCells.push(currentCell + 1 - gridSize); // upper right neighbor cell
-        } 
+        // if (col < gridSize - 1 && row > 0){
+        //   neighborCells.push(currentCell + 1 - gridSize); // upper right neighbor cell
+        // } 
         if (col < gridSize - 1){
           neighborCells.push(currentCell + 1); // right neighbor cell
         } 
-        if (col < gridSize - 1 && row < gridSize - 1){
-          neighborCells.push(currentCell + 1 + gridSize); // lower right neighbor cell
-        } 
+        // if (col < gridSize - 1 && row < gridSize - 1){
+        //   neighborCells.push(currentCell + 1 + gridSize); // lower right neighbor cell
+        // } 
 
       }
       return newGrid;
@@ -314,7 +312,6 @@ export default function CreatePix() {
         <TouchableOpacity onPress={clearAlert} style={[styles.clearButton, {borderWidth: 0.25, borderColor: '#000', paddingVertical: 5, paddingHorizontal: 10}, BORDER_FRAME]}>
             <Text>clear</Text>
         </TouchableOpacity>
-        {/* <View style={{ width: 20 }} /> */}
         {isUploading ? (
           <ActivityIndicator color="#000" />
         ) : (
