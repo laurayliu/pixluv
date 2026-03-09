@@ -21,7 +21,7 @@ export default function ChooseSize() {
   return (
     <View style={styles.container}>
 
-      <Text style = {{fontSize: 25, marginBottom: 45, marginTop: 100, color:'#5174cf'}}>pick canvas size:</Text>
+      <Text style = {{fontSize: 25, fontFamily: 'PixelifySans_700Bold', marginBottom: 45, marginTop: 100, color:'#5174cf'}}>pick canvas size:</Text>
       <View style = {styles.buttons}>
         <TouchableOpacity style = {styles.gridButton1} onPress={() => router.push({
             pathname: '/drawing',
@@ -30,7 +30,7 @@ export default function ChooseSize() {
             },
           })}>
           <Image style = {[BORDER_FRAME, styles.image]} source={require('../../assets/images/16x16-grid.png')}/>
-          <Text style = {{color:'#5174cf', fontSize: 18}}>16 x 16</Text>
+          <Text style = {{fontFamily: 'PixelifySans_700Bold', color:'#5174cf', fontSize: 18}}>16 x 16</Text>
         </TouchableOpacity>
 
          <TouchableOpacity style = {styles.gridButton} onPress={() => router.push({
@@ -40,7 +40,7 @@ export default function ChooseSize() {
             },
           })}>
           <Image style = {[BORDER_FRAME, styles.image]} source={require('../../assets/images/32x32-grid.png')}/>
-          <Text style = {{color:'#5174cf', fontSize: 18}}>32 x 32</Text>
+          <Text style = {{fontFamily: 'PixelifySans_700Bold', color:'#5174cf', fontSize: 18}}>32 x 32</Text>
         </TouchableOpacity>
         
         <TouchableOpacity style = {styles.gridButton} onPress={() => router.push({
@@ -50,7 +50,7 @@ export default function ChooseSize() {
             },
           })}>
           <Image style = {[BORDER_FRAME, styles.image]} source={require('../../assets/images/64x64-grid.png')}/>
-          <Text style = {{color:'#5174cf', fontSize: 18}}>64 x 64</Text>
+          <Text style = {{fontFamily: 'PixelifySans_700Bold', color:'#5174cf', fontSize: 18}}>64 x 64</Text>
         </TouchableOpacity>
       </View>
     </View>

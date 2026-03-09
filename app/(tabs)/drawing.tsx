@@ -262,7 +262,7 @@ export default function CreatePix() {
 
   return (
     <View style={styles.container}>
-      <Pressable style={styles.backButton} onPress={() => router.back()}>
+      <Pressable style={styles.backButton} onPress={() => router.navigate('/create')}>
         <IconSymbol name="undo" size={24} color="#ffffff" />
       </Pressable>
 
