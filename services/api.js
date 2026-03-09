@@ -33,11 +33,24 @@ async function post(path, body, token) {
   return res.json();
 }
 
+async function put(path, body, token) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method: 'PUT',
+    headers,
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`PUT ${path} failed: ${res.status}`);
+  return res.json();
+}
+
 export const api = {
   hello: () => get('/'),
   getPostsByUser: (userId, token) => get(`/posts/user/${userId}`, token),
   getPosts: (userId, token) => get(`/posts${userId ? `?userId=${encodeURIComponent(userId)}` : ''}`, token),
   getUser: (id) => get(`/users/${id}`),
+  updateUser: (id, data, token) => put(`/users/${id}`, data, token),
   searchUsers: (query, token) => get(`/users?search=${encodeURIComponent(query)}`, token),
 
   login: (email, password) => post('/auth/login', { email, password }),

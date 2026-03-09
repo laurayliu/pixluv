@@ -9,6 +9,7 @@ type User = {
   id: string;
   username: string;
   email: string;
+  profilePicture?: string;
 };
 
 type AuthContextType = {
@@ -17,6 +18,7 @@ type AuthContextType = {
   login: (email: string, password: string) => Promise<void>;
   signup: (username: string, email: string, password: string) => Promise<void>;
   logout: () => void;
+  updateUser: (data: Partial<User>) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -61,8 +63,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   }
 
+  async function updateUser(data: Partial<User>) {
+    if (!user || !token) return;
+    const updated = await api.updateUser(user.id, data, token);
+    const newUser = { ...user, ...updated };
+    await SecureStore.setItemAsync(USER_KEY, JSON.stringify(newUser));
+    setUser(newUser);
+  }
+
   return (
-    <AuthContext.Provider value={{ token, user, login, signup, logout }}>
+    <AuthContext.Provider value={{ token, user, login, signup, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

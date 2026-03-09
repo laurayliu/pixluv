@@ -1,13 +1,12 @@
 
 import React, { useCallback, useState}from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { StyleSheet, Text, View, Button, LayoutChangeEvent, TouchableOpacity, Pressable, FlatList, Image, ActivityIndicator} from 'react-native';
+import { StyleSheet, Text, View, Button, LayoutChangeEvent, TouchableOpacity, Pressable, FlatList, Image, ActivityIndicator, Modal, TouchableWithoutFeedback} from 'react-native';
 import { useAuth } from '@/context/AuthContext';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { api } from '../../services/api';
 import Animated, { useSharedValue, withSpring, withDecay, useAnimatedStyle, withTiming, withDelay} from 'react-native-reanimated';
 import { Dimensions } from 'react-native';
-
 import {
   Gesture,
   GestureDetector,
@@ -15,11 +14,50 @@ import {
 } from 'react-native-gesture-handler';
 import {scheduleOnRN } from 'react-native-worklets';
 
+const ITEM_SIZE = (Dimensions.get('window').width - 48) / 3;
+const SHEET_HEIGHT = Dimensions.get('window').height * 0.5;
+
 const Profile = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, token, updateUser } = useAuth();
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [pfpPickerVisible, setPfpPickerVisible] = useState(false);
+  const [pfpPosts, setPfpPosts] = useState<{ id: string; imageUrl: string }[]>([]);
+  const [pfpPostsLoading, setPfpPostsLoading] = useState(false);
+  const [updatingPfp, setUpdatingPfp] = useState(false);
+  const pfpSheetY = useSharedValue(SHEET_HEIGHT);
+  const pfpSheetStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: pfpSheetY.value }],
+  }));
+
+  const openPfpPicker = async () => {
+    setPfpPickerVisible(true);
+    pfpSheetY.value = withTiming(0, { duration: 300 });
+    setPfpPostsLoading(true);
+    try {
+      const fetched = await api.getPostsByUser(user?.id, token);
+      setPfpPosts(fetched);
+    } catch {
+    } finally {
+      setPfpPostsLoading(false);
+    }
+  };
+
+  const closePfpPicker = () => {
+    pfpSheetY.value = withTiming(SHEET_HEIGHT, { duration: 250 });
+    setTimeout(() => setPfpPickerVisible(false), 260);
+  };
+
+  const handleSelectPfp = async (imageUrl: string) => {
+    closePfpPicker();
+    try {
+      setUpdatingPfp(true);
+      await updateUser({ profilePicture: imageUrl });
+    } finally {
+      setUpdatingPfp(false);
+    }
+  };
 
   const offset = useSharedValue<number>(0);
   const width = useSharedValue<number>(0);
@@ -116,16 +154,21 @@ const prevPage = () => {
     }, [])
   );
 
-  if (loading) return <ActivityIndicator size="large" />;
   if (error) return <Text>{error}</Text>;
-  
+
   return (
 
     <View style={styles.main_container}>
       <View style={styles.profile_header}>
-        <View style={styles.profile_box}>
-          <IconSymbol name="profile" color={"currentColor"}/>        
-        </View>
+        <TouchableOpacity style={styles.profile_box} onPress={openPfpPicker} disabled={updatingPfp}>
+          {updatingPfp ? (
+            <ActivityIndicator />
+          ) : user?.profilePicture ? (
+            <Image source={{ uri: user.profilePicture }} style={{ width: 92, height: 92 }} />
+          ) : (
+            <IconSymbol name="profile" color={"currentColor"}/>
+          )}
+        </TouchableOpacity>
 
         <View style={styles.info_container}>
           <Text style={styles.username}>{user?.username ?? 'your profile'}</Text>
@@ -210,7 +253,8 @@ const prevPage = () => {
 
     <GestureHandlerRootView style={styles.container}>
       <View style={styles.book_container}>
-        {posts.length === 0 && (<Text>No post yet</Text>)}
+        {loading && <ActivityIndicator size="large" />}
+        {posts.length === 0 && !loading && (<Text>No post yet</Text>)}
         {posts.slice(0, 10).map((item, index) => {
           const isPrev = index < currentPage ;
           const isTop = index === currentPage;
@@ -247,6 +291,35 @@ const prevPage = () => {
 
         </View>
       </GestureHandlerRootView>
+
+      <Modal visible={pfpPickerVisible} transparent animationType="none" onRequestClose={closePfpPicker}>
+        <View style={{ flex: 1, justifyContent: 'flex-end' }}>
+          <TouchableWithoutFeedback onPress={closePfpPicker}>
+            <View style={[StyleSheet.absoluteFillObject, styles.pickerOverlay]} />
+          </TouchableWithoutFeedback>
+          <Animated.View style={[styles.pickerSheet, pfpSheetStyle]}>
+            <Text style={styles.pickerTitle}>Choose your profile picture</Text>
+            {pfpPostsLoading ? (
+              <ActivityIndicator style={{ marginTop: 24 }} />
+            ) : (
+              <FlatList
+                data={pfpPosts}
+                keyExtractor={(item) => String((item as any).id ?? (item as any)._id)}
+                numColumns={3}
+                renderItem={({ item }) => (
+                  <TouchableOpacity onPress={() => handleSelectPfp(item.imageUrl)}>
+                    <Image source={{ uri: item.imageUrl }} style={styles.pickerThumb} />
+                  </TouchableOpacity>
+                )}
+                ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 24, color: '#888' }}>No posts yet</Text>}
+              />
+            )}
+            <Pressable onPress={closePfpPicker} style={{ alignItems: 'center', paddingVertical: 12 }}>
+              <Text style={{ fontSize: 16, color: '#555' }}>Cancel</Text>
+            </Pressable>
+          </Animated.View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -272,7 +345,8 @@ const styles = StyleSheet.create({
     padding: 12,
     backgroundColor: '#ffffff',
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    overflow: 'hidden',
   },
   info_container: {
     display: 'flex',
@@ -405,6 +479,27 @@ const styles = StyleSheet.create({
     height: 500,
     backgroundColor: '#511f0b',
     borderRadius: 20,
+  },
+  pickerOverlay: {
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  pickerSheet: {
+    height: SHEET_HEIGHT,
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    padding: 16,
+  },
+  pickerTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  pickerThumb: {
+    width: ITEM_SIZE,
+    height: ITEM_SIZE,
+    margin: 4,
   },
 });
 
