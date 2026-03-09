@@ -256,11 +256,13 @@ const HomeScreen = () => {
                         <TouchableOpacity
                           onPress={handleSubmitComment}
                           disabled={submittingComment || !newComment.trim()}
-                          style={[styles.commentSendButton, BORDER_FRAME]}
+                          style={[styles.commentSendButton]}
                         >
-                          <Text style={styles.commentSendText}>
-                            {submittingComment ? '...' : 'send!'}
-                          </Text>
+                          <IconSymbol
+                            name={'mail'}
+                            color={'currentColor'}
+                            size={20}
+                          />
                         </TouchableOpacity>
                       </View>
                     </KeyboardAvoidingView>
@@ -340,13 +342,12 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   commentInput: {
-    padding: 10,
-    flex: 0.7,
+    padding: 8,
+    flex: 0.8,
     backgroundColor: 'white',
   },
   commentSendButton: {
     flex: 0.15,
-    padding: 10,
   },
   commentSendText: {
   },
