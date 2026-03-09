@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Animated, Dimensions, FlatList, Image, KeyboardAvoidingView, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ProfileAvatar } from '@/components/ui/profile-avatar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
@@ -25,6 +26,7 @@ export default function PixingThread() {
   const { username } = useLocalSearchParams<{ username: string }>();
   const { token, user } = useAuth();
 
+  const [otherUserPfp, setOtherUserPfp] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [inputText, setInputText] = useState('');
@@ -49,6 +51,13 @@ export default function PixingThread() {
   useEffect(() => {
     fetchMessages();
   }, [fetchMessages]);
+
+  useEffect(() => {
+    if (!userId) return;
+    api.getUser(userId).then((u: any) => {
+      if (u?.profilePicture) setOtherUserPfp(u.profilePicture);
+    }).catch(() => {});
+  }, [userId]);
 
   const openPicker = async () => {
     setPickerVisible(true);
@@ -101,7 +110,7 @@ export default function PixingThread() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <IconSymbol name="undo" size={24} color="#000" />
         </TouchableOpacity>
-        <IconSymbol name="profile_frame" size={40} color="#5F574F" />
+        <ProfileAvatar imageUrl={otherUserPfp} size={40} />
         <Text style={styles.topUsername}>{username}</Text>
       </View>
 
@@ -127,7 +136,7 @@ export default function PixingThread() {
                 <View style={[styles.messageRow, mine ? styles.rowRight : styles.rowLeft]}>
                   {!mine && (
                     <View style={styles.avatarSlot}>
-                      {showAvatar && <IconSymbol name="profile_frame" size={24} color="#5F574F" />}
+                      {showAvatar && <ProfileAvatar imageUrl={otherUserPfp} size={24} />}
                     </View>
                   )}
                   <View style={[styles.bubble, !item.imageUrl && styles.bubbleWithText, !item.imageUrl && (mine ? styles.bubbleMine : styles.bubbleTheirs)]}>
