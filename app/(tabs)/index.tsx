@@ -298,7 +298,10 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   actionsRow: {
+    marginTop: 10,
     flexDirection: 'row',
+    alignSelf: 'flex-start',
+    marginLeft: -30,
   },
   actionButton: {
     margin: 5,
