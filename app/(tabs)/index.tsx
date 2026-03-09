@@ -7,10 +7,12 @@ import {
   KeyboardAvoidingView,
   Modal,
   Platform,
+  Pressable,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 import { api } from '../../services/api';
@@ -207,7 +209,7 @@ const HomeScreen = () => {
 
                 <TouchableOpacity onPress={() => openComments(item)} style={styles.actionButton}>
                   <IconSymbol
-                    name={'comment'}
+                    name={commentsVisible && activePost?.id === item.id ? 'commented' : 'comment'}
                     color={'currentColor'}
                     size={24}
                   />
@@ -219,54 +221,50 @@ const HomeScreen = () => {
           ListEmptyComponent={<Text>no posts yet</Text>}
         />
       </View>
-            <Modal visible={commentsVisible} animationType="slide" onRequestClose={closeComments}>
-        <KeyboardAvoidingView
-          style={styles.commentsContainer}
-        >
-          <View style={styles.commentsHeader}>
-            <Text style={styles.commentsTitle}>
-              Comments{activePost ? ` for "${activePost.title ?? ''}"` : ''}
-            </Text>
-            <TouchableOpacity onPress={closeComments}>
-              <Text style={styles.closeText}>Close</Text>
-            </TouchableOpacity>
-          </View>
+            <Modal visible={commentsVisible} animationType="fade" transparent={true} onRequestClose={closeComments}>
+              <View style={styles.commentsOverlay}>
+                <Pressable style={styles.backdrop} onPress={closeComments} />
+                    <KeyboardAvoidingView
+                      style={styles.commentsContainer}
+                    >
+                      {loadingComments ? (
+                        <ActivityIndicator size="large" />
+                      ) : (
+                        <FlatList
+                          data={comments}
+                          keyExtractor={(c) => c.id}
+                          contentContainerStyle={styles.commentsList}
+                          renderItem={({ item }) => (
+                            <View style={styles.commentRow}>
+                              <Text style={styles.commentAuthor}>{item.user.username}</Text>
+                              <Text style={styles.commentBody}>{item.body}</Text>
+                            </View>
+                          )}
+                          ListEmptyComponent={<Text>be the first comment!</Text>}
+                        />
+                      )}
 
-          {loadingComments ? (
-            <ActivityIndicator size="large" />
-          ) : (
-            <FlatList
-              data={comments}
-              keyExtractor={(c) => c.id}
-              contentContainerStyle={styles.commentsList}
-              renderItem={({ item }) => (
-                <View style={styles.commentRow}>
-                  <Text style={styles.commentAuthor}>{item.user.username}</Text>
-                  <Text style={styles.commentBody}>{item.body}</Text>
-                </View>
-              )}
-              ListEmptyComponent={<Text>No comments yet</Text>}
-            />
-          )}
-
-          <View style={styles.commentInputRow}>
-            <TextInput
-              style={styles.commentInput}
-              placeholder="Add a comment..."
-              value={newComment}
-              onChangeText={setNewComment}
-            />
-            <TouchableOpacity
-              onPress={handleSubmitComment}
-              disabled={submittingComment || !newComment.trim()}
-              style={styles.commentSendButton}
-            >
-              <Text style={styles.commentSendText}>
-                {submittingComment ? '...' : 'Send'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </KeyboardAvoidingView>
+                      <View style={styles.commentInputRow}>
+                        <TextInput
+                          style={[BORDER_FRAME, styles.commentInput]}
+                          placeholder="leave a comment..."
+                          value={newComment}
+                          onChangeText={setNewComment}
+                          placeholderTextColor='rgba(81, 116, 207, 0.5)' 
+                          autoCapitalize='none'
+                        />
+                        <TouchableOpacity
+                          onPress={handleSubmitComment}
+                          disabled={submittingComment || !newComment.trim()}
+                          style={[styles.commentSendButton, BORDER_FRAME]}
+                        >
+                          <Text style={styles.commentSendText}>
+                            {submittingComment ? '...' : 'send!'}
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    </KeyboardAvoidingView>
+              </View>
       </Modal>
     </View>
   );
@@ -306,14 +304,18 @@ const styles = StyleSheet.create({
   actionButton: {
     margin: 5,
   },
+  commentsOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
   commentsContainer: {
-
-  },
-  commentsHeader: {
-
-  },
-  commentsTitle: {
-
+    height: '50%',
+    backgroundColor: '#ececec',
+    padding: 30,
   },
   commentsList: {
 
@@ -322,26 +324,32 @@ const styles = StyleSheet.create({
 
   },
   commentRow: {
-
+    flexDirection: 'row',
+    gap: 40,
   },
   commentAuthor: {
-
+    fontWeight: '800'
   },
   commentBody: {
 
   },
   commentInputRow: {
-
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    margin: 10,
+    marginBottom: 5,
   },
   commentInput: {
-
+    padding: 10,
+    flex: 0.7,
+    backgroundColor: 'white',
   },
   commentSendButton: {
-
+    flex: 0.15,
+    padding: 10,
   },
   commentSendText: {
-
-  }
+  },
 
 });
 
