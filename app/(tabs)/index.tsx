@@ -208,7 +208,6 @@ const HomeScreen = () => {
             ListEmptyComponent={<Text>no posts yet</Text>}
           />
         </View>
-      )}
       <View style={styles.posts}>
         <FlatList
           data={posts.slice(0, 5)}
