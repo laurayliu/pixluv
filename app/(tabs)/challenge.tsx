@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { Link } from 'expo-router';
 import { api } from '../../services/api';
+import PaletteImg from '../../assets/icons/palette_img.svg';
+import PencilIcon from '../../assets/icons/editor/pencil.svg';
 
 type Challenge = {
   id: string;
@@ -10,15 +12,30 @@ type Challenge = {
   allowedColors: string[];
 };
 
-export default function Challenge() {
-  const [todayColors, setTodayColors] = useState<string[]>([]);
+function formatDate(dateStr: string) {
+  const d = new Date(dateStr);
+  return `${d.getUTCMonth() + 1}/${d.getUTCDate()}:`;
+}
+
+function ColorStack({ colors }: { colors: string[] }) {
+  return (
+    <View style={styles.colorStack}>
+      {colors.map((color) => (
+        <View key={color} style={[styles.colorBlock, { backgroundColor: color }]}>
+          <Text style={styles.hexLabel}>{color}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+export default function ChallengeTab() {
+  const [today, setToday] = useState<Challenge | null>(null);
   const [pastChallenges, setPastChallenges] = useState<Challenge[]>([]);
 
   useEffect(() => {
     api.getTodayChallenge()
-      .then((c: any) => {
-        if (c.allowedColors?.length) setTodayColors(c.allowedColors);
-      })
+      .then((c: any) => setToday(c))
       .catch(() => {});
 
     api.getChallenges()
@@ -33,28 +50,41 @@ export default function Challenge() {
   }, []);
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text>today&apos;s challenge</Text>
+    <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
+      <Text style={styles.title}>#pixoftheday</Text>
+      <Text style={styles.subtitle}>daily challenge!</Text>
+      <View style={styles.divider} />
 
-      <View style={styles.swatches}>
-        {todayColors.map((color) => (
-          <View key={color} style={[styles.swatch, { backgroundColor: color }]} />
-        ))}
-      </View>
+      {today && (
+        <View style={styles.todayCard}>
+          <Text style={[styles.cardDate, {textAlign: 'center'}]}>{formatDate(today.date)}</Text>
+          <Text style={styles.cardPrompt}>{today.prompt}</Text>
+          <View style={styles.cardRow}>
+            <PaletteImg width={72} height={58} />
+            <Text style={styles.colon}>:</Text>
+            <ColorStack colors={today.allowedColors} />
+          </View>
+          <Text style={styles.tagLine}>tag your creation: #pixoftheday</Text>
+          <Link href="/drawing_challenge" asChild>
+            <Pressable style={styles.drawButton}>
+              <Text style={styles.drawButtonText}>draw it!</Text>
+              <PencilIcon width={20} height={20} />
+            </Pressable>
+          </Link>
+        </View>
+      )}
 
-      <Link href="/drawing_challenge" asChild>
-        <Pressable><Text>draw</Text></Pressable>
-      </Link>
+      <Text style={styles.title}>see past creations!</Text>
+      <View style={styles.divider} />
 
-      <Text>past challenges</Text>
       {pastChallenges.map((c) => (
-        <View key={c.id} style={styles.pastChallenge}>
-          <Text>{new Date(c.date).toLocaleDateString()}</Text>
-          <Text>{c.prompt}</Text>
-          <View style={styles.swatches}>
-            {c.allowedColors.map((color) => (
-              <View key={color} style={[styles.swatch, { backgroundColor: color }]} />
-            ))}
+        <View key={c.id} style={styles.card}>
+          <Text style={styles.cardDate}>{formatDate(c.date)}</Text>
+          <View style={styles.cardRow}>
+            <Text style={styles.pastPrompt}>{c.prompt}</Text>
+            <PaletteImg width={56} height={44} />
+            <Text style={styles.colon}>:</Text>
+            <ColorStack colors={c.allowedColors} />
           </View>
         </View>
       ))}
@@ -62,28 +92,110 @@ export default function Challenge() {
   );
 }
 
+const CARD_COLOR = '#5174CF';
+const TODAY_CARD_INNER = '#29ADFF';
+
 const styles = StyleSheet.create({
+  scroll: {
+    backgroundColor: '#FFF1E8',
+  },
   container: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     padding: 20,
-    gap: 16,
+    paddingTop: 60,
+    paddingBottom: 40,
+    gap: 12,
   },
-  swatches: {
+  title: {
+    fontSize: 22,
+    fontFamily: 'PixelifySans_700Bold',
+    color: '#1a1a1a',
+  },
+  subtitle: {
+    fontSize: 13,
+    fontFamily: 'PixelifySans_400Regular',
+    color: '#1a1a1a',
+    marginTop: -6,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#ccc',
+    marginVertical: 4,
+  },
+  todayCard: {
+    backgroundColor: TODAY_CARD_INNER,
+    borderWidth: 20,
+    borderColor: CARD_COLOR,
+    padding: 16,
+    gap: 12,
+  },
+  card: {
+    backgroundColor: CARD_COLOR,
+    padding: 16,
+    gap: 12,
+  },
+  cardDate: {
+    fontSize: 18,
+    fontFamily: 'PixelifySans_700Bold',
+    color: '#1a1a1a',
+  },
+  cardPrompt: {
+    fontSize: 18,
+    fontFamily: 'PixelifySans_700Bold',
+    color: '#1a1a1a',
+    textAlign: 'center',
+  },
+  cardRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 4,
-  },
-  swatch: {
-    width: 32,
-    height: 32,
-    borderWidth: 1,
-    borderColor: '#ccc',
-  },
-  pastChallenge: {
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+  },
+  colon: {
+    fontSize: 20,
+    fontFamily: 'PixelifySans_700Bold',
+    color: '#1a1a1a',
+  },
+  colorStack: {
+    flexDirection: 'column',
+    gap: 0,
+  },
+  colorBlock: {
+    width: 80,
+    height: 28,
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    paddingRight: 4,
+  },
+  hexLabel: {
+    fontSize: 9,
+    fontFamily: 'PixelifySans_400Regular',
+    color: '#1a1a1a',
+  },
+  tagLine: {
+    fontSize: 13,
+    fontFamily: 'PixelifySans_700Bold',
+    color: '#1a1a1a',
+    textAlign: 'center',
+  },
+  drawButton: {
+    backgroundColor: CARD_COLOR,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 10,
     gap: 8,
+  },
+  drawButtonText: {
+    fontSize: 16,
+    fontFamily: 'PixelifySans_700Bold',
+    color: '#1a1a1a',
+  },
+  pastPrompt: {
+    fontSize: 14,
+    fontFamily: 'PixelifySans_700Bold',
+    color: '#1a1a1a',
+    flex: 1,
   },
 });
