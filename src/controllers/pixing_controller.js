@@ -8,8 +8,8 @@ export const getConversations = async (req, res) => {
     },
     orderBy: { createdAt: 'desc' },
     include: {
-      sender: { select: { id: true, username: true } },
-      receiver: { select: { id: true, username: true } },
+      sender: { select: { id: true, username: true, profilePicture: true } },
+      receiver: { select: { id: true, username: true, profilePicture: true } },
     },
   });
 
