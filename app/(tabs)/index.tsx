@@ -191,23 +191,6 @@ const HomeScreen = () => {
         <View style = {{backgroundColor: '#ff77a8', paddingTop: 70}}>
           <Logo width={150} height={40} style={styles.logo} />
         </View>
-        <View style={styles.posts}>
-          <FlatList
-            data={posts.slice(0, 5)}
-            keyExtractor={(item) => String(item.id ?? item._id)}
-            renderItem={({ item }) => (
-              <View style={[BORDER_FRAME, styles.post]}>
-                {/* <Text style = {styles.title}>{item.title ?? item.caption ?? JSON.stringify(item)}</Text> */}
-                <Image
-                  source={{ uri: item.imageUrl }}
-                  style={[BORDER_FRAME, { width: 250, height: 250, marginTop: 15 }]}
-                />
-                <Text style={styles.caption}>{item.content ?? JSON.stringify(item)}</Text>
-              </View>
-            )}
-            ListEmptyComponent={<Text>no posts yet</Text>}
-          />
-        </View>
       <View style={styles.posts}>
         <FlatList
           data={posts.slice(0, 5)}
@@ -239,7 +222,7 @@ const HomeScreen = () => {
               <Text style={styles.caption}>{item.content ?? JSON.stringify(item)}</Text>
             </View>
           )}
-          ListEmptyComponent={<Text>no posts yet</Text>}
+          ListEmptyComponent={<Text>no posts yet!</Text>}
         />
       </View>
             <Modal visible={commentsVisible} animationType="fade" transparent={true} onRequestClose={closeComments}>
