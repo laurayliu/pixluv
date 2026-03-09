@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ProfileAvatar } from '@/components/ui/profile-avatar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { router } from 'expo-router';
@@ -8,7 +9,7 @@ import { api } from '@/services/api';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 
 type InboxEntry = {
-  user: { id: string; username: string };
+  user: { id: string; username: string; profilePicture?: string };
   latestMessage: { message?: string; imageUrl?: string; createdAt: string };
 };
 
@@ -86,7 +87,7 @@ export default function PixingScreen() {
                 }
               >
                 <View style={styles.avatarWrap}>
-                  <IconSymbol name="profile_frame" size={50} color="#5F574F" />
+                  <ProfileAvatar imageUrl={item.profilePicture} size={50} />
                 </View>
                 <Text style={styles.username}>{item.username}</Text>
               </TouchableOpacity>
@@ -113,7 +114,7 @@ export default function PixingScreen() {
                 }
               >
                 <View style={styles.avatarWrap}>
-                  <IconSymbol name="profile_frame" size={50} color="#5F574F" />
+                  <ProfileAvatar imageUrl={item.user.profilePicture} size={50} />
                 </View>
                 <View style={styles.textCol}>
                   <Text style={styles.username}>{item.user.username}</Text>
