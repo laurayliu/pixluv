@@ -1,6 +1,6 @@
 import DefaultColorPanel from '../../components/color_picker';
 import React, { useState, useRef, useEffect } from 'react';
-import {StyleSheet, Text, View, TextInput, Dimensions, ActivityIndicator, PanResponder, Pressable, TouchableOpacity, Alert } from 'react-native';
+import {StyleSheet, Text, View, TextInput, Dimensions, ActivityIndicator, PanResponder, Pressable, TouchableOpacity, Alert, Modal, } from 'react-native';
 import { captureRef } from "react-native-view-shot";
 import { api } from '../../services/api';
 import { useAuth } from '@/context/AuthContext';
@@ -252,6 +252,11 @@ export default function CreatePix() {
     }
   }
 
+  const [showAlertClear, setShowAlertClear] = useState(false);
+  const [showAlertCaption, setShowAlertCaption] = useState(false);
+  const [showAlertPosting, setShowAlertPosting] = useState(false);
+  const [showAlertLike, setShowAlertLike] = useState(false);
+
   const clearAlert = () => {
     Alert.alert(
       "alert!",
@@ -268,12 +273,14 @@ export default function CreatePix() {
 
   const captionAlert = () => {
     if (caption.trim().length === 0) {
-      Alert.alert(
-      "alert!",
-      "please add a caption!",
-      [],
-      { cancelable: true }
-    )
+    //   Alert.alert(
+    //   "alert!",
+    //   "please add a caption!",
+    //   [],
+    //   { cancelable: true }
+    // )
+      setShowAlertCaption(true)
+      return;
     }
     else {
       Alert.alert(
@@ -352,6 +359,30 @@ export default function CreatePix() {
           </TouchableOpacity>
         )}
       </View>
+
+        <Modal
+          visible={showAlertCaption}
+          transparent={true}
+          animationType='fade'
+          onRequestClose={() => setShowAlertCaption(false)}
+        >
+          <View style={[styles.alertOverlay]}>
+            <Pressable style={styles.backdrop} onPress={() => setShowAlertCaption(false)} />
+              <View style={[BORDER_FRAME, styles.alertBox]}>
+                <View style={[styles.captionTitle]}>
+                  <Text style={{fontFamily: 'ms', fontSize: 20}}>no caption!</Text>
+                </View>
+                <View style={[styles.captionBody]}>
+                  <Text style={{fontFamily: 'ms'}}>please add a caption before posting!</Text>
+                </View>
+                <TouchableOpacity style={[BORDER_FRAME, styles.alertButton]} onPress={() => setShowAlertCaption(false)}>
+                  <Text style={{fontFamily: 'ms'}} >ok</Text>
+                </TouchableOpacity>
+              </View>
+              
+          </View>
+        </Modal>
+
       </View>
   );
 };
@@ -419,18 +450,52 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 20,
     width: '95%',
-    gap: 230,
+    gap: 20,
+    justifyContent: 'flex-end',
   },
   clearButton: {
-    alignSelf: 'flex-start'
+    alignSelf: 'flex-start',
+    backgroundColor: 'white',
   },
   postButton: {
-    alignSelf: 'flex-end'
+    alignSelf: 'flex-end',
+    backgroundColor: 'white',
   },
   backButton: {
     marginTop: 10,
     marginLeft: 15,
     alignSelf: 'flex-start',
+  },
+  alertOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'  
+  },
+  alertBox: {
+    width: '70%',
+    padding: 10,
+    alignItems: 'center',
+    flexDirection: 'column',
+    backgroundColor: '#ececec',
+  },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  captionTitle: {
+    alignSelf: "flex-start",
+    marginBottom: 10,
+  },
+  captionBody: {
+    margin: 5,
+    marginBottom: 15,
+    alignSelf: 'flex-start'
+  },
+  alertButton: {
+    padding: 2,
+    backgroundColor: 'white',
+    paddingHorizontal: 5,
+    alignSelf: 'flex-end',
   }
 });
 

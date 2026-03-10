@@ -37,7 +37,7 @@ export default function DefaultColorPanel( {value, onColorChange} : {value: stri
           activeOpacity={0.8}
           onPress={() => setShowModal(true)}
         />
-        <View style={[styles.inputGroup, BORDER_FRAME]}>
+        <View style={[styles.inputGroup, BORDER_FRAME, {backgroundColor: 'white'}]}>
           <TextInput style={{fontFamily:'ms'}} value={value} onChangeText={onColorChange}></TextInput>
         </View>
       </View>
