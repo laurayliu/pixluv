@@ -64,7 +64,8 @@ const Profile = () => {
   const [pfpPostsLoading, setPfpPostsLoading] = useState(false);
   const [updatingPfp, setUpdatingPfp] = useState(false);
   const router = useRouter();
-  
+    const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
   const [commentsVisible, setCommentsVisible] = useState(false);
   const [activePost, setActivePost] = useState<Post | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -327,14 +328,22 @@ const Profile = () => {
 
   useFocusEffect(
     useCallback(() => {
+      if (!user?.id) return;
       setLoading(true);
-      api.getPostsByUser(user?.id ?? null, token)
-        .then(setPosts)
+      Promise.all([
+        api.getPostsByUser(user.id, token),
+        api.getUser(user.id),
+      ])
+        .then(([userPosts, fullUser]) => {
+          setPosts(userPosts);
+          setFollowerCount(fullUser._count?.followers ?? 0);
+          setFollowingCount(fullUser._count?.following ?? 0);
+        })
         .catch((err: Error) => setError(err.message))
         .finally(() => setLoading(false));
     }, [user?.id, token])
   );
-
+  
   if (error) return <Text>{error}</Text>;
 
   return (
@@ -353,16 +362,17 @@ const Profile = () => {
 
         <View style={styles.info_container}>
           <Text style={styles.username}>{user?.username ?? 'your profile'}</Text>
+          <Text style={styles.texts}>{followerCount} followers · {followingCount} following</Text>
           <Text style={styles.texts}>Bio goes here oooh</Text>
           <View style={styles.action_container}>
             {/* Needd to add edit button instead for personal profile view */}
-            <Pressable style={styles.action_button}>
+            {/* <Pressable style={styles.action_button}>
               <Text style={styles.button_text}>Follow</Text>
             </Pressable>
 
             <Pressable style={styles.action_button}>
               <Text  style={styles.button_text}>Pix Me!</Text>
-            </Pressable>
+            </Pressable> */}
           </View>
         </View>
       </View>
