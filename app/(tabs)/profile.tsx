@@ -381,7 +381,7 @@ const Profile = () => {
         <View style={styles.sticker_container}>
           <Text style={[styles.texts, {textAlign: 'center' }]}>Sticker Collection</Text>
           <View style={styles.sticker_box}>
-            <View style={[styles.sticker, {backgroundColor: '#B7E3FF'}]}>
+            <View style={[styles.sticker,  BORDER_FRAME, {backgroundColor: '#B7E3FF'}]}>
 
               <IconSymbol name="sticker2" size={70} color={'currentColor'} />
 
@@ -391,7 +391,7 @@ const Profile = () => {
               /> */}
             </View>
 
-            <View style={[styles.sticker, {backgroundColor: '#ffffff'}]}>
+            <View style={[styles.sticker, BORDER_FRAME, {backgroundColor: '#ffffff'}]}>
               <IconSymbol name="sticker1" size={70} color={'currentColor'} />
             </View>
           </View>
@@ -687,20 +687,17 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     justifyContent: 'center',
     alignContent: 'center',
-    textAlign: 'center',
-    fontFamily: 'ms',
+    textAlign: 'center'
   },
   username: {
     fontSize: 25,
     fontWeight: '700',
     color: '#ffffff',
-    fontFamily: 'ms',
   },
   texts: {
     fontSize: 15,
     color: '#ffffff',
     marginBottom: 5,
-    fontFamily: 'ms',
   },
   favorite_container: {
     display: 'flex',
@@ -822,7 +819,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textAlign: 'center',
     marginBottom: 12,
-    fontFamily: 'ms',
   },
   pickerThumb: {
     width: ITEM_SIZE,
