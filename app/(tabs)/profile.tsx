@@ -491,7 +491,7 @@ const prevPage = () => {
 
         <GestureDetector key={'cover'} gesture={coverPan}>
           <Animated.View style={[coverAnimatedStyles, styles.page_cover, {width: bookWidth, alignSelf: 'center', alignItems: 'center'}, {zIndex: 77500}]}>
-            <Image style={[{width: '100%', height: '100%', borderRadius: 15}]} source={require('../../assets/images/book_cover.png')}/>
+            <Image style={[{width: '100%', height: '100%', borderRadius: 15}]} source={require('../../assets/images/leather_cover.jpg')}/>
           </Animated.View>
           </GestureDetector>
         {posts.slice(0, 10).map((item, index) => {
