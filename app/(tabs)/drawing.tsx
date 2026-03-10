@@ -145,6 +145,8 @@ export default function CreatePix() {
 
   onPanResponderRelease: (evt) => {
     if (evt.nativeEvent.touches.length > 0) return; 
+    if (activeTool.current === 'dropper') return; // don't call setPrevGrid if using dropper 
+
     setPrevGrid((prevHistory) => {
       const newGrid = prevHistory.slice(0, index.current + 1); // prevents weird things if someone undos then starts drawing again
       const updatedGrid = [...newGrid, [...grid]];  // takes saved states and adds on current grid at the end
