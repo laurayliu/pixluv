@@ -391,7 +391,7 @@ export default function Challenge() {
         </TouchableWithoutFeedback>
       )}
 
-      <TextInput value={caption} onFocus={() => setCaptionFocused(true)} onBlur = {() => setCaptionFocused(false)} onChangeText={setCaption} style = {[styles.caption, BORDER_FRAME, {fontFamily:'ms'}]} multiline placeholder='enter caption!' placeholderTextColor='rgba(81, 116, 207, 0.5)' autoCapitalize='none'/>
+      <TextInput value={caption} onFocus={() => setCaptionFocused(true)} onBlur = {() => setCaptionFocused(false)} onChangeText={setCaption} style = {[captionFocused ? styles.focusedCaption : styles.caption, BORDER_FRAME, {fontFamily:'ms'}]} multiline placeholder='enter caption!' placeholderTextColor='rgba(81, 116, 207, 0.5)' autoCapitalize='none'/>
       <View style={styles.actions}>
         <TouchableOpacity onPress={clearAlert} style={[styles.clearButton, {borderWidth: 0.25, borderColor: '#000', paddingVertical: 5, paddingHorizontal: 10}, BORDER_FRAME]}>
           <Text style={{fontFamily:'ms'}}>clear</Text>
@@ -451,7 +451,7 @@ const styles = StyleSheet.create({
   },
    focusedCaption: {
     position: 'fixed',
-    top: -475,
+    top: -460,
     fontSize: 15,
     borderWidth: 0.25, 
     paddingTop: 10,
@@ -460,6 +460,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '25%',
     backgroundColor: 'white',
+    zIndex: 11,
   },
    darkOverlay: {
     position: 'absolute',
