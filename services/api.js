@@ -1,9 +1,5 @@
 
-function getBaseUrl() {
-  return 'https://project-api-pixluv.onrender.com/api';
-}
-
-const BASE_URL = getBaseUrl();
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 async function get(path, token) {
   const headers = {};
@@ -62,6 +58,7 @@ export const api = {
   getChallenges: () => get('/challenges'),
   getTodayChallenge: () => get('/challenges/today'),
   getTodayChallengePosts: (token) => get('/posts/challenge/today', token),
+  getChallengePosts: (date, token) => get(`/posts/challenge/${encodeURIComponent(date)}`, token),
   getPresignedUrl: (filename, token) =>
     get(
       `/sign-s3?fileName=${encodeURIComponent(filename)}&fileType=${encodeURIComponent('image/png')}`,
