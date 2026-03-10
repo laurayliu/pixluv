@@ -210,14 +210,17 @@ const HomeScreen = () => {
                     size={24}
                   />
                 </TouchableOpacity>
-
-                <TouchableOpacity onPress={() => openComments(item)} style={styles.actionButton}>
-                  <IconSymbol
-                    name={commentsVisible && activePost?.id === item.id ? 'commented' : 'comment'}
-                    color={'currentColor'}
-                    size={24}
-                  />
-                </TouchableOpacity>
+                <View style={styles.commentBar}> 
+                  <TouchableOpacity onPress={() => openComments(item)} style={styles.actionButton}>
+                    <IconSymbol
+                      name={commentsVisible && activePost?.id === item.id ? 'commented' : 'comment'}
+                      color={'currentColor'}
+                      size={24}
+                    />
+                  </TouchableOpacity>
+                  <Text style={styles.commentCount}>({(item._count?.comments ?? 0)})</Text>
+                </View>
+                
               </View>
               <Text style={styles.caption}>{item.content ?? JSON.stringify(item)}</Text>
             </View>
@@ -315,6 +318,16 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     margin: 5,
+  },
+  commentBar: {
+    flexDirection: 'row',
+  },
+  commentCount: {
+    fontFamily: 'ms',
+    fontSize: 12,
+    alignSelf: 'center',
+    //marginTop: 7,
+    marginLeft: -2.5,
   },
   commentsOverlay: {
     flex: 1,
