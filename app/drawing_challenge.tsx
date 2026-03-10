@@ -113,6 +113,11 @@ export default function Challenge() {
       return;
     }
 
+    if (activeTool.current === 'dropper'){
+      handleDropper(grid[cellIndex]);
+      return;
+    }
+
     const drawingColor = activeTool.current === 'erase' ? DEFAULT_COLOR : selectedColor; // if eraser is toggled set selected color to white
     setGrid((currentGrid) => {
       if (currentGrid[cellIndex] === drawingColor) { return currentGrid }
@@ -184,7 +189,13 @@ export default function Challenge() {
       await api.createPost({ title: 'Challenge Post', content: caption, imageUrl: publicUrl, challengeDate: new Date().toISOString() }, token);
       const { posts } = await api.getTodayChallengePosts(token);
       setSubmissions(posts);
-      setSubmitted(true);
+      setSubmitted(true);   
+      router.navigate('/(tabs)');
+
+      handleClear(); // make sure to clear canvas
+      setSelectedColor(DEFAULT_SELECTED_COLOR);
+      setCaption('');
+
     } catch (error) {
       console.error('Upload process failed:', error);
       alert('Failed to save image. Check console.');
@@ -211,35 +222,29 @@ export default function Challenge() {
         const col = currentCell % GRID_SIZE;
 
         // make sure neighbors are within bounds
-        // if (col > 0 && row > 0) {
-        //   neighborCells.push(currentCell - 1 - GRID_SIZE); // upper left neighbor cell
-        // }
         if (col > 0) {
           neighborCells.push(currentCell - 1); // left neighbor cell
         }
-        // if (col > 0 && row < GRID_SIZE - 1) {
-        //   neighborCells.push(currentCell - 1 + GRID_SIZE); // lower left neighbor cell
-        // }
         if (row > 0){
           neighborCells.push(currentCell - GRID_SIZE); // up neighbor cell
         } 
         if (row < GRID_SIZE - 1){
           neighborCells.push(currentCell + GRID_SIZE); // down neighbor cell
         }
-        // if (col < GRID_SIZE - 1 && row > 0){
-        //   neighborCells.push(currentCell + 1 - GRID_SIZE); // upper right neighbor cell
-        // } 
         if (col < GRID_SIZE - 1){
           neighborCells.push(currentCell + 1); // right neighbor cell
         } 
-        // if (col < GRID_SIZE - 1 && row < GRID_SIZE - 1){
-        //   neighborCells.push(currentCell + 1 + GRID_SIZE); // lower right neighbor cell
-        // } 
 
       }
       return newGrid;
     });
 
+  }
+
+  const handleDropper = (cellColor: string) => {
+    if (cellColor !== selectedColor){
+      setSelectedColor(cellColor);
+    }
   }
 
   if (submitted) {
@@ -419,6 +424,7 @@ const styles = StyleSheet.create({
     paddingBottom: 100, 
     paddingHorizontal: 15,
     width: '85%',
+    height: '20%',
     borderRadius: 5,
     color: '#5174cf',
     backgroundColor: 'white',

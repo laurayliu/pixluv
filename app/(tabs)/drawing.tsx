@@ -175,6 +175,12 @@ export default function CreatePix() {
       const { signedUrl, publicUrl } = await api.getPresignedUrl(filename, token);
       await api.uploadToS3(signedUrl, base64);
       await api.createPost({ content: caption, imageUrl: publicUrl }, token);
+      router.navigate('/(tabs)');
+
+      handleClear(); // make sure to clear canvas
+      setSelectedColor(DEFAULT_SELECTED_COLOR);
+      setCaption('');
+
       alert(`Post Success!`);
     } catch (error) {
       console.error("Upload process failed:", error);
@@ -220,31 +226,18 @@ export default function CreatePix() {
         const col = currentCell % gridSize;
 
         // make sure neighbors are within bounds
-        // if (col > 0 && row > 0) {
-        //   neighborCells.push(currentCell - 1 - gridSize); // upper left neighbor cell
-        // }
         if (col > 0) {
           neighborCells.push(currentCell - 1); // left neighbor cell
         }
-        // if (col > 0 && row < gridSize - 1) {
-        //   neighborCells.push(currentCell - 1 + gridSize); // lower left neighbor cell
-        // }
         if (row > 0){
           neighborCells.push(currentCell - gridSize); // up neighbor cell
         } 
         if (row < gridSize - 1){
           neighborCells.push(currentCell + gridSize); // down neighbor cell
         }
-        // if (col < gridSize - 1 && row > 0){
-        //   neighborCells.push(currentCell + 1 - gridSize); // upper right neighbor cell
-        // } 
         if (col < gridSize - 1){
           neighborCells.push(currentCell + 1); // right neighbor cell
         } 
-        // if (col < gridSize - 1 && row < gridSize - 1){
-        //   neighborCells.push(currentCell + 1 + gridSize); // lower right neighbor cell
-        // } 
-
       }
       return newGrid;
     });
@@ -252,7 +245,9 @@ export default function CreatePix() {
   }
 
   const handleDropper = (cellColor: string) => {
-    setSelectedColor(cellColor);
+   if (cellColor !== selectedColor){
+      setSelectedColor(cellColor);
+    }
   }
 
   const clearAlert = () => {
@@ -280,7 +275,6 @@ export default function CreatePix() {
     }
     else {
       handleSaveAndUpload();
-      handleClear(); // make sure to clear canvas
     }
   }
 
@@ -373,8 +367,9 @@ const styles = StyleSheet.create({
     paddingBottom: 100, 
     paddingHorizontal: 15,
     width: '85%',
+    height: '20%',
     borderRadius: 5,
-    color: '#5174cf',
+    color: '#141415',
     backgroundColor: 'white',
   },
   inputGroup: {
