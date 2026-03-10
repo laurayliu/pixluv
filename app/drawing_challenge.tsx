@@ -58,6 +58,7 @@ export default function Challenge() {
   );
   const [selectedColor, setSelectedColor] = useState<string>(DEFAULT_SELECTED_COLOR);
   const [isUploading, setIsUploading] = useState(false);
+  const[captionFocused, setCaptionFocused] = useState(false);
   const cellSize = GRID_CONTAINER_SIZE / GRID_SIZE;
 
   const activeTool = useRef('draw');
@@ -384,7 +385,7 @@ export default function Challenge() {
         </View>
       </View>
 
-      <TextInput value={caption} onChangeText={setCaption} style = {[styles.caption, BORDER_FRAME]} multiline placeholder='enter caption!' placeholderTextColor='rgba(81, 116, 207, 0.5)' autoCapitalize='none'/>
+      <TextInput value={caption} onFocus={() => setCaptionFocused(true)} onBlur = {() => setCaptionFocused(false)} onChangeText={setCaption} style = {[styles.caption, BORDER_FRAME]} multiline placeholder='enter caption!' placeholderTextColor='rgba(81, 116, 207, 0.5)' autoCapitalize='none'/>
       <View style={styles.actions}>
         <TouchableOpacity onPress={clearAlert} style={[styles.clearButton, {borderWidth: 0.25, borderColor: '#000', paddingVertical: 5, paddingHorizontal: 10}, BORDER_FRAME]}>
           <Text>clear</Text>
@@ -440,6 +441,18 @@ const styles = StyleSheet.create({
     height: '20%',
     borderRadius: 5,
     color: '#5174cf',
+    backgroundColor: 'white',
+  },
+   focusedCaption: {
+    position: 'fixed',
+    top: -475,
+    fontSize: 15,
+    borderWidth: 0.25, 
+    paddingTop: 10,
+    paddingBottom: 100, 
+    paddingHorizontal: 15,
+    width: '100%',
+    height: '25%',
     backgroundColor: 'white',
   },
   inputGroup: {
