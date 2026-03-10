@@ -46,7 +46,15 @@
           }
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/ms-sans-serif-1.ttf"
+          ]
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

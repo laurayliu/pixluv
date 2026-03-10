@@ -60,8 +60,10 @@ export default function ChallengeTab() {
           <Text style={[styles.cardDate, {textAlign: 'center'}]}>{formatDate(today.date)}</Text>
           <Text style={styles.cardPrompt}>{today.prompt}</Text>
           <View style={styles.cardRow}>
-            <PaletteImg width={72} height={58} />
-            <Text style={styles.colon}>:</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
+              <PaletteImg style={{marginTop: 20}} width={72} height={58} />
+              <Text style={styles.colon}>:</Text>
+            </View>
             <ColorStack colors={today.allowedColors} />
           </View>
           <Text style={styles.tagLine}>tag your creation: #pixoftheday</Text>
@@ -82,8 +84,10 @@ export default function ChallengeTab() {
           <Text style={styles.cardDate}>{formatDate(c.date)}</Text>
           <View style={styles.cardRow}>
             <Text style={styles.pastPrompt}>{c.prompt}</Text>
-            <PaletteImg width={56} height={44} />
-            <Text style={styles.colon}>:</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
+              <PaletteImg style={{marginTop: 15}} width={56} height={44} />
+              <Text style={styles.colon}>:</Text>
+            </View>
             <ColorStack colors={c.allowedColors} />
           </View>
         </View>

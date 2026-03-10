@@ -167,11 +167,12 @@ const styles = StyleSheet.create({
     color: '#000',
     fontSize: 15,
     padding: 0,
+    fontFamily:'ms',
   },
   sectionLabel: {
     color: '#000',
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 25,
+    fontFamily: 'PixelifySans_700Bold',
     marginLeft: 8,
     marginTop: 6,
     marginBottom: 4,
@@ -196,11 +197,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: '#000',
+    fontFamily:'ms',
   },
   previewText: {
     fontSize: 12,
     color: '#6B6B6B',
     marginTop: 2,
+    fontFamily:'ms',
   },
   separator: {
     height: 1,
@@ -212,11 +215,13 @@ const styles = StyleSheet.create({
     color: '#999',
     marginTop: 40,
     fontSize: 14,
+    fontFamily:'ms',
   },
   errorText: {
     textAlign: 'center',
     color: '#ff6161',
     marginTop: 16,
     fontSize: 13,
+    fontFamily:'ms',
   },
 });

@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, Dimensions, Button, ActivityIndicator, Pressable, PanResponder, Image, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Dimensions, ActivityIndicator, Pressable, PanResponder, Image, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { captureRef } from 'react-native-view-shot';
 import { api } from '../services/api';
 import { useAuth } from '@/context/AuthContext';
-import Toolbar, { ToolName } from '@/components/toolbar';
+import Toolbar, { ALL_TOOL_NAMES } from '@/components/toolbar';
 import { useRouter } from 'expo-router';
 import BackIcon from '../assets/icons/editor/undo.svg';
+import { ReactNativeZoomableView } from '@openspacelabs/react-native-zoomable-view';
+import PaletteImg from '../assets/icons/palette_img.svg';
 
 const GRID_SIZE = 32;
 const DEFAULT_COLOR = '#fff';
@@ -14,13 +16,42 @@ const DEFAULT_SELECTED_COLOR = '#000';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GRID_CONTAINER_SIZE = SCREEN_WIDTH - 100;
 
+const GridCell = React.memo(({ color, gridSize, cellSize, noBorder }: { 
+  color: string, 
+  gridSize: number,
+  cellSize: number,
+  noBorder?: boolean
+}) => (
+  <View style={{
+    width: `${100 / gridSize}%`,
+    height: cellSize,
+    backgroundColor: color,
+    borderWidth: noBorder ? 0 : 0.25,
+    borderColor: noBorder ? 'transparent' : '#eee'
+  }} />
+));
+GridCell.displayName = 'GridCell';
+
+const BORDER_FRAME = {
+  borderRadius: 0,
+  borderTopColor: '#c4c4c4',
+  borderLeftColor: '#c4c4c4',
+  borderBottomColor: '#ffffff',
+  borderRightColor: '#ffffff',
+  borderTopWidth: 3,
+  borderLeftWidth: 3,
+  borderBottomWidth: 3,
+  borderRightWidth: 3,
+  overflow: 'hidden',
+} as const;
+
 export default function Challenge() {
   const router = useRouter();
   const { token, user } = useAuth();
   const [submissions, setSubmissions] = useState<{ id: string; imageUrl: string; author: { username: string } }[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const [allowedColors, setAllowedColors] = useState<string[]>([]);
-  const [allowedTools, setAllowedTools] = useState<string[]>([]);
+
   const [grid, setGrid] = useState<string[]>(
     Array(GRID_SIZE * GRID_SIZE).fill(DEFAULT_COLOR)
   );
@@ -29,17 +60,23 @@ export default function Challenge() {
   const cellSize = GRID_CONTAINER_SIZE / GRID_SIZE;
 
   const activeTool = useRef('draw');
+  const [caption, setCaption] = useState<string>('');
+
   const gridRef = useRef<View>(null);
   const exportRef = useRef<View>(null);
+
   const [prevGrid, setPrevGrid] = useState<string[][]>([Array(GRID_SIZE * GRID_SIZE).fill(DEFAULT_COLOR)]);
   const index = useRef(0);
-  const gridLayout = useRef({ x: 0, y: 0 });
+
+  const zoomState = useRef({
+      level: 1,
+  });
+
 
   useEffect(() => {
     api.getTodayChallenge()
       .then((c: any) => {
         if (c.allowedColors?.length) setAllowedColors(c.allowedColors);
-        if (c.allowedTools?.length) setAllowedTools(c.allowedTools);
       })
       .catch(() => {});
 
@@ -51,46 +88,73 @@ export default function Challenge() {
       .catch(() => {});
   }, []);
 
-  const colorCellAtPosition = (pageX: number, pageY: number) => {
-    const relativeX = pageX - gridLayout.current.x;
-    const relativeY = pageY - gridLayout.current.y;
-    const col = Math.floor(relativeX / cellSize);
-    const row = Math.floor(relativeY / cellSize);
+   const getCellIndex = (pageX: number, pageY: number, gridOriginX: number, gridOriginY: number) => {
+    // pageX/pageY: where you clicked on screen; gridOriginX/gridOriginY: where the current origin of the grid is
+    const { level } = zoomState.current;
+
+    const xInGrid = (pageX - gridOriginX) / level; // 
+    const yInGrid = (pageY - gridOriginY) / level;
+
+    const col = Math.floor(xInGrid / cellSize);
+    const row = Math.floor(yInGrid / cellSize);
 
     if (col >= 0 && col < GRID_SIZE && row >= 0 && row < GRID_SIZE) {
-      const i = row * GRID_SIZE + col;
-      const drawingColor = activeTool.current === 'erase' ? DEFAULT_COLOR : selectedColor;
-      setGrid(prev => {
-        const newGrid = [...prev];
-        newGrid[i] = drawingColor;
-        return newGrid;
-      });
+      return row * GRID_SIZE + col;
     }
+    return null;
+  }
+
+  const colorCellAtPosition = (pageX: number, pageY: number, gridOriginX: number, gridOriginY: number) => {
+    const cellIndex = getCellIndex(pageX, pageY, gridOriginX, gridOriginY);
+    if (cellIndex === null) return;
+    
+    if (activeTool.current === 'fill') {
+      handleFill(cellIndex, grid[cellIndex]);
+      return;
+    }
+
+    const drawingColor = activeTool.current === 'erase' ? DEFAULT_COLOR : selectedColor; // if eraser is toggled set selected color to white
+    setGrid((currentGrid) => {
+      if (currentGrid[cellIndex] === drawingColor) { return currentGrid }
+        const newGrid = [...currentGrid];
+        newGrid[cellIndex] = drawingColor;
+        return newGrid;
+    });
   };
 
-  const panResponder = PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onMoveShouldSetPanResponder: () => true,
-    onPanResponderGrant: (evt) => {
-      const { pageX, pageY } = evt.nativeEvent;
-      colorCellAtPosition(pageX, pageY);
+   const panResponder = PanResponder.create({
+    onStartShouldSetPanResponder: (evt) => evt.nativeEvent.touches.length === 1,
+    onMoveShouldSetPanResponder: (evt) => evt.nativeEvent.touches.length === 1,
+  
+    onPanResponderGrant: (evt) => { // runs once you touch screen for the first time
+      const { pageX, pageY } = evt.nativeEvent; // capture whatever pageX/pageY is
+      gridRef.current?.measure((x, y, width, height, gridOriginX, gridOriginY) => { // gives updated gridOriginX/gridOriginY
+        colorCellAtPosition(pageX, pageY, gridOriginX, gridOriginY); // callback with updated values 
+      });
     },
+  
     onPanResponderMove: (evt) => {
       const { pageX, pageY } = evt.nativeEvent;
-      colorCellAtPosition(pageX, pageY);
+      gridRef.current?.measure((x, y, width, height, gridOriginX, gridOriginY) => {
+        colorCellAtPosition(pageX, pageY, gridOriginX, gridOriginY);
+      });
     },
-    onPanResponderRelease: () => {
+  
+    onPanResponderRelease: (evt) => {
+      if (evt.nativeEvent.touches.length > 0) return; 
       setPrevGrid((prevHistory) => {
-        const newGrid = prevHistory.slice(0, index.current + 1);
-        const updatedGrid = [...newGrid, [...grid]];
+        const newGrid = prevHistory.slice(0, index.current + 1); // prevents weird things if someone undos then starts drawing again
+        const updatedGrid = [...newGrid, [...grid]];  // takes saved states and adds on current grid at the end
         index.current = updatedGrid.length - 1;
         return updatedGrid;
       });
-    },
+    }
   });
 
   const handleClear = () => {
-    setGrid(Array(GRID_SIZE * GRID_SIZE).fill(DEFAULT_COLOR));
+    setGrid(Array(GRID_SIZE * GRID_SIZE).fill(DEFAULT_COLOR))
+    setPrevGrid([Array(GRID_SIZE * GRID_SIZE).fill(DEFAULT_COLOR)])
+    index.current = 0;
   };
 
   const handleUndo = () => {
@@ -117,7 +181,7 @@ export default function Challenge() {
       const filename = `pix.png`;
       const { signedUrl, publicUrl } = await api.getPresignedUrl(filename, token);
       await api.uploadToS3(signedUrl, base64);
-      await api.createPost({ title: 'Challenge Post', imageUrl: publicUrl, challengeDate: new Date().toISOString() }, token);
+      await api.createPost({ title: 'Challenge Post', content: caption, imageUrl: publicUrl, challengeDate: new Date().toISOString() }, token);
       const { posts } = await api.getTodayChallengePosts(token);
       setSubmissions(posts);
       setSubmitted(true);
@@ -128,6 +192,55 @@ export default function Challenge() {
       setIsUploading(false);
     }
   };
+
+  const handleFill = (cellIndex: number, cellColor: string) => {
+    if (cellColor === selectedColor) return;
+
+    setGrid((currentGrid)=> {
+      const newGrid = [...currentGrid];
+      const neighborCells = [cellIndex];
+
+      while (neighborCells.length > 0) {
+        const currentCell = neighborCells.pop()!;
+
+        if (newGrid[currentCell] !== cellColor) continue; // if fill finds a color that is different (boundary)
+
+        newGrid[currentCell] = selectedColor;
+
+        const row = Math.floor(currentCell / GRID_SIZE);
+        const col = currentCell % GRID_SIZE;
+
+        // make sure neighbors are within bounds
+        // if (col > 0 && row > 0) {
+        //   neighborCells.push(currentCell - 1 - GRID_SIZE); // upper left neighbor cell
+        // }
+        if (col > 0) {
+          neighborCells.push(currentCell - 1); // left neighbor cell
+        }
+        // if (col > 0 && row < GRID_SIZE - 1) {
+        //   neighborCells.push(currentCell - 1 + GRID_SIZE); // lower left neighbor cell
+        // }
+        if (row > 0){
+          neighborCells.push(currentCell - GRID_SIZE); // up neighbor cell
+        } 
+        if (row < GRID_SIZE - 1){
+          neighborCells.push(currentCell + GRID_SIZE); // down neighbor cell
+        }
+        // if (col < GRID_SIZE - 1 && row > 0){
+        //   neighborCells.push(currentCell + 1 - GRID_SIZE); // upper right neighbor cell
+        // } 
+        if (col < GRID_SIZE - 1){
+          neighborCells.push(currentCell + 1); // right neighbor cell
+        } 
+        // if (col < GRID_SIZE - 1 && row < GRID_SIZE - 1){
+        //   neighborCells.push(currentCell + 1 + GRID_SIZE); // lower right neighbor cell
+        // } 
+
+      }
+      return newGrid;
+    });
+
+  }
 
   if (submitted) {
     return (
@@ -164,11 +277,25 @@ export default function Challenge() {
     );
   }
 
+  const clearAlert = () => {
+      Alert.alert(
+        "alert!",
+        "are you sure you want to clear the canvas?",
+        [
+          { text: "cancel" },
+          { text: "clear",
+            onPress: handleClear
+          }
+        ],
+        { cancelable: false }
+      )
+    }
+
   return (
     <View style={styles.container}>
       <View ref={exportRef} collapsable={false} style={[styles.exportGrid, { width: GRID_CONTAINER_SIZE, height: GRID_CONTAINER_SIZE }]}>
-        {grid.map((color, i) => (
-          <View key={i} style={{ width: `${100 / GRID_SIZE}%`, height: cellSize, backgroundColor: color }} />
+        {grid.map((color, index) => (
+          <GridCell key={index} color={color} gridSize={GRID_SIZE} cellSize={cellSize} noBorder={true}/>
         ))}
       </View>
       <Pressable onPress={() => router.back()} style={{ position: 'absolute', top: 50, left: 20, zIndex: 10 }}>
@@ -176,6 +303,10 @@ export default function Challenge() {
       </Pressable>
       <Text style={{ fontSize: 20, marginBottom: 10, fontFamily: 'PixelifySans_700Bold' }}>challenge!</Text>
       <View style={styles.controls}>
+        <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
+          <PaletteImg style={{marginTop: 20}} width={62} height={48} />
+          <Text style={styles.colon}>:</Text>
+        </View>
         <View style={styles.colorSwatches}>
           {allowedColors.map((color) => (
             <Pressable
@@ -192,38 +323,49 @@ export default function Challenge() {
       </View>
 
       <View style={styles.gridAndTools}>
-        <Toolbar allowedTools={allowedTools as ToolName[]} onToolChange={t => { activeTool.current = t; }} onUndo={handleUndo} onRedo={handleRedo}/>
+        <Toolbar allowedTools={ALL_TOOL_NAMES} onToolChange={t => { activeTool.current = t; }} onUndo={handleUndo} onRedo={handleRedo} />
 
-        <View
-          {...panResponder.panHandlers}
-          ref={gridRef}
-          collapsable={false}
-          style={[styles.grid, { width: GRID_CONTAINER_SIZE, height: GRID_CONTAINER_SIZE }]}
-        >
-          {grid.map((color, i) => (
-            <View
-              key={i}
-              style={{
-                width: `${100 / GRID_SIZE}%`,
-                height: cellSize,
-                backgroundColor: color,
-                borderWidth: 0.5,
-                borderColor: '#eee',
-              }}
-            />
-          ))}
+        <View style = {styles.zoomable}>
+          <ReactNativeZoomableView
+            maxZoom={4} 
+            minZoom={1} 
+            initialZoom={1} 
+            bindToBorders={true}
+            contentWidth={GRID_CONTAINER_SIZE}
+            contentHeight={GRID_CONTAINER_SIZE}
+            panEnabled={true}
+            onTransform={(data: any) => {
+            zoomState.current = {
+              level: data.zoomLevel,
+            };
+            }}>
+            <View {...panResponder.panHandlers} 
+            ref={gridRef}
+            collapsable={false}
+            style={[BORDER_FRAME, styles.grid, { width: GRID_CONTAINER_SIZE, height: GRID_CONTAINER_SIZE }]}
+            >
+            {grid.map((color, index) => (
+               <GridCell key={index} color={color} gridSize={GRID_SIZE} cellSize={cellSize} noBorder={false}/>
+            ))}
+            </View>
+          </ReactNativeZoomableView>
         </View>
       </View>
 
+      <TextInput value={caption} onChangeText={setCaption} style = {[styles.caption, BORDER_FRAME]} multiline placeholder='enter caption!' placeholderTextColor='rgba(81, 116, 207, 0.5)' autoCapitalize='none'/>
       <View style={styles.actions}>
-        <Button title="clear" onPress={handleClear} color="#000" />
-        <View style={{ width: 20 }} />
-        {isUploading ? (
-          <ActivityIndicator color="#000" />
-        ) : (
-          <Button title="post" onPress={handleSaveAndUpload} color="#000" />
-        )}
-      </View>
+        <TouchableOpacity onPress={clearAlert} style={[styles.clearButton, {borderWidth: 0.25, borderColor: '#000', paddingVertical: 5, paddingHorizontal: 10}, BORDER_FRAME]}>
+          <Text>clear</Text>
+        </TouchableOpacity>
+          {isUploading ? (
+            <ActivityIndicator color="#000" />
+          ) : (
+          <TouchableOpacity onPress={handleSaveAndUpload} style={[styles.postButton, {borderWidth: 0.25, borderColor: '#000', paddingVertical: 5, paddingHorizontal: 10}, BORDER_FRAME]}>
+             <Text>post</Text>
+          </TouchableOpacity>
+          )}
+       </View>
+
     </View>
   );
 }
@@ -235,22 +377,44 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
   },
+  controls: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 15,
+    width: '80%',
+  },
+  colon: {
+    fontSize: 20,
+    fontFamily: 'PixelifySans_700Bold',
+    color: '#1a1a1a',
+  },
   container: {
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 50,
-    backgroundColor: '#fff',
+    backgroundColor: '#ececec',
   },
-  controls: {
-    marginBottom: 20,
-    width: '80%',
+  caption: {
+    fontSize: 15, 
+    marginBottom: 10, 
+    marginTop: 30, 
+    borderWidth: 0.25, 
+    paddingTop: 10,
+    paddingBottom: 100, 
+    paddingHorizontal: 15,
+    width: '85%',
+    borderRadius: 5,
+    color: '#5174cf',
+    backgroundColor: 'white',
   },
   inputGroup: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 10,
+    width: '80%',
   },
   input: {
     borderWidth: 1,
@@ -261,20 +425,33 @@ const styles = StyleSheet.create({
   },
   gridAndTools: {
     flexDirection: 'row',
-    marginTop: 70,
+    marginTop: 40,
+    gap: 30,
+  },
+  zoomable: {
+    overflow: 'hidden',
+    width: GRID_CONTAINER_SIZE,
+    height: GRID_CONTAINER_SIZE,
   },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     borderWidth: 1,
-    borderColor: '#000',
+    borderColor: '#5174cf',
     overflow: 'hidden',
-    marginLeft: 40,
   },
   actions: {
+    display: 'flex',
     flexDirection: 'row',
     padding: 20,
-    alignItems: 'center',
+    width: '95%',
+    gap: 230,
+  },
+  clearButton: {
+    alignSelf: 'flex-start'
+  },
+  postButton: {
+    alignSelf: 'flex-end'
   },
   colorSwatches: {
     flexDirection: 'row',

@@ -210,14 +210,17 @@ const HomeScreen = () => {
                     size={24}
                   />
                 </TouchableOpacity>
-
-                <TouchableOpacity onPress={() => openComments(item)} style={styles.actionButton}>
-                  <IconSymbol
-                    name={commentsVisible && activePost?.id === item.id ? 'commented' : 'comment'}
-                    color={'currentColor'}
-                    size={24}
-                  />
-                </TouchableOpacity>
+                <View style={styles.commentBar}> 
+                  <TouchableOpacity onPress={() => openComments(item)} style={styles.actionButton}>
+                    <IconSymbol
+                      name={commentsVisible && activePost?.id === item.id ? 'commented' : 'comment'}
+                      color={'currentColor'}
+                      size={24}
+                    />
+                  </TouchableOpacity>
+                  <Text style={styles.commentCount}>({(item._count?.comments ?? 0)})</Text>
+                </View>
+                
               </View>
               <Text style={styles.caption}>{item.content ?? JSON.stringify(item)}</Text>
             </View>
@@ -244,7 +247,7 @@ const HomeScreen = () => {
                               <Text style={styles.commentBody}>{item.body}</Text>
                             </View>
                           )}
-                          ListEmptyComponent={<Text>be the first comment!</Text>}
+                          ListEmptyComponent={<Text style={{fontFamily:'ms',}}>be the first comment!</Text>}
                         />
                       )}
 
@@ -305,6 +308,7 @@ const styles = StyleSheet.create({
     paddingTop: 15,
     marginLeft: -30,
     alignSelf: 'flex-start',
+    fontFamily:'ms',
   },
   actionsRow: {
     marginTop: 10,
@@ -314,6 +318,16 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     margin: 5,
+  },
+  commentBar: {
+    flexDirection: 'row',
+  },
+  commentCount: {
+    fontFamily: 'ms',
+    fontSize: 12,
+    alignSelf: 'center',
+    //marginTop: 7,
+    marginLeft: -2.5,
   },
   commentsOverlay: {
     flex: 1,
@@ -336,10 +350,11 @@ const styles = StyleSheet.create({
     gap: 40,
   },
   commentAuthor: {
-    fontWeight: '800'
+    fontWeight: '800',
+    fontFamily:'ms',
   },
   commentBody: {
-
+    fontFamily:'ms'
   },
   commentInputRow: {
     flexDirection: 'row',
@@ -351,6 +366,7 @@ const styles = StyleSheet.create({
     padding: 8,
     flex: 0.8,
     backgroundColor: 'white',
+    fontFamily:'ms',
   },
   commentSendButton: {
     flex: 0.15,

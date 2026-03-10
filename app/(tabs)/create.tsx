@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import {StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useFonts } from 'expo-font';
 
 export default function ChooseSize() {
   const router = useRouter()
@@ -17,7 +18,7 @@ export default function ChooseSize() {
   borderRightWidth: 3,
   overflow: 'hidden',
 } as const;
-  
+
   return (
     <View style={styles.container}>
 
@@ -30,7 +31,7 @@ export default function ChooseSize() {
             },
           })}>
           <Image style = {[BORDER_FRAME, styles.image]} source={require('../../assets/images/16x16-grid.png')}/>
-          <Text style = {{fontFamily: 'PixelifySans_700Bold', color:'#5174cf', fontSize: 18}}>16 x 16</Text>
+          <Text style = {{fontFamily:'ms', color:'#5174cf', fontSize: 18}}>16 x 16</Text>
         </TouchableOpacity>
 
          <TouchableOpacity style = {styles.gridButton} onPress={() => router.push({
@@ -40,7 +41,7 @@ export default function ChooseSize() {
             },
           })}>
           <Image style = {[BORDER_FRAME, styles.image]} source={require('../../assets/images/32x32-grid.png')}/>
-          <Text style = {{fontFamily: 'PixelifySans_700Bold', color:'#5174cf', fontSize: 18}}>32 x 32</Text>
+          <Text style = {{fontFamily: 'ms', color:'#5174cf', fontSize: 18}}>32 x 32</Text>
         </TouchableOpacity>
         
         <TouchableOpacity style = {styles.gridButton} onPress={() => router.push({
@@ -50,7 +51,7 @@ export default function ChooseSize() {
             },
           })}>
           <Image style = {[BORDER_FRAME, styles.image]} source={require('../../assets/images/64x64-grid.png')}/>
-          <Text style = {{fontFamily: 'PixelifySans_700Bold', color:'#5174cf', fontSize: 18}}>64 x 64</Text>
+          <Text style = {{fontFamily: 'ms', color:'#5174cf', fontSize: 18}}>64 x 64</Text>
         </TouchableOpacity>
       </View>
     </View>

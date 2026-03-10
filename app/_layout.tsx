@@ -7,13 +7,19 @@ import { useFonts, PixelifySans_400Regular, PixelifySans_700Bold } from '@expo-g
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AuthProvider } from '@/context/AuthContext';
 
+
 export const unstable_settings = {
   anchor: '(tabs)',
 };
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const [fontsLoaded] = useFonts({ PixelifySans_400Regular, PixelifySans_700Bold });
+  const [fontsLoaded] = useFonts
+    ({ 
+      PixelifySans_400Regular, 
+      PixelifySans_700Bold, 
+      ms: require('../assets/fonts/ms-sans-serif-1.ttf') 
+    });
 
   if (!fontsLoaded) return null;
 
