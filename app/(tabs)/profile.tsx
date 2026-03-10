@@ -25,6 +25,7 @@ type Post = {
     comments?: number;
   };
   likedByMe?: boolean;
+  showLikes: boolean;
 };
 
 type Comment = {
