@@ -180,7 +180,7 @@ export default function Challenge() {
     }
   }
 
-  const handleSaveAndUpload = async () => {
+  const handleSaveAndUpload = async (showLikes: boolean) => {
     if (isUploading) return;
     setIsUploading(true);
     try {
@@ -188,7 +188,7 @@ export default function Challenge() {
       const filename = `pix.png`;
       const { signedUrl, publicUrl } = await api.getPresignedUrl(filename, token);
       await api.uploadToS3(signedUrl, base64);
-      await api.createPost({ title: 'Challenge Post', content: caption, imageUrl: publicUrl, challengeDate: new Date().toISOString() }, token);
+      await api.createPost({ title: 'Challenge Post', content: caption, imageUrl: publicUrl, challengeDate: new Date().toISOString(), showLikes }, token);
       const { posts } = await api.getTodayChallengePosts(token);
       setSubmissions(posts);
       setSubmitted(true);   
@@ -308,7 +308,16 @@ export default function Challenge() {
       )
       }
       else {
-        handleSaveAndUpload();
+        Alert.alert(
+          'show number of likes on this post?',
+          'the number of likes will only be visible to you if toggled on',
+          [
+            { text: 'yes!', onPress: () => handleSaveAndUpload(true) },
+            { text: 'no!', onPress: () => handleSaveAndUpload(false) },
+            { text: 'cancel', style: 'cancel' },
+          ],
+            { cancelable: true }
+        )
       }
   }
 

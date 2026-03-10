@@ -282,7 +282,7 @@ export default function CreatePix() {
         [
           { text: 'yes!', onPress: () => handleSaveAndUpload(true) },
           { text: 'no!', onPress: () => handleSaveAndUpload(false) },
-          { text: 'cancle', style: 'cancel' },
+          { text: 'cancel', style: 'cancel' },
         ],
         { cancelable: true }
       )
