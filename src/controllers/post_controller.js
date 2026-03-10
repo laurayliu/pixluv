@@ -14,7 +14,7 @@ export const getPosts = async (req, res) => {
       createdAt: true, 
       showLikes: true,
       author: { select: { username: true } } ,
-      _count: { select: { likes: true } },
+      _count: { select: { likes: true, comments: true } },
       ...(userId && {
         likes: {
           where: { userId },
@@ -99,7 +99,7 @@ export const getPostsByUser = async (req, res) => {
       createdAt: true, 
       showLikes: true,
       author: { select: { username: true } } ,
-      _count: { select: { likes: true } },
+      _count: { select: { likes: true, comments: true } },
       ...(userId && {
         likes: {
           where: { userId },
