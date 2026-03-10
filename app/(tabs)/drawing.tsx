@@ -1,6 +1,6 @@
 import DefaultColorPanel from '../../components/color_picker';
 import React, { useState, useRef, useEffect } from 'react';
-import {StyleSheet, Text, View, TextInput, Dimensions, ActivityIndicator, PanResponder, Pressable, TouchableOpacity, Alert } from 'react-native';
+import {StyleSheet, Text, View, TextInput, Dimensions, ActivityIndicator, PanResponder, Pressable, TouchableOpacity, Alert, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { captureRef } from "react-native-view-shot";
 import { api } from '../../services/api';
 import { useAuth } from '@/context/AuthContext';
@@ -291,6 +291,7 @@ export default function CreatePix() {
 
 
   return (
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
     <View style={styles.container}>
       <Pressable style={styles.backButton} onPress={() => router.navigate('/create')}>
         <IconSymbol name="undo" size={24} color="#ffffff" />
@@ -353,6 +354,7 @@ export default function CreatePix() {
         )}
       </View>
       </View>
+    </TouchableWithoutFeedback>
   );
 };
 
