@@ -199,7 +199,7 @@ const HomeScreen = () => {
         </View>
       <View style={styles.posts}>
         <FlatList
-          data={posts.slice(0, 5)}
+          data={posts.slice(0, 10)}
           keyExtractor={(item) => String(item.id ?? item._id)}
           renderItem={({ item }) => (
             <View style={[BORDER_FRAME, styles.post]}>
