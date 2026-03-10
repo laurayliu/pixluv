@@ -57,8 +57,6 @@ const BORDER_FRAME = {
 const Profile = () => {
   const { user, logout, token, updateUser } = useAuth();
   const [posts, setPosts] = useState<any[]>([]);
-  const [followerCount, setFollowerCount] = useState(0);
-  const [followingCount, setFollowingCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pfpPickerVisible, setPfpPickerVisible] = useState(false);
@@ -205,7 +203,6 @@ const Profile = () => {
       }
     };
   
-
   const offset = useSharedValue<number>(0);
   const coverOffset = useSharedValue<number>(0);
   const width = useSharedValue<number>(0);
@@ -220,69 +217,69 @@ const Profile = () => {
   })
 
 
-const nextPage = () => {
-  setCurrentPage(p => 
-    Math.min(p + 1, posts.length - 1))
-    // currentPageShared.set(next); 
-}
+  const nextPage = () => {
+    setCurrentPage(p => 
+      Math.min(p + 1, posts.length - 1))
+      // currentPageShared.set(next); 
+  }
 
-const prevPage = () => {
-  setCurrentPage(p => 
-    Math.max(p - 1, 0)
-  )
-}
+  const prevPage = () => {
+    setCurrentPage(p => 
+      Math.max(p - 1, 0)
+    )
+  }
   const { width: wid, height: hei } = Dimensions.get('window')
   const bookWidth = wid - 60;
   const imagePercent = .60
   const translateX = useSharedValue(0)
 
   const pan = Gesture.Pan()
-      .onUpdate((e) => {
-        translateX.value = e.translationX;
-      })
+    .onUpdate((e) => {
+      translateX.value = e.translationX;
+    })
 
-      .onEnd(() => {
-        if (offset.value < -90 && currentPageShared.value < posts.length - 1) {
-          console.log(`Turn page ${currentPageShared.value}`)
-          currentPageShared.value += 1;
-          offset.value = withTiming(-109, { duration: 300 }, (finished) => {
-            if (finished) {
-              scheduleOnRN(nextPage);
-              offset.set(0);
-              console.log(`T: Update current page ${currentPageShared.value}`)
-            }
-          });
-        } else if (offset.get() > -90 && currentPageShared.value > 0) {
-          console.log(`Flip back page ${currentPageShared.value}`)
-          currentPageShared.value -= 1;
-          offset.set(withTiming(0, { duration: 300 }, (finished) => {
-            if (finished) {
-              scheduleOnRN(prevPage);
-              console.log(`F: Update current page ${currentPageShared.value}`)
-            }
-          })) 
-        } else if (offset.get() < 10 || offset.get() > 0 && currentPageShared.value === 0) {
-            coverOffset.value = withTiming(0, { duration: 300 })
-            offset.set(withTiming(0, { duration: 0 }));
+    .onEnd(() => {
+      if (offset.value < -90 && currentPageShared.value < posts.length - 1) {
+        console.log(`Turn page ${currentPageShared.value}`)
+        currentPageShared.value += 1;
+        offset.value = withTiming(-109, { duration: 300 }, (finished) => {
+          if (finished) {
+            scheduleOnRN(nextPage);
+            offset.set(0);
+            console.log(`T: Update current page ${currentPageShared.value}`)
+          }
+        });
+      } else if (offset.get() > -90 && currentPageShared.value > 0) {
+        console.log(`Flip back page ${currentPageShared.value}`)
+        currentPageShared.value -= 1;
+        offset.set(withTiming(0, { duration: 300 }, (finished) => {
+          if (finished) {
+            scheduleOnRN(prevPage);
+            console.log(`F: Update current page ${currentPageShared.value}`)
+          }
+        })) 
+      } else if (offset.get() < 10 || offset.get() > 0 && currentPageShared.value === 0) {
+          coverOffset.value = withTiming(0, { duration: 100 })
+          offset.set(withTiming(0, { duration: 0 }));
 
-        } else {
-          offset.set(withTiming(0, { duration: 300 }));
-        }
-      })
+      } else {
+        offset.set(withTiming(0, { duration: 300 }));
+      }
+    })
 
-      .onChange((event) => {
-        offset.set((value) => value += event.changeX) ;
-        offset.set((value) => value =  Math.min(0, Math.max(-120, offset.value))); 
-      })
+    .onChange((event) => {
+      offset.set((value) => value += event.changeX) ;
+      offset.set((value) => value =  Math.min(0, Math.max(-120, offset.value))); 
+    })
 
-      .onFinalize((event) => {
-        if (offset.get() < -90) return; 
-        offset.set((value) => withDecay({
-          velocity: event.velocityX * 0.3,
-          rubberBandEffect: true,
-          clamp: [-110,0],
-        }))
-      });
+    .onFinalize((event) => {
+      if (offset.get() < -90) return; 
+      offset.set((value) => withDecay({
+        velocity: event.velocityX * 0.3,
+        rubberBandEffect: true,
+        clamp: [-110,0],
+      }))
+    });
 
   const animatedStyles = useAnimatedStyle(() => ({
     transform: [{perspective: 8000}, {translateX: (-bookWidth/2)}, { rotateY: `${offset.value}deg`}, {translateX: bookWidth/2}],  
@@ -291,38 +288,36 @@ const prevPage = () => {
 
 
   const coverPan = Gesture.Pan()
-      .onUpdate((e) => {
-        translateX.value = e.translationX;
-      })
+    .onUpdate((e) => {
+      translateX.value = e.translationX;
+    })
 
-      .onEnd(() => {
+    .onEnd(() => {
 
-        if (coverOffset.value < -90 && currentPageShared.value < posts.length - 1) {
-          coverOffset.value = withTiming(-109, { duration: 300 }, (finished) => {
-            openBookCover.value = false
-          });
-        } else if (coverOffset.get() > -90 && currentPageShared.value > 0) {
-          console.log(`Flip back page ${currentPageShared.value}`)
-        } else {
-          coverOffset.set(withTiming(0, { duration: 300 }));
-        }
-      })
+      if (coverOffset.value < -90 && currentPageShared.value < posts.length - 1) {
+        coverOffset.value = withTiming(-109, { duration: 300 }, (finished) => {
+          openBookCover.value = false
+        });
+      } else if (coverOffset.get() > -90 && currentPageShared.value > 0) {
+        console.log(`Flip back page ${currentPageShared.value}`)
+      } else {
+        coverOffset.set(withTiming(0, { duration: 300 }));
+      }
+    })
 
-      .onChange((event) => {
-        coverOffset.set((value) => value += event.changeX) ;
-        coverOffset.set((value) => value =  Math.min(0, Math.max(-120, coverOffset.value))); 
-      })
+    .onChange((event) => {
+      coverOffset.set((value) => value += event.changeX) ;
+      coverOffset.set((value) => value =  Math.min(0, Math.max(-120, coverOffset.value))); 
+    })
 
-      .onFinalize((event) => {
-        if (coverOffset.get() < -90) return; 
-        coverOffset.set((value) => withDecay({
-          velocity: event.velocityX * 0.3,
-          rubberBandEffect: true,
-          clamp: [-110,0],
-        }))
-      });
-
-
+    .onFinalize((event) => {
+      if (coverOffset.get() < -90) return; 
+      coverOffset.set((value) => withDecay({
+        velocity: event.velocityX * 0.3,
+        rubberBandEffect: true,
+        clamp: [-110,0],
+      }))
+    });
 
   const coverAnimatedStyles = useAnimatedStyle(() => ({
     transform: [{perspective: 8000}, {translateX: (-bookWidth/2)}, { rotateY: `${coverOffset.value}deg`}, {translateX: bookWidth/2}],  
@@ -332,17 +327,9 @@ const prevPage = () => {
 
   useFocusEffect(
     useCallback(() => {
-      if (!user?.id) return;
       setLoading(true);
-      Promise.all([
-        api.getPostsByUser(user.id, token),
-        api.getUser(user.id),
-      ])
-        .then(([userPosts, fullUser]) => {
-          setPosts(userPosts);
-          setFollowerCount(fullUser._count?.followers ?? 0);
-          setFollowingCount(fullUser._count?.following ?? 0);
-        })
+      api.getPostsByUser(user?.id ?? null, token)
+        .then(setPosts)
         .catch((err: Error) => setError(err.message))
         .finally(() => setLoading(false));
     }, [user?.id, token])
@@ -366,7 +353,17 @@ const prevPage = () => {
 
         <View style={styles.info_container}>
           <Text style={styles.username}>{user?.username ?? 'your profile'}</Text>
-          <Text style={styles.texts}>{followerCount} followers · {followingCount} following</Text>
+          <Text style={styles.texts}>Bio goes here oooh</Text>
+          <View style={styles.action_container}>
+            {/* Needd to add edit button instead for personal profile view */}
+            <Pressable style={styles.action_button}>
+              <Text style={styles.button_text}>Follow</Text>
+            </Pressable>
+
+            <Pressable style={styles.action_button}>
+              <Text  style={styles.button_text}>Pix Me!</Text>
+            </Pressable>
+          </View>
         </View>
       </View>
 
@@ -491,9 +488,9 @@ const prevPage = () => {
 
         <GestureDetector key={'cover'} gesture={coverPan}>
           <Animated.View style={[coverAnimatedStyles, styles.page_cover, {width: bookWidth, alignSelf: 'center', alignItems: 'center'}, {zIndex: 77500}]}>
-            <Image style={[{width: '100%', height: '100%', borderRadius: 15}]} source={require('../../assets/images/leather_cover.jpg')}/>
+            <Image style={[{width: '100%', height: '100%', borderRadius: 15}]} source={require('../../assets/images/book_cover.png')}/>
           </Animated.View>
-          </GestureDetector>
+        </GestureDetector>
         {posts.slice(0, 10).map((item, index) => {
           const isLast = index === currentPage
           const isPrev = index < currentPage ;
@@ -510,7 +507,6 @@ const prevPage = () => {
                 ? 950
                 : 0} 
               ]}>
-
               <View style={[styles.art_wrapper, BORDER_FRAME, {marginTop: wid*.1}]}>
                 <Image
                   source={{ uri: item.imageUrl }}
@@ -564,8 +560,6 @@ const prevPage = () => {
                   </View>
                 </View> 
               </View>
-
-
 
             </Animated.View>
             
@@ -757,7 +751,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 1,
   },
-    container: {
+  container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'flex-start',
@@ -815,7 +809,8 @@ const styles = StyleSheet.create({
     width: ITEM_SIZE,
     height: ITEM_SIZE,
     margin: 4,
-  },  commentsOverlay: {
+  },  
+  commentsOverlay: {
     flex: 1,
     justifyContent: 'flex-end',
   },
