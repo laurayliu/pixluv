@@ -57,8 +57,6 @@ const BORDER_FRAME = {
 const Profile = () => {
   const { user, logout, token, updateUser } = useAuth();
   const [posts, setPosts] = useState<any[]>([]);
-  const [followerCount, setFollowerCount] = useState(0);
-  const [followingCount, setFollowingCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pfpPickerVisible, setPfpPickerVisible] = useState(false);
@@ -329,17 +327,9 @@ const Profile = () => {
 
   useFocusEffect(
     useCallback(() => {
-      if (!user?.id) return;
       setLoading(true);
-      Promise.all([
-        api.getPostsByUser(user.id, token),
-        api.getUser(user.id),
-      ])
-        .then(([userPosts, fullUser]) => {
-          setPosts(userPosts);
-          setFollowerCount(fullUser._count?.followers ?? 0);
-          setFollowingCount(fullUser._count?.following ?? 0);
-        })
+      api.getPostsByUser(user?.id ?? null, token)
+        .then(setPosts)
         .catch((err: Error) => setError(err.message))
         .finally(() => setLoading(false));
     }, [user?.id, token])
@@ -363,7 +353,17 @@ const Profile = () => {
 
         <View style={styles.info_container}>
           <Text style={styles.username}>{user?.username ?? 'your profile'}</Text>
-          <Text style={styles.texts}>{followerCount} followers · {followingCount} following</Text>
+          <Text style={styles.texts}>Bio goes here oooh</Text>
+          <View style={styles.action_container}>
+            {/* Needd to add edit button instead for personal profile view */}
+            <Pressable style={styles.action_button}>
+              <Text style={styles.button_text}>Follow</Text>
+            </Pressable>
+
+            <Pressable style={styles.action_button}>
+              <Text  style={styles.button_text}>Pix Me!</Text>
+            </Pressable>
+          </View>
         </View>
       </View>
 
