@@ -64,7 +64,7 @@ const Profile = () => {
   const [pfpPostsLoading, setPfpPostsLoading] = useState(false);
   const [updatingPfp, setUpdatingPfp] = useState(false);
   const router = useRouter();
-    const [followerCount, setFollowerCount] = useState(0);
+  const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [commentsVisible, setCommentsVisible] = useState(false);
   const [activePost, setActivePost] = useState<Post | null>(null);
@@ -381,15 +381,18 @@ const Profile = () => {
         <View style={styles.sticker_container}>
           <Text style={[styles.texts, {textAlign: 'center' }]}>Sticker Collection</Text>
           <View style={styles.sticker_box}>
-            <View style={styles.sticker}>
+            <View style={[styles.sticker, {backgroundColor: '#B7E3FF'}]}>
+
+              <IconSymbol name="sticker2" size={70} color={'currentColor'} />
+
               {/* use image here to display the sticker */}
               {/* <Image
                 source={{ uri: item.imageUrl }}
               /> */}
             </View>
 
-            <View style={styles.sticker}>
-              {/* use image here to display the sticker */}
+            <View style={[styles.sticker, {backgroundColor: '#ffffff'}]}>
+              <IconSymbol name="sticker1" size={70} color={'currentColor'} />
             </View>
           </View>
         </View>
@@ -721,7 +724,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row'
   },
   sticker: {
-    backgroundColor: '#382979',
+    display: 'flex',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
     height: 75,
     width: 75,
   },
