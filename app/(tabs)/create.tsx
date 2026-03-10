@@ -24,7 +24,7 @@ export default function ChooseSize() {
 
       <Text style = {{fontSize: 25, fontFamily: 'PixelifySans_700Bold', marginBottom: 45, marginTop: 100, color:'#5174cf'}}>pick canvas size:</Text>
       <View style = {styles.buttons}>
-        <TouchableOpacity style = {styles.gridButton1} onPress={() => router.push({
+        <TouchableOpacity style = {styles.gridButton} onPress={() => router.push({
             pathname: '/drawing',
             params: {
               size: 16,
@@ -73,12 +73,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: 50,
-  },
-  gridButton1: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 54,
   },
   nextButton: {
     width: 200,

@@ -177,6 +177,8 @@ export default function CreatePix() {
     } finally {
       setIsUploading(false);
     }
+
+    
   };
 
   const handleUndo = () => {
@@ -258,6 +260,20 @@ export default function CreatePix() {
     )
   }
 
+  const captionAlert = () => {
+    if (caption.trim().length === 0) {
+      Alert.alert(
+      "alert!",
+      "please add a caption!",
+      [],
+      { cancelable: true }
+    )
+    }
+    else {
+      handleSaveAndUpload();
+    }
+  }
+
 
   return (
     <View style={styles.container}>
@@ -316,7 +332,7 @@ export default function CreatePix() {
         {isUploading ? (
           <ActivityIndicator color="#000" />
         ) : (
-          <TouchableOpacity onPress={handleSaveAndUpload} style={[styles.postButton, {borderWidth: 0.25, borderColor: '#000', paddingVertical: 5, paddingHorizontal: 10}, BORDER_FRAME]}>
+          <TouchableOpacity onPress={captionAlert} style={[styles.postButton, {borderWidth: 0.25, borderColor: '#000', paddingVertical: 5, paddingHorizontal: 10}, BORDER_FRAME]}>
             <Text style={{fontFamily:'ms'}} >post</Text>
           </TouchableOpacity>
         )}
