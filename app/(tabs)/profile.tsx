@@ -1,18 +1,41 @@
 
-import React, { useCallback, useState}from 'react';
+import React, { useCallback, useEffect, useState}from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { StyleSheet, Text, View, Button, LayoutChangeEvent, TouchableOpacity, Pressable, FlatList, Image, ActivityIndicator, Modal, TouchableWithoutFeedback} from 'react-native';
+import { StyleSheet, Text, View, Button, LayoutChangeEvent, KeyboardAvoidingView, TouchableOpacity, TextInput, Pressable, FlatList, Image, ActivityIndicator, Modal, TouchableWithoutFeedback} from 'react-native';
 import { useAuth } from '@/context/AuthContext';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { api } from '../../services/api';
 import Animated, { useSharedValue, withSpring, withDecay, useAnimatedStyle, withTiming, withDelay} from 'react-native-reanimated';
 import { Dimensions } from 'react-native';
+import { useRouter } from 'expo-router';
 import {
   Gesture,
   GestureDetector,
   GestureHandlerRootView,
 } from 'react-native-gesture-handler';
 import {scheduleOnRN } from 'react-native-worklets';
+
+type Post = {
+  id: string;
+  title?: string;
+  caption?: string;
+  imageUrl?: string;
+  _count?: {
+    likes?: number;
+    comments?: number;
+  };
+  likedByMe?: boolean;
+};
+
+type Comment = {
+  id: string;
+  body: string;
+  createdAt: string;
+  user: {
+    username: string;
+    id: string;
+  };
+};
 
 const ITEM_SIZE = (Dimensions.get('window').width - 48) / 3;
 const SHEET_HEIGHT = Dimensions.get('window').height * 0.5;
@@ -26,6 +49,17 @@ const Profile = () => {
   const [pfpPosts, setPfpPosts] = useState<{ id: string; imageUrl: string }[]>([]);
   const [pfpPostsLoading, setPfpPostsLoading] = useState(false);
   const [updatingPfp, setUpdatingPfp] = useState(false);
+  const router = useRouter();
+  
+  const [commentsVisible, setCommentsVisible] = useState(false);
+  const [activePost, setActivePost] = useState<Post | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [newComment, setNewComment] = useState('');
+  const [loadingComments, setLoadingComments] = useState(false);
+  const [submittingComment, setSubmittingComment] = useState(false);
+
+
+
   const pfpSheetY = useSharedValue(SHEET_HEIGHT);
   const pfpSheetStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: pfpSheetY.value }],
@@ -59,40 +93,127 @@ const Profile = () => {
     }
   };
 
+  const handleToggleLike = async (postId: string) => {
+    if (!token) {
+      router.replace('/login');
+    }
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === postId
+          ? {
+              ...p,
+              likedByMe: !p.likedByMe,
+              _count: {
+                ...(p._count ?? {}),
+                likes: (p._count?.likes ?? 0) + (p.likedByMe ? -1 : 1),
+              },
+            }
+          : p,
+      ),
+    );
+
+    try {
+      await api.likePost(postId, token);
+    } catch {
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId
+            ? {
+                ...p,
+                likedByMe: !p.likedByMe,
+                _count: {
+                  ...(p._count ?? {}),
+                  likes: (p._count?.likes ?? 0) + (!p.likedByMe ? -1 : 1),
+                },
+              }
+            : p,
+        ),
+      );
+    }
+  };
+  
+  
+    const openComments = async (post: Post) => {
+      setActivePost(post);
+      setCommentsVisible(true);
+      setLoadingComments(true);
+      setNewComment('');
+  
+      try {
+        const data = await api.getComments(post.id);
+        setComments(data);
+      } catch (err) {
+        console.error('Failed to load comments', err);
+  
+      } finally {
+        setLoadingComments(false);
+      }
+    };
+  
+    const closeComments = () => {
+      setCommentsVisible(false);
+      setActivePost(null);
+      setComments([]);
+      setNewComment('');
+    };
+  
+    const handleSubmitComment = async () => {
+      if (!token || !activePost) return;
+      const body = newComment.trim();
+      if (!body) return;
+  
+      setSubmittingComment(true);
+      try {
+        const created = await api.createComment(activePost.id, body, token);
+        setComments((prev) => [...prev, created]);
+        setNewComment('');
+  
+        // optionally bump comment count on the post list
+        setPosts((prev) =>
+          prev.map((p) =>
+            p.id === activePost.id
+              ? {
+                  ...p,
+                  _count: {
+                    ...(p._count ?? {}),
+                    comments: (p._count?.comments ?? 0) + 1,
+                  },
+                }
+              : p,
+          ),
+        );
+      } finally {
+        setSubmittingComment(false);
+      }
+    };
+  
+
   const offset = useSharedValue<number>(0);
   const width = useSharedValue<number>(0);
   const pageWidth = useSharedValue(0);
-  const flip = useSharedValue<number>(0);
-  const [trackIndex, setTrackIndex] = useState(0);
   const [currentPage, setCurrentPage] = useState(0)
   const currentPageShared = useSharedValue(0);
 
+  // const next = Math.min(p + 1, posts.length - 1);
+  // currentPageShared.set(next);  
+  useEffect(() => {
+    currentPageShared.set(currentPage);
+  })
+
+
 const nextPage = () => {
-  setCurrentPage(p => {
-    const next = Math.min(p + 1, posts.length - 1);
-    currentPageShared.value = next;  
-    return next;
-  });
+  setCurrentPage(p => 
+    Math.min(p + 1, posts.length - 1))
+    // currentPageShared.set(next); 
 }
 
 const prevPage = () => {
-  setCurrentPage(p => {
-    const prev = Math.max(p - 1, 0);
-    currentPageShared.value = prev; 
-    return prev;
-  });
+  setCurrentPage(p => 
+    Math.max(p - 1, 0)
+  )
 }
   const { width: wid, height: hei } = Dimensions.get('window')
   const bookWidth = wid * 0.75;
-
-  const onLayout = (event: LayoutChangeEvent) => {
-    pageWidth.value = event.nativeEvent.layout.width;
-  };
-
-  const handlePress = () => {
-    width.value = withSpring(Math.random() * 100 + 50);
-  };
-
   const translateX = useSharedValue(0)
 
   const pan = Gesture.Pan()
@@ -103,55 +224,54 @@ const prevPage = () => {
       .onEnd(() => {
         if (offset.value < -90 && currentPageShared.value < posts.length - 1) {
           console.log(`Turn page ${currentPageShared.value}`)
-            currentPageShared.value += 1;
-
+          currentPageShared.value += 1;
           offset.value = withTiming(-109, { duration: 300 }, (finished) => {
             if (finished) {
               scheduleOnRN(nextPage);
-              offset.value = 0;
+              offset.set(0);
               console.log(`T: Update current page ${currentPageShared.value}`)
             }
           });
-        } else if (offset.value > -90 && currentPageShared.value > 0) {
+        } else if (offset.get() > -90 && currentPageShared.value > 0) {
           console.log(`Flip back page ${currentPageShared.value}`)
           currentPageShared.value -= 1;
-          offset.value = withTiming(0, { duration: 300 }, (finished) => {
+          offset.set(withTiming(0, { duration: 300 }, (finished) => {
             if (finished) {
               scheduleOnRN(prevPage);
               console.log(`F: Update current page ${currentPageShared.value}`)
             }
-          });
+          })) 
         } else {
-          offset.value = withTiming(0, { duration: 300 });
+          offset.set(withTiming(0, { duration: 300 }));
         }
       })
 
       .onChange((event) => {
-        offset.value += event.changeX;
-        offset.value = Math.min(0, Math.max(-120, offset.value)); 
+        offset.set((value) => value += event.changeX) ;
+        offset.set((value) => value =  Math.min(0, Math.max(-120, offset.value))); 
       })
 
       .onFinalize((event) => {
-        if (offset.value < -90) return; 
-        offset.value = withDecay({
+        if (offset.get() < -90) return; 
+        offset.set((value) => withDecay({
           velocity: event.velocityX * 0.3,
           rubberBandEffect: true,
           clamp: [-110,0],
-        });
+        }))
       });
 
   const animatedStyles = useAnimatedStyle(() => ({
-    transform: [{perspective: 3000}, {translateX: -bookWidth/2}, { rotateY: `${offset.value}deg`}, {translateX: bookWidth/2}],  
+    transform: [{perspective: 8000}, {translateX: (-bookWidth/2)}, { rotateY: `${offset.value}deg`}, {translateX: bookWidth/2}],  
   }));
 
   useFocusEffect(
     useCallback(() => {
       setLoading(true);
-      api.getPostsByUser(user?.id)
+      api.getPostsByUser(user?.id ?? null, token)
         .then(setPosts)
         .catch((err: Error) => setError(err.message))
         .finally(() => setLoading(false));
-    }, [])
+    }, [user?.id, token])
   );
 
   if (error) return <Text>{error}</Text>;
@@ -247,15 +367,63 @@ const prevPage = () => {
         </View>
       </View>
 
-      {/* <TouchableOpacity style={styles.logoutButton} onPress={logout}>
+      <TouchableOpacity style={styles.logoutButton} onPress={logout}>
         <Text style={styles.logoutText}>log out</Text>
-      </TouchableOpacity>  */}
+      </TouchableOpacity> 
 
     <GestureHandlerRootView style={styles.container}>
       <View style={styles.book_container}>
         {loading && <ActivityIndicator size="large" />}
         {posts.length === 0 && !loading && (<Text>No post yet</Text>)}
+            <Modal visible={commentsVisible} animationType="fade" transparent={true} onRequestClose={closeComments}>
+              <View style={styles.commentsOverlay}>
+                <Pressable style={styles.backdrop} onPress={closeComments} />
+                    <KeyboardAvoidingView
+                      style={styles.commentsContainer}
+                    >
+                      {loadingComments ? (
+                        <ActivityIndicator size="large" />
+                      ) : (
+                        <FlatList
+                          data={comments}
+                          keyExtractor={(c) => c.id}
+                          contentContainerStyle={styles.commentsList}
+                          renderItem={({ item }) => (
+                            <View style={styles.commentRow}>
+                              <Text style={styles.commentAuthor}>{item.user.username}</Text>
+                              <Text style={styles.commentBody}>{item.body}</Text>
+                            </View>
+                          )}
+                          ListEmptyComponent={<Text>be the first comment!</Text>}
+                        />
+                      )}
+
+                      <View style={styles.commentInputRow}>
+                        <TextInput
+                          style={[styles.commentInput]}
+                          placeholder="leave a comment..."
+                          value={newComment}
+                          onChangeText={setNewComment}
+                          placeholderTextColor='rgba(81, 116, 207, 0.5)' 
+                          autoCapitalize='none'
+                        />
+                        <TouchableOpacity
+                          onPress={handleSubmitComment}
+                          disabled={submittingComment || !newComment.trim()}
+                          style={[styles.commentSendButton]}
+                        >
+                          <IconSymbol
+                            name={'mail'}
+                            color={'currentColor'}
+                            size={20}
+                          />
+                        </TouchableOpacity>
+                      </View>
+                    </KeyboardAvoidingView>
+              </View>
+      </Modal>
         {posts.slice(0, 10).map((item, index) => {
+          const isLast = index === currentPage
           const isPrev = index < currentPage ;
           const isTop = index === currentPage;
           const isNext = index === currentPage + 1;
@@ -269,15 +437,35 @@ const prevPage = () => {
                 ? 950
                 : 0} 
               ]}>
-              <Text>{item.title ?? item.caption ?? JSON.stringify(item)}</Text>
+              
               <Image
                 source={{ uri: item.imageUrl }}
                 style={{ width: 300, height: 300, justifyContent: 'center'}}
               />
+              <View>
+                <TouchableOpacity onPress={() => handleToggleLike(item.id)} style={styles.actionButton}>
+                  <IconSymbol
+                    name={item.likedByMe ? 'liked' : 'like'}
+                    color={'currentColor'}
+                    size={24}
+                  />
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={() => openComments(item)} style={styles.actionButton}>
+                  <IconSymbol
+                    name={commentsVisible && activePost?.id === item.id ? 'commented' : 'comment'}
+                    color={'currentColor'}
+                    size={24}
+                  />
+                </TouchableOpacity>
+              </View>
+              <Text>{item.content ?? JSON.stringify(item)}</Text>
+
             </Animated.View>
+            
           );
 
-          if (isTop) {
+          if (isTop || isLast) {
             return(
               <GestureDetector key={String(item.id ?? item._id)} gesture={pan}>
                 {Page}
@@ -386,19 +574,17 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     justifyContent: 'center',
     alignContent: 'center',
-    textAlign: 'center',
-    fontFamily:'ms',
+    textAlign: 'center'
   },
   username: {
     fontSize: 25,
-    fontFamily: 'PixelifySans_700Bold',
+    fontWeight: '700',
     color: '#ffffff',
   },
   texts: {
     fontSize: 15,
     color: '#ffffff',
     marginBottom: 5,
-    fontFamily:'ms',
   },
   favorite_container: {
     display: 'flex',
@@ -502,6 +688,48 @@ const styles = StyleSheet.create({
     width: ITEM_SIZE,
     height: ITEM_SIZE,
     margin: 4,
+  },  commentsOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  commentsContainer: {
+    height: '40%',
+    backgroundColor: '#ececec',
+    padding: 30,
+  },
+  commentsList: {
+
+  },
+  commentRow: {
+    flexDirection: 'row',
+    gap: 40,
+  },
+  commentAuthor: {
+    fontWeight: '800'
+  },
+  commentBody: {
+
+  },
+  commentInputRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    margin: 10,
+    marginBottom: 5,
+  },
+  commentInput: {
+    padding: 8,
+    flex: 0.8,
+    backgroundColor: 'white',
+  },
+  commentSendButton: {
+    flex: 0.15,
+  }, 
+  actionButton: {
+    margin: 5,
   },
 });
 
