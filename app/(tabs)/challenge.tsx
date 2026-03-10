@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 13,
-    fontFamily: 'PixelifySans_400Regular',
+    fontFamily: 'ms',
     color: '#1a1a1a',
     marginTop: -6,
   },
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
   },
   cardDate: {
     fontSize: 18,
-    fontFamily: 'PixelifySans_700Bold',
+    fontFamily: 'ms',
     color: '#1a1a1a',
   },
   cardPrompt: {
@@ -173,12 +173,12 @@ const styles = StyleSheet.create({
   },
   hexLabel: {
     fontSize: 9,
-    fontFamily: 'PixelifySans_400Regular',
+    fontFamily: 'ms',
     color: '#1a1a1a',
   },
   tagLine: {
     fontSize: 13,
-    fontFamily: 'PixelifySans_700Bold',
+    fontFamily: 'ms',
     color: '#1a1a1a',
     textAlign: 'center',
   },

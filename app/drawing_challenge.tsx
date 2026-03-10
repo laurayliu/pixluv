@@ -334,7 +334,7 @@ export default function Challenge() {
       <Pressable onPress={() => router.back()} style={{ position: 'absolute', top: 50, left: 20, zIndex: 10 }}>
         <BackIcon width={24} height={24} />
       </Pressable>
-      <Text style={{ fontSize: 20, marginBottom: 10, fontFamily: 'PixelifySans_700Bold' }}>challenge!</Text>
+      <Text style={{ fontSize: 20, marginBottom: 10, fontFamily: 'ms' }}>challenge!</Text>
       <View style={styles.controls}>
         <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
           <PaletteImg style={{marginTop: 20}} width={62} height={48} />
@@ -528,12 +528,12 @@ const submissionStyles = StyleSheet.create({
   },
   title: {
     fontSize: 22,
-    fontFamily: 'PixelifySans_700Bold',
+    fontFamily: 'ms',
     color: '#1a1a1a',
   },
   subtitle: {
     fontSize: 13,
-    fontFamily: 'PixelifySans_400Regular',
+    fontFamily: 'ms',
     color: '#1a1a1a',
     marginTop: -6,
   },
@@ -551,13 +551,13 @@ const submissionStyles = StyleSheet.create({
   },
   yourLabel: {
     fontSize: 16,
-    fontFamily: 'PixelifySans_700Bold',
+    fontFamily: 'ms',
     color: '#1a1a1a',
     alignSelf: 'flex-start',
   },
   username: {
     fontSize: 16,
-    fontFamily: 'PixelifySans_700Bold',
+    fontFamily: 'ms',
     color: '#1a1a1a',
     alignSelf: 'flex-start',
   },
