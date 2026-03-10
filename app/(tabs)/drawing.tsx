@@ -356,6 +356,13 @@ export default function CreatePix() {
       <View style={{ width: '100%' }}>
           <DefaultColorPanel value={selectedColor} onColorChange={setSelectedColor}/>
       </View>
+
+      {captionFocused && (
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.darkOverlay} />
+      </TouchableWithoutFeedback>
+      )}
+
       <TextInput value={caption} onFocus={() => setCaptionFocused(true)} onBlur = {() => setCaptionFocused(false)} onChangeText={setCaption} style = {[captionFocused ? styles.focusedCaption : styles.caption, BORDER_FRAME, {fontFamily:'ms'}]} multiline placeholder='enter caption!' placeholderTextColor='rgba(81, 116, 207, 0.5)' autoCapitalize='none'/>
       
       <View style={styles.actions}>
@@ -511,7 +518,7 @@ const styles = StyleSheet.create({
   },
   focusedCaption: {
     position: 'fixed',
-    top: -475,
+    top: -460,
     fontSize: 15,
     borderWidth: 0.25, 
     paddingTop: 10,
@@ -520,6 +527,16 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '25%',
     backgroundColor: 'white',
+    zIndex: 11,
+  },
+  darkOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', 
+    zIndex: 10, 
   },
   inputGroup: {
     flexDirection: 'row',
@@ -569,8 +586,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   backButton: {
-    marginTop: 10,
-    marginLeft: 15,
+    position: 'absolute',
+    top: 60,
+    left: 15,
     alignSelf: 'flex-start',
   },
   alertOverlay: {

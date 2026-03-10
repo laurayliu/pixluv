@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, Dimensions, ActivityIndicator, Pressable, PanResponder, Image, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Dimensions, ActivityIndicator, Pressable, PanResponder, Image, TouchableOpacity, ScrollView, Alert, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { captureRef } from 'react-native-view-shot';
 import { api } from '../services/api';
 import { useAuth } from '@/context/AuthContext';
@@ -385,6 +385,12 @@ export default function Challenge() {
         </View>
       </View>
 
+      {captionFocused && (
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.darkOverlay} />
+        </TouchableWithoutFeedback>
+      )}
+
       <TextInput value={caption} onFocus={() => setCaptionFocused(true)} onBlur = {() => setCaptionFocused(false)} onChangeText={setCaption} style = {[styles.caption, BORDER_FRAME]} multiline placeholder='enter caption!' placeholderTextColor='rgba(81, 116, 207, 0.5)' autoCapitalize='none'/>
       <View style={styles.actions}>
         <TouchableOpacity onPress={clearAlert} style={[styles.clearButton, {borderWidth: 0.25, borderColor: '#000', paddingVertical: 5, paddingHorizontal: 10}, BORDER_FRAME]}>
@@ -454,6 +460,15 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '25%',
     backgroundColor: 'white',
+  },
+   darkOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', 
+    zIndex: 10, 
   },
   inputGroup: {
     flexDirection: 'row',
