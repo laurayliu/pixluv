@@ -1,14 +1,6 @@
-import { Platform } from 'react-native';
-import Constants from 'expo-constants';
 
 function getBaseUrl() {
-  if (Platform.OS === 'web') return 'http://localhost:9090/api';
-  if (Platform.OS === 'android' && !Constants.expoConfig?.hostUri) {
-    return 'http://10.0.2.2:9090/api'; // android emulator
-  }
-  const host = Constants.expoConfig?.hostUri?.split(':')[0]; // ip from hostUri
-  if (host) return `http://${host}:9090/api`;
-  return 'http://localhost:9090/api';
+  return 'https://project-api-pixluv.onrender.com/api';
 }
 
 const BASE_URL = getBaseUrl();
