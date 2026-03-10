@@ -385,16 +385,16 @@ export default function Challenge() {
         </View>
       </View>
 
-      <TextInput value={caption} onFocus={() => setCaptionFocused(true)} onBlur = {() => setCaptionFocused(false)} onChangeText={setCaption} style = {[styles.caption, BORDER_FRAME]} multiline placeholder='enter caption!' placeholderTextColor='rgba(81, 116, 207, 0.5)' autoCapitalize='none'/>
+      <TextInput value={caption} onFocus={() => setCaptionFocused(true)} onBlur = {() => setCaptionFocused(false)} onChangeText={setCaption} style = {[styles.caption, BORDER_FRAME, {fontFamily:'ms'}]} multiline placeholder='enter caption!' placeholderTextColor='rgba(81, 116, 207, 0.5)' autoCapitalize='none'/>
       <View style={styles.actions}>
         <TouchableOpacity onPress={clearAlert} style={[styles.clearButton, {borderWidth: 0.25, borderColor: '#000', paddingVertical: 5, paddingHorizontal: 10}, BORDER_FRAME]}>
-          <Text>clear</Text>
+          <Text style={{fontFamily:'ms'}}>clear</Text>
         </TouchableOpacity>
           {isUploading ? (
             <ActivityIndicator color="#000" />
           ) : (
           <TouchableOpacity onPress={captionAlert} style={[styles.postButton, {borderWidth: 0.25, borderColor: '#000', paddingVertical: 5, paddingHorizontal: 10}, BORDER_FRAME]}>
-             <Text>post</Text>
+             <Text style={{fontFamily:'ms'}}>post</Text>
           </TouchableOpacity>
           )}
        </View>
@@ -491,13 +491,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 20,
     width: '95%',
-    gap: 230,
+    gap: 20,
+    justifyContent: 'flex-end',
   },
   clearButton: {
-    alignSelf: 'flex-start'
+    alignSelf: 'flex-start',
+    backgroundColor: 'white',
   },
   postButton: {
-    alignSelf: 'flex-end'
+    alignSelf: 'flex-end',
+    backgroundColor: 'white',
   },
   colorSwatches: {
     flexDirection: 'row',
