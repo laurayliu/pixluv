@@ -334,7 +334,7 @@ export default function Challenge() {
       <Pressable onPress={() => router.back()} style={{ position: 'absolute', top: 50, left: 20, zIndex: 10 }}>
         <BackIcon width={24} height={24} />
       </Pressable>
-      <Text style={{ fontSize: 20, marginBottom: 10, fontFamily: 'PixelifySans_700Bold' }}>challenge!</Text>
+      <Text style={{ fontSize: 20, marginBottom: 10, fontFamily: 'ms' }}>challenge!</Text>
       <View style={styles.controls}>
         <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
           <PaletteImg style={{marginTop: 20}} width={62} height={48} />
@@ -391,16 +391,16 @@ export default function Challenge() {
         </TouchableWithoutFeedback>
       )}
 
-      <TextInput value={caption} onFocus={() => setCaptionFocused(true)} onBlur = {() => setCaptionFocused(false)} onChangeText={setCaption} style = {[styles.caption, BORDER_FRAME]} multiline placeholder='enter caption!' placeholderTextColor='rgba(81, 116, 207, 0.5)' autoCapitalize='none'/>
+      <TextInput value={caption} onFocus={() => setCaptionFocused(true)} onBlur = {() => setCaptionFocused(false)} onChangeText={setCaption} style = {[styles.caption, BORDER_FRAME, {fontFamily:'ms'}]} multiline placeholder='enter caption!' placeholderTextColor='rgba(81, 116, 207, 0.5)' autoCapitalize='none'/>
       <View style={styles.actions}>
         <TouchableOpacity onPress={clearAlert} style={[styles.clearButton, {borderWidth: 0.25, borderColor: '#000', paddingVertical: 5, paddingHorizontal: 10}, BORDER_FRAME]}>
-          <Text>clear</Text>
+          <Text style={{fontFamily:'ms'}}>clear</Text>
         </TouchableOpacity>
           {isUploading ? (
             <ActivityIndicator color="#000" />
           ) : (
           <TouchableOpacity onPress={captionAlert} style={[styles.postButton, {borderWidth: 0.25, borderColor: '#000', paddingVertical: 5, paddingHorizontal: 10}, BORDER_FRAME]}>
-             <Text>post</Text>
+             <Text style={{fontFamily:'ms'}}>post</Text>
           </TouchableOpacity>
           )}
        </View>
@@ -506,13 +506,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 20,
     width: '95%',
-    gap: 230,
+    gap: 20,
+    justifyContent: 'flex-end',
   },
   clearButton: {
-    alignSelf: 'flex-start'
+    alignSelf: 'flex-start',
+    backgroundColor: 'white',
   },
   postButton: {
-    alignSelf: 'flex-end'
+    alignSelf: 'flex-end',
+    backgroundColor: 'white',
   },
   colorSwatches: {
     flexDirection: 'row',
@@ -543,12 +546,12 @@ const submissionStyles = StyleSheet.create({
   },
   title: {
     fontSize: 22,
-    fontFamily: 'PixelifySans_700Bold',
+    fontFamily: 'ms',
     color: '#1a1a1a',
   },
   subtitle: {
     fontSize: 13,
-    fontFamily: 'PixelifySans_400Regular',
+    fontFamily: 'ms',
     color: '#1a1a1a',
     marginTop: -6,
   },
@@ -566,13 +569,13 @@ const submissionStyles = StyleSheet.create({
   },
   yourLabel: {
     fontSize: 16,
-    fontFamily: 'PixelifySans_700Bold',
+    fontFamily: 'ms',
     color: '#1a1a1a',
     alignSelf: 'flex-start',
   },
   username: {
     fontSize: 16,
-    fontFamily: 'PixelifySans_700Bold',
+    fontFamily: 'ms',
     color: '#1a1a1a',
     alignSelf: 'flex-start',
   },

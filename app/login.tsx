@@ -91,6 +91,7 @@ const styles = StyleSheet.create({
     color: '#cd477a',
     marginBottom: 32,
     letterSpacing: 1,
+    fontFamily: 'ms',
   },
   input: {
     width: '100%',
@@ -107,6 +108,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#1d2b53',
     backgroundColor: '#fff',
+    fontFamily: 'ms',
   },
   button: {
     width: '100%',
@@ -128,10 +130,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     letterSpacing: 1,
+    fontFamily: 'ms'
   },
   link: {
     color: '#cd477a',
     fontSize: 13,
     letterSpacing: 1,
+    fontFamily: 'ms'
   },
 });
