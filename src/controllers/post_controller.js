@@ -13,7 +13,7 @@ export const getPosts = async (req, res) => {
       imageUrl: true, 
       createdAt: true, 
       showLikes: true,
-      author: { select: { username: true } } ,
+      author: { select: { username: true, profilePicture: true } },
       _count: { select: { likes: true, comments: true } },
       ...(userId && {
         likes: {
@@ -58,7 +58,7 @@ export const getTodayChallengePosts = async (req, res) => {
   const posts = await prisma.post.findMany({
     where: { challengeDate: { gte: today, lt: tomorrow } },
     orderBy: { createdAt: 'desc' },
-    select: { id: true, imageUrl: true, authorId: true, author: { select: { username: true } } },
+    select: { id: true, imageUrl: true, authorId: true, author: { select: { username: true, profilePicture: true } } },
   });
 
   const hasSubmitted = posts.some(p => p.authorId === req.user.id);
@@ -73,7 +73,7 @@ export const getChallengePosts = async (req, res) => {
   const posts = await prisma.post.findMany({
     where: { challengeDate: { gte: day, lt: nextDay } },
     orderBy: { createdAt: 'desc' },
-    select: { id: true, imageUrl: true, authorId: true, author: { select: { username: true } } },
+    select: { id: true, imageUrl: true, authorId: true, author: { select: { username: true, profilePicture: true } } },
   });
 
   const hasSubmitted = posts.some(p => p.authorId === req.user.id);
@@ -85,7 +85,7 @@ export const getPost = async (req, res) => {
   const post = await prisma.post.findUnique({
     where: { id: req.params.id },
     include: { 
-      author: { select: { username: true, id: true } },
+      author: { select: { username: true, id: true, profilePicture: true } },
       _count: { select: { likes: true, comments: true } },
       ...(userId && {
         likes: {
@@ -114,7 +114,7 @@ export const getPostsByUser = async (req, res) => {
       imageUrl: true, 
       createdAt: true, 
       showLikes: true,
-      author: { select: { username: true } } ,
+      author: { select: { username: true, profilePicture: true } },
       _count: { select: { likes: true, comments: true } },
       ...(userId && {
         likes: {
@@ -185,7 +185,7 @@ export const createComment = async (req, res) => {
       id: true,
       body: true,
       createdAt: true,
-      user: { select: { username: true, id: true } },
+      user: { select: { username: true, id: true, profilePicture: true } },
     }
   });
   res.json(comment);
@@ -200,7 +200,7 @@ export const getComments = async (req, res) => {
       id: true,
       body: true,
       createdAt: true,
-      user: { select: {username: true, id: true } },
+      user: { select: { username: true, id: true, profilePicture: true } },
     },
   });
   res.json(comments);
