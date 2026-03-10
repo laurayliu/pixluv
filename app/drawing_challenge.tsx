@@ -16,6 +16,7 @@ const DEFAULT_SELECTED_COLOR = '#000';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GRID_CONTAINER_SIZE = SCREEN_WIDTH - 100;
 
+
 const GridCell = React.memo(({ color, gridSize, cellSize, noBorder }: { 
   color: string, 
   gridSize: number,
@@ -74,6 +75,8 @@ export default function Challenge() {
       level: 1,
   });
 
+  const isPinching = useRef(false);
+
 
   useEffect(() => {
     api.getTodayChallenge()
@@ -131,35 +134,53 @@ export default function Challenge() {
   };
 
    const panResponder = PanResponder.create({
-    onStartShouldSetPanResponder: (evt) => evt.nativeEvent.touches.length === 1,
-    onMoveShouldSetPanResponder: (evt) => evt.nativeEvent.touches.length === 1,
-  
-    onPanResponderGrant: (evt) => { // runs once you touch screen for the first time
-      const { pageX, pageY } = evt.nativeEvent; // capture whatever pageX/pageY is
-      gridRef.current?.measure((x, y, width, height, gridOriginX, gridOriginY) => { // gives updated gridOriginX/gridOriginY
-        colorCellAtPosition(pageX, pageY, gridOriginX, gridOriginY); // callback with updated values 
-      });
-    },
-  
-    onPanResponderMove: (evt) => {
-      const { pageX, pageY } = evt.nativeEvent;
-      gridRef.current?.measure((x, y, width, height, gridOriginX, gridOriginY) => {
-        colorCellAtPosition(pageX, pageY, gridOriginX, gridOriginY);
-      });
-    },
-  
-    onPanResponderRelease: (evt) => {
-      if (evt.nativeEvent.touches.length > 0) return; 
-      if (activeTool.current === 'dropper') return; // don't call setPrevGrid if using dropper 
-
-      setPrevGrid((prevHistory) => {
-        const newGrid = prevHistory.slice(0, index.current + 1); // prevents weird things if someone undos then starts drawing again
-        const updatedGrid = [...newGrid, [...grid]];  // takes saved states and adds on current grid at the end
-        index.current = updatedGrid.length - 1;
-        return updatedGrid;
-      });
-    }
-  });
+     onStartShouldSetPanResponder: (evt) => evt.nativeEvent.touches.length === 1,
+     onMoveShouldSetPanResponder: (evt) => {
+       if (evt.nativeEvent.touches.length > 1) {
+         isPinching.current = true; 
+         return false; // This gives control back to the ZoomableView
+       }
+       return true;
+     },
+     onPanResponderGrant: (evt) => { // runs once you touch screen for the first time
+       if (evt.nativeEvent.touches.length > 1) return; 
+       isPinching.current = false;
+       const { pageX, pageY } = evt.nativeEvent; // capture whatever pageX/pageY is
+       gridRef.current?.measure((x, y, width, height, gridOriginX, gridOriginY) => { // gives updated gridOriginX/gridOriginY
+         colorCellAtPosition(pageX, pageY, gridOriginX, gridOriginY); // callback with updated values 
+       });
+     },
+   
+     onPanResponderMove: (evt) => {
+       if (evt.nativeEvent.touches.length > 1) {
+         isPinching.current = true;
+         return;
+       }
+       if (!isPinching.current) {
+         const { pageX, pageY } = evt.nativeEvent;
+         gridRef.current?.measure((x, y, width, height, gridOriginX, gridOriginY) => {
+         colorCellAtPosition(pageX, pageY, gridOriginX, gridOriginY);
+       });
+       }
+      
+     },
+   
+     onPanResponderRelease: (evt) => {
+       //if (evt.nativeEvent.touches.length > 0) return; 
+       if (isPinching.current) {
+         isPinching.current = false;
+         return;
+       }
+       if (activeTool.current === 'dropper') return; // don't call setPrevGrid if using dropper 
+   
+       setPrevGrid((prevHistory) => {
+         const newGrid = prevHistory.slice(0, index.current + 1); // prevents weird things if someone undos then starts drawing again
+         const updatedGrid = [...newGrid, [...grid]];  // takes saved states and adds on current grid at the end
+         index.current = updatedGrid.length - 1;
+         return updatedGrid;
+       });
+     }
+   });
 
   const handleClear = () => {
     setGrid(Array(GRID_SIZE * GRID_SIZE).fill(DEFAULT_COLOR))

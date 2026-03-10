@@ -126,12 +126,21 @@ export default function CreatePix() {
     });
   };
 
+  const isPinching = useRef(false);
+
 
   const panResponder = PanResponder.create({
   onStartShouldSetPanResponder: (evt) => evt.nativeEvent.touches.length === 1,
-  onMoveShouldSetPanResponder: (evt) => evt.nativeEvent.touches.length === 1,
-
+  onMoveShouldSetPanResponder: (evt) => {
+    if (evt.nativeEvent.touches.length > 1) {
+      isPinching.current = true; 
+      return false; 
+    }
+    return true;
+  },
   onPanResponderGrant: (evt) => { // runs once you touch screen for the first time
+    if (evt.nativeEvent.touches.length > 1) return; 
+    isPinching.current = false;
     const { pageX, pageY } = evt.nativeEvent; // capture whatever pageX/pageY is
     gridRef.current?.measure((x, y, width, height, gridOriginX, gridOriginY) => { // gives updated gridOriginX/gridOriginY
       colorCellAtPosition(pageX, pageY, gridOriginX, gridOriginY); // callback with updated values 
@@ -139,14 +148,25 @@ export default function CreatePix() {
   },
 
   onPanResponderMove: (evt) => {
-    const { pageX, pageY } = evt.nativeEvent;
-    gridRef.current?.measure((x, y, width, height, gridOriginX, gridOriginY) => {
+    if (evt.nativeEvent.touches.length > 1) {
+      isPinching.current = true;
+      return;
+    }
+    if (!isPinching.current) {
+      const { pageX, pageY } = evt.nativeEvent;
+      gridRef.current?.measure((x, y, width, height, gridOriginX, gridOriginY) => {
       colorCellAtPosition(pageX, pageY, gridOriginX, gridOriginY);
     });
+    }
+   
   },
 
   onPanResponderRelease: (evt) => {
-    if (evt.nativeEvent.touches.length > 0) return; 
+    //if (evt.nativeEvent.touches.length > 0) return; 
+    if (isPinching.current) {
+      isPinching.current = false;
+      return;
+    }
     if (activeTool.current === 'dropper') return; // don't call setPrevGrid if using dropper 
 
     setPrevGrid((prevHistory) => {
