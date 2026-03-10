@@ -23,6 +23,11 @@ router.route('/users/:id')
   .put(requireAuth, Users.updateUser)
   .delete(requireAuth, Users.deleteUser);
 
+router.post('/users/:id/follow', requireAuth, Users.followUser);
+router.delete('/users/:id/follow', requireAuth, Users.unfollowUser);
+router.get('/users/:id/followers', Users.getFollowers);
+router.get('/users/:id/following', Users.getFollowing);
+
 router.get('/posts/user/:userId', Posts.getPostsByUser);
 router.get('/posts/challenge/today', requireAuth, Posts.getTodayChallengePosts);
 
