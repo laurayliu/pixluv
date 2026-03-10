@@ -28,7 +28,7 @@ model Post {
   id            String    @id @default(cuid())
   title         String?
   tags          String?
-  content       String?
+  content       String
   imageUrl      String?
   challengeDate DateTime?
   createdAt     DateTime  @default(now())
