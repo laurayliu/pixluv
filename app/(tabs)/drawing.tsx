@@ -110,6 +110,11 @@ export default function CreatePix() {
       return;
     }
 
+    if (activeTool.current === 'dropper'){
+      handleDropper(grid[cellIndex]);
+      return;
+    }
+
     const drawingColor = activeTool.current === 'erase' ? DEFAULT_COLOR : selectedColor; // if eraser is toggled set selected color to white
     setGrid((currentGrid) => {
       if (currentGrid[cellIndex] === drawingColor) { return currentGrid }
@@ -140,6 +145,8 @@ export default function CreatePix() {
 
   onPanResponderRelease: (evt) => {
     if (evt.nativeEvent.touches.length > 0) return; 
+    if (activeTool.current === 'dropper') return; // don't call setPrevGrid if using dropper 
+
     setPrevGrid((prevHistory) => {
       const newGrid = prevHistory.slice(0, index.current + 1); // prevents weird things if someone undos then starts drawing again
       const updatedGrid = [...newGrid, [...grid]];  // takes saved states and adds on current grid at the end
@@ -170,6 +177,12 @@ export default function CreatePix() {
       const { signedUrl, publicUrl } = await api.getPresignedUrl(filename, token);
       await api.uploadToS3(signedUrl, base64);
       await api.createPost({ content: caption, imageUrl: publicUrl, showLikes }, token);
+      router.navigate('/(tabs)');
+
+      handleClear(); // make sure to clear canvas
+      setSelectedColor(DEFAULT_SELECTED_COLOR);
+      setCaption('');
+
       alert(`Post Success!`);
     } catch (error) {
       console.error("Upload process failed:", error);
@@ -215,35 +228,28 @@ export default function CreatePix() {
         const col = currentCell % gridSize;
 
         // make sure neighbors are within bounds
-        // if (col > 0 && row > 0) {
-        //   neighborCells.push(currentCell - 1 - gridSize); // upper left neighbor cell
-        // }
         if (col > 0) {
           neighborCells.push(currentCell - 1); // left neighbor cell
         }
-        // if (col > 0 && row < gridSize - 1) {
-        //   neighborCells.push(currentCell - 1 + gridSize); // lower left neighbor cell
-        // }
         if (row > 0){
           neighborCells.push(currentCell - gridSize); // up neighbor cell
         } 
         if (row < gridSize - 1){
           neighborCells.push(currentCell + gridSize); // down neighbor cell
         }
-        // if (col < gridSize - 1 && row > 0){
-        //   neighborCells.push(currentCell + 1 - gridSize); // upper right neighbor cell
-        // } 
         if (col < gridSize - 1){
           neighborCells.push(currentCell + 1); // right neighbor cell
         } 
-        // if (col < gridSize - 1 && row < gridSize - 1){
-        //   neighborCells.push(currentCell + 1 + gridSize); // lower right neighbor cell
-        // } 
-
       }
       return newGrid;
     });
 
+  }
+
+  const handleDropper = (cellColor: string) => {
+   if (cellColor !== selectedColor){
+      setSelectedColor(cellColor);
+    }
   }
 
   const clearAlert = () => {
@@ -372,8 +378,9 @@ const styles = StyleSheet.create({
     paddingBottom: 100, 
     paddingHorizontal: 15,
     width: '85%',
+    height: '20%',
     borderRadius: 5,
-    color: '#5174cf',
+    color: '#141415',
     backgroundColor: 'white',
   },
   inputGroup: {
