@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
     paddingBottom: 100, 
     paddingHorizontal: 15,
     width: '100%',
-    height: '20%',
+    height: '25%',
     backgroundColor: 'white',
   },
   inputGroup: {
