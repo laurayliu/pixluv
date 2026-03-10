@@ -283,16 +283,18 @@ export default function CreatePix() {
       return;
     }
     else {
-      Alert.alert(
-        'show number of likes on this post?',
-        'the number of likes will only be visible to you if toggled on',
-        [
-          { text: 'yes!', onPress: () => handleSaveAndUpload(true) },
-          { text: 'no!', onPress: () => handleSaveAndUpload(false) },
-          { text: 'cancel', style: 'cancel' },
-        ],
-        { cancelable: true }
-      )
+      // Alert.alert(
+      //   'show number of likes on this post?',
+      //   'the number of likes will only be visible to you if toggled on',
+      //   [
+      //     { text: 'yes!', onPress: () => handleSaveAndUpload(true) },
+      //     { text: 'no!', onPress: () => handleSaveAndUpload(false) },
+      //     { text: 'cancel', style: 'cancel' },
+      //   ],
+      //   { cancelable: true }
+      // )
+      setShowAlertLike(true)
+      return;
     }
   }
 
@@ -378,6 +380,35 @@ export default function CreatePix() {
                 <TouchableOpacity style={[BORDER_FRAME, styles.alertButton]} onPress={() => setShowAlertCaption(false)}>
                   <Text style={{fontFamily: 'ms'}} >ok</Text>
                 </TouchableOpacity>
+              </View>
+              
+          </View>
+        </Modal>
+
+        <Modal
+          visible={showAlertLike}
+          transparent={true}
+          animationType='fade'
+          onRequestClose={() => setShowAlertLike(false)}
+        >
+          <View style={[styles.alertOverlay]}>
+            <Pressable style={styles.backdrop} onPress={() => setShowAlertLike(false)} />
+              <View style={[BORDER_FRAME, styles.alertBox]}>
+                <View style={[styles.captionTitle]}>
+                  <Text style={{fontFamily: 'ms', fontSize: 20}}>show number of likes on this post?</Text>
+                </View>
+                <View style={[styles.captionBody]}>
+                  <Text style={{fontFamily: 'ms'}}>the number of likes will only be visible to you if toggled on.</Text>
+                </View>
+                <View style={styles.alertButtons}>
+                  <TouchableOpacity style={[BORDER_FRAME, styles.alertButton]} onPress={() => handleSaveAndUpload(true)}>
+                    <Text style={{fontFamily: 'ms'}} >yes!</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={[BORDER_FRAME, styles.alertButton]} onPress={() => handleSaveAndUpload(false)}>
+                    <Text style={{fontFamily: 'ms'}} >no!</Text>
+                  </TouchableOpacity>
+                </View>
+                
               </View>
               
           </View>
@@ -496,6 +527,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     paddingHorizontal: 5,
     alignSelf: 'flex-end',
+  },
+  alertButtons: {
+    flexDirection: 'row',
+    alignSelf: 'flex-end',
+    gap: 15,
   }
 });
 
