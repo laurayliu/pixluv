@@ -33,6 +33,14 @@ async function put(path, body, token) {
   return res.json();
 }
 
+async function del(path, token) {
+  const headers = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(`${BASE_URL}${path}`, { method: 'DELETE', headers });
+  if (!res.ok) throw new Error(`DELETE ${path} failed: ${res.status}`);
+  return res.json();
+}
+
 export const api = {
   hello: () => get('/'),
   getPostsByUser: (userId, token) => get(`/posts/user/${userId}`, token),
@@ -46,6 +54,11 @@ export const api = {
   createPost: (data, token) => post('/posts', data, token),
 
   likePost: (postId, token) => post(`/posts/${postId}/like`, {}, token),
+
+  followUser: (id, token) => post(`/users/${id}/follow`, {}, token),
+  unfollowUser: (id, token) => del(`/users/${id}/follow`, token),
+  getFollowers: (id) => get(`/users/${id}/followers`),
+  getFollowing: (id) => get(`/users/${id}/following`),
 
   getComments: (postId) => get(`/posts/${postId}/comments`),
   createComment: (postId, body, token) => post(`/posts/${postId}/comments`, {body}, token),
