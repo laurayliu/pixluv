@@ -110,6 +110,11 @@ export default function CreatePix() {
       return;
     }
 
+    if (activeTool.current === 'dropper'){
+      handleDropper(grid[cellIndex]);
+      return;
+    }
+
     const drawingColor = activeTool.current === 'erase' ? DEFAULT_COLOR : selectedColor; // if eraser is toggled set selected color to white
     setGrid((currentGrid) => {
       if (currentGrid[cellIndex] === drawingColor) { return currentGrid }
@@ -246,6 +251,10 @@ export default function CreatePix() {
 
   }
 
+  const handleDropper = (cellColor: string) => {
+    setSelectedColor(cellColor);
+  }
+
   const clearAlert = () => {
     Alert.alert(
       "alert!",
@@ -271,6 +280,7 @@ export default function CreatePix() {
     }
     else {
       handleSaveAndUpload();
+      handleClear(); // make sure to clear canvas
     }
   }
 
