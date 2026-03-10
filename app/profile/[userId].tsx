@@ -57,11 +57,14 @@ export default function UserProfile() {
   const { user, token } = useAuth();
 
   const { userId } = useLocalSearchParams<{ userId: string }>();
-  // const { token } = useAuth();
-  const [profile, setProfile] = useState<{ username: string; profilePicture?: string; bio?: string } | null>(null);
+  const { token, user: me } = useAuth();
+  const [profile, setProfile] = useState<{ username: string; profilePicture?: string; bio?: string; _count?: { followers: number; following: number } } | null>(null);
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
+  const [followerCount, setFollowerCount] = useState(0);
 
   const [commentsVisible, setCommentsVisible] = useState(false);
   const [activePost, setActivePost] = useState<Post | null>(null);
@@ -207,10 +210,15 @@ export default function UserProfile() {
   //   Promise.all([
   //     api.getUser(userId),
   //     api.getPostsByUser(userId, token),
+      api.getFollowers(userId).catch(() => []),
   //   ])
-  //     .then(([user, userPosts]) => {
+  //     .then(([user, userPosts, followers]) => {
   //       setProfile(user);
   //       setPosts(userPosts);
+        setFollowerCount(user._count?.followers ?? followers.length);
+        if (me?.id) {
+          setIsFollowing(followers.some((f: any) => f.id === me.id));
+        }
   //     })
   //     .catch((err: Error) => setError(err.message))
   //     .finally(() => setLoading(false));
@@ -323,6 +331,27 @@ export default function UserProfile() {
 
   if (error) return <Text>{error}</Text>;
 
+  const handleFollowToggle = async () => {
+    if (!token) { router.replace('/login'); return; }
+    setFollowLoading(true);
+    const wasFollowing = isFollowing;
+    setIsFollowing(!wasFollowing);
+    setFollowerCount(c => c + (wasFollowing ? -1 : 1));
+    try {
+      if (wasFollowing) {
+        await api.unfollowUser(userId, token);
+      } else {
+        await api.followUser(userId, token);
+      }
+    } catch (err) {
+      console.error('Follow/unfollow failed:', err);
+      setIsFollowing(wasFollowing);
+      setFollowerCount(c => c + (wasFollowing ? 1 : -1));
+    } finally {
+      setFollowLoading(false);
+    }
+  };
+
   
   return (
     <View style={styles.main_container}>
@@ -340,10 +369,10 @@ export default function UserProfile() {
 
         <View style={styles.info_container}>
           <Text style={styles.username}>{profile?.username ?? ''}</Text>
-          <Text style={styles.texts}>{profile?.bio ?? 'Bio goes here oooh'}</Text>
+          <Text style={styles.texts}>{followerCount} followers · {profile?._count?.following ?? 0} following</Text>
           <View style={styles.action_container}>
-            <Pressable style={styles.action_button}>
-              <Text style={styles.button_text}>Follow</Text>
+            <Pressable style={[styles.action_button, isFollowing && styles.action_button_active]} onPress={handleFollowToggle} disabled={followLoading}>
+              <Text style={styles.button_text}>{isFollowing ? 'Following' : 'Follow'}</Text>
             </Pressable>
             <Pressable
               style={styles.action_button}
@@ -636,6 +665,11 @@ const styles = StyleSheet.create({
     width: '48%',
     fontSize: 15,
     backgroundColor: '#FF004D',
+  },
+  action_button_active: {
+    backgroundColor: '#a0003200',
+    borderWidth: 1,
+    borderColor: '#FF004D',
   },
   button_text: {
     width: '100%',

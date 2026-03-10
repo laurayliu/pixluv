@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, TextInput, Dimensions, ActivityIndicator, Press
 import { captureRef } from 'react-native-view-shot';
 import { api } from '../services/api';
 import { useAuth } from '@/context/AuthContext';
-import Toolbar, { ALL_TOOL_NAMES } from '@/components/toolbar';
+import Toolbar, { ALL_TOOL_NAMES, ToolName } from '@/components/toolbar';
 import { useRouter } from 'expo-router';
 import BackIcon from '../assets/icons/editor/undo.svg';
 import { ReactNativeZoomableView } from '@openspacelabs/react-native-zoomable-view';
@@ -51,12 +51,14 @@ export default function Challenge() {
   const [submissions, setSubmissions] = useState<{ id: string; imageUrl: string; author: { username: string } }[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const [allowedColors, setAllowedColors] = useState<string[]>([]);
+  const [allowedTools, setAllowedTools] = useState<ToolName[]>(ALL_TOOL_NAMES);
 
   const [grid, setGrid] = useState<string[]>(
     Array(GRID_SIZE * GRID_SIZE).fill(DEFAULT_COLOR)
   );
   const [selectedColor, setSelectedColor] = useState<string>(DEFAULT_SELECTED_COLOR);
   const [isUploading, setIsUploading] = useState(false);
+  const[captionFocused, setCaptionFocused] = useState(false);
   const cellSize = GRID_CONTAINER_SIZE / GRID_SIZE;
 
   const activeTool = useRef('draw');
@@ -77,6 +79,7 @@ export default function Challenge() {
     api.getTodayChallenge()
       .then((c: any) => {
         if (c.allowedColors?.length) setAllowedColors(c.allowedColors);
+        if (c.allowedTools?.length) setAllowedTools(c.allowedTools as ToolName[]);
       })
       .catch(() => {});
 
@@ -353,7 +356,7 @@ export default function Challenge() {
       </View>
 
       <View style={styles.gridAndTools}>
-        <Toolbar allowedTools={ALL_TOOL_NAMES} onToolChange={t => { activeTool.current = t; }} onUndo={handleUndo} onRedo={handleRedo} />
+        <Toolbar allowedTools={allowedTools} onToolChange={t => { activeTool.current = t; }} onUndo={handleUndo} onRedo={handleRedo} />
 
         <View style = {styles.zoomable}>
           <ReactNativeZoomableView
@@ -382,7 +385,7 @@ export default function Challenge() {
         </View>
       </View>
 
-      <TextInput value={caption} onChangeText={setCaption} style = {[styles.caption, BORDER_FRAME]} multiline placeholder='enter caption!' placeholderTextColor='rgba(81, 116, 207, 0.5)' autoCapitalize='none'/>
+      <TextInput value={caption} onFocus={() => setCaptionFocused(true)} onBlur = {() => setCaptionFocused(false)} onChangeText={setCaption} style = {[styles.caption, BORDER_FRAME]} multiline placeholder='enter caption!' placeholderTextColor='rgba(81, 116, 207, 0.5)' autoCapitalize='none'/>
       <View style={styles.actions}>
         <TouchableOpacity onPress={clearAlert} style={[styles.clearButton, {borderWidth: 0.25, borderColor: '#000', paddingVertical: 5, paddingHorizontal: 10}, BORDER_FRAME]}>
           <Text>clear</Text>
@@ -438,6 +441,18 @@ const styles = StyleSheet.create({
     height: '20%',
     borderRadius: 5,
     color: '#5174cf',
+    backgroundColor: 'white',
+  },
+   focusedCaption: {
+    position: 'fixed',
+    top: -475,
+    fontSize: 15,
+    borderWidth: 0.25, 
+    paddingTop: 10,
+    paddingBottom: 100, 
+    paddingHorizontal: 15,
+    width: '100%',
+    height: '25%',
     backgroundColor: 'white',
   },
   inputGroup: {

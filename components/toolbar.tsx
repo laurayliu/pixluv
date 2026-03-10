@@ -4,7 +4,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 
 export type ToolName = 'draw' | 'erase' | 'fill' | 'lasso' | 'dropper' | 'line' | 'square' | 'circle' | 'undo' | 'redo';
 
-export const ALL_TOOL_NAMES: ToolName[] = ['draw', 'erase', 'fill', 'lasso', 'dropper', 'line', 'square', 'circle', 'undo', 'redo'];
+export const ALL_TOOL_NAMES: ToolName[] = ['draw', 'erase', 'fill', 'dropper', 'undo', 'redo'];
 
 type Props = {
   allowedTools: ToolName[];
