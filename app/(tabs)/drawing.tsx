@@ -162,7 +162,7 @@ export default function CreatePix() {
     index.current = 0;
   }
 
-  const handleSaveAndUpload = async () => {
+  const handleSaveAndUpload = async (showLikes: boolean) => {
     if (isUploading) return;
     setIsUploading(true);
 
@@ -176,7 +176,7 @@ export default function CreatePix() {
       const filename = `pix.png`;
       const { signedUrl, publicUrl } = await api.getPresignedUrl(filename, token);
       await api.uploadToS3(signedUrl, base64);
-      await api.createPost({ content: caption, imageUrl: publicUrl }, token);
+      await api.createPost({ content: caption, imageUrl: publicUrl, showLikes }, token);
       router.navigate('/(tabs)');
 
       handleClear(); // make sure to clear canvas
@@ -276,7 +276,16 @@ export default function CreatePix() {
     )
     }
     else {
-      handleSaveAndUpload();
+      Alert.alert(
+        'show number of likes on this post?',
+        'the number of likes will only be visible to you if toggled on',
+        [
+          { text: 'yes!', onPress: () => handleSaveAndUpload(true) },
+          { text: 'no!', onPress: () => handleSaveAndUpload(false) },
+          { text: 'cancle', style: 'cancel' },
+        ],
+        { cancelable: true }
+      )
     }
   }
 
