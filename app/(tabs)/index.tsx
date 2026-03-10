@@ -18,6 +18,7 @@ import {
 import { api } from '../../services/api';
 import { useAuth } from '@/context/AuthContext';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { ProfileAvatar } from '@/components/ui/profile-avatar';
 import { useRouter } from 'expo-router';
 
 type Post = {
@@ -30,6 +31,10 @@ type Post = {
     comments?: number;
   };
   likedByMe?: boolean;
+  author?: {
+    username?: string;
+    profilePicture?: string | null;
+  };
 };
 
 type Comment = {
@@ -39,6 +44,7 @@ type Comment = {
   user: {
     username: string;
     id: string;
+    profilePicture?: string | null;
   };
 };
 
@@ -203,24 +209,31 @@ const HomeScreen = () => {
                 style={[BORDER_FRAME, { width: 250, height: 250, marginTop: 15 }]}
               />
               <View style={styles.actionsRow}>
-                <TouchableOpacity onPress={() => handleToggleLike(item.id)} style={styles.actionButton}>
-                  <IconSymbol
-                    name={item.likedByMe ? 'liked' : 'like'}
-                    color={'currentColor'}
-                    size={24}
-                  />
-                </TouchableOpacity>
-                <View style={styles.commentBar}> 
-                  <TouchableOpacity onPress={() => openComments(item)} style={styles.actionButton}>
+                <View style={styles.actionButtons}>
+                  <TouchableOpacity onPress={() => handleToggleLike(item.id)} style={styles.actionButton}>
                     <IconSymbol
-                      name={commentsVisible && activePost?.id === item.id ? 'commented' : 'comment'}
+                      name={item.likedByMe ? 'liked' : 'like'}
                       color={'currentColor'}
                       size={24}
                     />
                   </TouchableOpacity>
-                  <Text style={styles.commentCount}>({(item._count?.comments ?? 0)})</Text>
+                  <View style={styles.commentBar}>
+                    <TouchableOpacity onPress={() => openComments(item)} style={styles.actionButton}>
+                      <IconSymbol
+                        name={commentsVisible && activePost?.id === item.id ? 'commented' : 'comment'}
+                        color={'currentColor'}
+                        size={24}
+                      />
+                    </TouchableOpacity>
+                    <Text style={styles.commentCount}>({(item._count?.comments ?? 0)})</Text>
+                  </View>
                 </View>
-                
+                <View style={styles.postAuthor}>
+                  <ProfileAvatar imageUrl={item.author?.profilePicture} size={36} />
+                  {item.author?.username && (
+                    <Text style={styles.postUsername}>{item.author.username}</Text>
+                  )}
+                </View>
               </View>
               <Text style={styles.caption}>{item.content ?? JSON.stringify(item)}</Text>
             </View>
@@ -243,8 +256,11 @@ const HomeScreen = () => {
                           contentContainerStyle={styles.commentsList}
                           renderItem={({ item }) => (
                             <View style={styles.commentRow}>
-                              <Text style={styles.commentAuthor}>{item.user.username}</Text>
-                              <Text style={styles.commentBody}>{item.body}</Text>
+                              <ProfileAvatar imageUrl={item.user.profilePicture} size={28} />
+                              <View>
+                                <Text style={styles.commentAuthor}>{item.user.username}</Text>
+                                <Text style={styles.commentBody}>{item.body}</Text>
+                              </View>
                             </View>
                           )}
                           ListEmptyComponent={<Text style={{fontFamily:'ms',}}>be the first comment!</Text>}
@@ -313,8 +329,14 @@ const styles = StyleSheet.create({
   actionsRow: {
     marginTop: 10,
     flexDirection: 'row',
-    alignSelf: 'flex-start',
-    marginLeft: -30,
+    alignSelf: 'stretch',
+    marginHorizontal: -30,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   actionButton: {
     margin: 5,
@@ -345,9 +367,20 @@ const styles = StyleSheet.create({
   commentsList: {
 
   },
+  postAuthor: {
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  postUsername: {
+    fontFamily: 'ms',
+    fontSize: 13,
+    marginTop: 3,
+  },
   commentRow: {
     flexDirection: 'row',
-    gap: 40,
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 6,
   },
   commentAuthor: {
     fontWeight: '800',
