@@ -684,17 +684,20 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     justifyContent: 'center',
     alignContent: 'center',
-    textAlign: 'center'
+    textAlign: 'center',
+    fontFamily: 'ms',
   },
   username: {
     fontSize: 25,
     fontWeight: '700',
     color: '#ffffff',
+    fontFamily: 'ms',
   },
   texts: {
     fontSize: 15,
     color: '#ffffff',
     marginBottom: 5,
+    fontFamily: 'ms',
   },
   favorite_container: {
     display: 'flex',
@@ -814,6 +817,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textAlign: 'center',
     marginBottom: 12,
+    fontFamily: 'ms',
   },
   pickerThumb: {
     width: ITEM_SIZE,

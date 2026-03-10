@@ -669,18 +669,28 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     justifyContent: 'center',
     alignContent: 'center',
-    textAlign: 'center'
+    textAlign: 'center',
+    fontFamily: 'ms',
   },
   username: {
     fontSize: 25,
     fontWeight: '700',
     color: '#ffffff',
+    fontFamily: 'ms',
   },
-
   texts: {
     fontSize: 15,
     color: '#ffffff',
     marginBottom: 5,
+    fontFamily: 'ms',
+  },
+  main_color: {
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
+    width: 110,
+    alignContent: 'center',
+    justifyContent: 'flex-end',
   },
   favorite_container: {
     display: 'flex',
@@ -738,12 +748,14 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     textAlign: 'center',
     marginTop: 20,
+    fontFamily: 'ms',
   },
   errorText: {
     textAlign: 'center',
     color: '#ff6161',
     marginTop: 80,
     fontSize: 14,
+    fontFamily: 'ms',
   },
   backdrop: {
     flex: 1,
@@ -800,10 +812,11 @@ const styles = StyleSheet.create({
     gap: 40,
   },
   commentAuthor: {
-    fontWeight: '800'
+    fontWeight: '800',
+    fontFamily: 'ms',
   },
   commentBody: {
-
+    fontFamily: 'ms',
   },
   commentInputRow: {
     flexDirection: 'row',
