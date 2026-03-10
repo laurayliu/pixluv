@@ -177,13 +177,14 @@ export default function CreatePix() {
       const { signedUrl, publicUrl } = await api.getPresignedUrl(filename, token);
       await api.uploadToS3(signedUrl, base64);
       await api.createPost({ content: caption, imageUrl: publicUrl, showLikes }, token);
-      router.navigate('/(tabs)');
 
       handleClear(); // make sure to clear canvas
       setSelectedColor(DEFAULT_SELECTED_COLOR);
       setCaption('');
 
-      alert(`Post Success!`);
+      // alert(`Post Success!`);
+      setShowAlertPosting(true);
+
     } catch (error) {
       console.error("Upload process failed:", error);
       alert("Failed to save image. Check console.");
@@ -381,7 +382,6 @@ export default function CreatePix() {
                   <Text style={{fontFamily: 'ms'}} >ok</Text>
                 </TouchableOpacity>
               </View>
-              
           </View>
         </Modal>
 
@@ -401,16 +401,44 @@ export default function CreatePix() {
                   <Text style={{fontFamily: 'ms'}}>the number of likes will only be visible to you if toggled on.</Text>
                 </View>
                 <View style={styles.alertButtons}>
-                  <TouchableOpacity style={[BORDER_FRAME, styles.alertButton]} onPress={() => handleSaveAndUpload(true)}>
+                  <TouchableOpacity style={[BORDER_FRAME, styles.alertButton]} onPress={() => {setShowAlertLike(false); handleSaveAndUpload(true);}}>
                     <Text style={{fontFamily: 'ms'}} >yes!</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={[BORDER_FRAME, styles.alertButton]} onPress={() => handleSaveAndUpload(false)}>
+                  <TouchableOpacity style={[BORDER_FRAME, styles.alertButton]} onPress={() => {setShowAlertLike(false); handleSaveAndUpload(false);}}>
                     <Text style={{fontFamily: 'ms'}} >no!</Text>
                   </TouchableOpacity>
                 </View>
                 
+              </View> 
+          </View>
+        </Modal>
+
+        <Modal
+          visible={showAlertPosting}
+          transparent={true}
+          animationType='fade'
+          onRequestClose={() => setShowAlertPosting(false)}
+        >
+          <View style={[styles.alertOverlay]}>
+            <Pressable style={styles.backdrop} onPress={() => setShowAlertPosting(false)} />
+              <View style={[BORDER_FRAME, styles.alertBox]}>
+                <View style={[styles.captionTitle]}>
+                  <Text style={{fontFamily: 'ms', fontSize: 20}}>post success!</Text>
+                </View>
+                <View style={styles.goHome}>
+                  <View>
+                    <Text style={{fontFamily: 'ms'}}>go home and view?</Text>
+                  </View>
+                    <TouchableOpacity style={[BORDER_FRAME, styles.homeButton]} onPress={() => 
+                      {setShowAlertPosting(false);
+                        router.push({pathname: '/(tabs)'});
+                      }
+                      }>
+                      <IconSymbol name={'home'} color={'currentColor'} />
+                    </TouchableOpacity>   
+                </View>
+                             
               </View>
-              
           </View>
         </Modal>
 
@@ -503,7 +531,7 @@ const styles = StyleSheet.create({
     alignItems: 'center'  
   },
   alertBox: {
-    width: '70%',
+    width: '80%',
     padding: 10,
     alignItems: 'center',
     flexDirection: 'column',
@@ -532,6 +560,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignSelf: 'flex-end',
     gap: 15,
+  },
+  homeButton: {
+    padding: 5,
+    backgroundColor: 'white',
+  },
+  goHome: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-evenly',
+    marginBottom: 10,
   }
 });
 
