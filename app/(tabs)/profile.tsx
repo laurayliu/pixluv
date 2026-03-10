@@ -14,7 +14,6 @@ import {
   GestureHandlerRootView,
 } from 'react-native-gesture-handler';
 import {scheduleOnRN } from 'react-native-worklets';
-import { AnimatedView } from 'react-native-reanimated/lib/typescript/component/View';
 
 type Post = {
   id: string;
@@ -26,7 +25,6 @@ type Post = {
     comments?: number;
   };
   likedByMe?: boolean;
-  showLikes: boolean;
 };
 
 type Comment = {
@@ -39,6 +37,7 @@ type Comment = {
   };
 };
 
+
 const ITEM_SIZE = (Dimensions.get('window').width - 48) / 3;
 const SHEET_HEIGHT = Dimensions.get('window').height * 0.5;
 
@@ -47,7 +46,7 @@ const BORDER_FRAME = {
   borderTopColor: '#c4c4c4',
   borderLeftColor: '#c4c4c4',
   borderBottomColor: 'hsl(0, 100%, 98%)',
-  borderRightColor: 'hsl(0, 100%, 98%)',
+  borderRightColor: '#ffffff',
   borderTopWidth: 3,
   borderLeftWidth: 3,
   borderBottomWidth: 3,
@@ -58,14 +57,14 @@ const BORDER_FRAME = {
 const Profile = () => {
   const { user, logout, token, updateUser } = useAuth();
   const [posts, setPosts] = useState<any[]>([]);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pfpPickerVisible, setPfpPickerVisible] = useState(false);
   const [pfpPosts, setPfpPosts] = useState<{ id: string; imageUrl: string }[]>([]);
   const [pfpPostsLoading, setPfpPostsLoading] = useState(false);
   const [updatingPfp, setUpdatingPfp] = useState(false);
-  const [openCover, setOpenCover] = useState(false);
-
   const router = useRouter();
   
   const [commentsVisible, setCommentsVisible] = useState(false);
@@ -74,6 +73,8 @@ const Profile = () => {
   const [newComment, setNewComment] = useState('');
   const [loadingComments, setLoadingComments] = useState(false);
   const [submittingComment, setSubmittingComment] = useState(false);
+  const [openCover, setOpenCover] = useState(false);
+  const openBookCover = useSharedValue(false);
 
 
 
@@ -206,6 +207,7 @@ const Profile = () => {
   
 
   const offset = useSharedValue<number>(0);
+  const coverOffset = useSharedValue<number>(0);
   const width = useSharedValue<number>(0);
   const pageWidth = useSharedValue(0);
   const [currentPage, setCurrentPage] = useState(0)
@@ -231,7 +233,7 @@ const prevPage = () => {
 }
   const { width: wid, height: hei } = Dimensions.get('window')
   const bookWidth = wid - 60;
-  const imagePercent = .58
+  const imagePercent = .60
   const translateX = useSharedValue(0)
 
   const pan = Gesture.Pan()
@@ -259,6 +261,10 @@ const prevPage = () => {
               console.log(`F: Update current page ${currentPageShared.value}`)
             }
           })) 
+        } else if (offset.get() < 10 || offset.get() > 0 && currentPageShared.value === 0) {
+            coverOffset.value = withTiming(0, { duration: 300 })
+            offset.set(withTiming(0, { duration: 0 }));
+
         } else {
           offset.set(withTiming(0, { duration: 300 }));
         }
@@ -283,11 +289,60 @@ const prevPage = () => {
     backfaceVisibility: 'hidden'
   }));
 
+
+  const coverPan = Gesture.Pan()
+      .onUpdate((e) => {
+        translateX.value = e.translationX;
+      })
+
+      .onEnd(() => {
+
+        if (coverOffset.value < -90 && currentPageShared.value < posts.length - 1) {
+          coverOffset.value = withTiming(-109, { duration: 300 }, (finished) => {
+            openBookCover.value = false
+          });
+        } else if (coverOffset.get() > -90 && currentPageShared.value > 0) {
+          console.log(`Flip back page ${currentPageShared.value}`)
+        } else {
+          coverOffset.set(withTiming(0, { duration: 300 }));
+        }
+      })
+
+      .onChange((event) => {
+        coverOffset.set((value) => value += event.changeX) ;
+        coverOffset.set((value) => value =  Math.min(0, Math.max(-120, coverOffset.value))); 
+      })
+
+      .onFinalize((event) => {
+        if (coverOffset.get() < -90) return; 
+        coverOffset.set((value) => withDecay({
+          velocity: event.velocityX * 0.3,
+          rubberBandEffect: true,
+          clamp: [-110,0],
+        }))
+      });
+
+
+
+  const coverAnimatedStyles = useAnimatedStyle(() => ({
+    transform: [{perspective: 8000}, {translateX: (-bookWidth/2)}, { rotateY: `${coverOffset.value}deg`}, {translateX: bookWidth/2}],  
+    backfaceVisibility: 'hidden'
+  }));  
+
+
   useFocusEffect(
     useCallback(() => {
+      if (!user?.id) return;
       setLoading(true);
-      api.getPostsByUser(user?.id ?? null, token)
-        .then(setPosts)
+      Promise.all([
+        api.getPostsByUser(user.id, token),
+        api.getUser(user.id),
+      ])
+        .then(([userPosts, fullUser]) => {
+          setPosts(userPosts);
+          setFollowerCount(fullUser._count?.followers ?? 0);
+          setFollowingCount(fullUser._count?.following ?? 0);
+        })
         .catch((err: Error) => setError(err.message))
         .finally(() => setLoading(false));
     }, [user?.id, token])
@@ -311,17 +366,7 @@ const prevPage = () => {
 
         <View style={styles.info_container}>
           <Text style={styles.username}>{user?.username ?? 'your profile'}</Text>
-          <Text style={styles.texts}>Bio goes here oooh</Text>
-          <View style={styles.action_container}>
-            {/* Needd to add edit button instead for personal profile view */}
-            <Pressable style={styles.action_button}>
-              <Text style={styles.button_text}>Follow</Text>
-            </Pressable>
-
-            <Pressable style={styles.action_button}>
-              <Text  style={styles.button_text}>Pix Me!</Text>
-            </Pressable>
-          </View>
+          <Text style={styles.texts}>{followerCount} followers · {followingCount} following</Text>
         </View>
       </View>
 
@@ -349,36 +394,38 @@ const prevPage = () => {
             <View style={styles.color_row}>
               <View style={[
                 styles.color_box, BORDER_FRAME,
-              { backgroundColor: '#d52056' }, // take user info to fill color
+              { backgroundColor: '#faeb4d' }, // take user info to fill color
               ]}></View>
             <View style={[
                 styles.color_box, BORDER_FRAME,
-              { backgroundColor: '#39c08c' }, // take user info to fill color
+              { backgroundColor: '#d73a3a' }, // take user info to fill color
               ]}></View>
 
             <View style={[
                 styles.color_box, BORDER_FRAME,
-              { backgroundColor: '#c2e234' }, // take user info to fill color
+              { backgroundColor: '#51c770' }, // take user info to fill color
               ]}></View>          
             </View>
 
             <View style={styles.color_row}>
               <View style={[
                   styles.color_box, BORDER_FRAME,
-                { backgroundColor: '#a22d2d' }, // take user info to fill color
+                { backgroundColor: '#9b3b00' }, // take user info to fill color
                 ]}/>       
 
               <View style={[
                   styles.color_box, BORDER_FRAME,
-                { backgroundColor: '#f8ea7e' }, // take user info to fill color
+                { backgroundColor: '#b74caf' }, // take user info to fill color
                 ]}/>       
               
               <View style={[
                   styles.color_box, BORDER_FRAME,
-                { backgroundColor: '#1e5de4' }, // take user info to fill color
+                { backgroundColor: '#3400f1' }, // take user info to fill color
                 ]}/>       
             </View>
           </View>
+
+
           <View>
             {/* <Text>Edit tton</Text> */}
           </View>
@@ -388,6 +435,7 @@ const prevPage = () => {
       {/* <TouchableOpacity style={styles.logoutButton} onPress={logout}>
         <Text style={styles.logoutText}>log out</Text>
       </TouchableOpacity> */}
+
     <GestureHandlerRootView style={styles.container}>
       <View style={styles.book_container}>
         {loading && <ActivityIndicator size="large" />}
@@ -438,21 +486,20 @@ const prevPage = () => {
                       </View>
                     </KeyboardAvoidingView>
               </View>
+       
       </Modal>
-      
-  
+
+        <GestureDetector key={'cover'} gesture={coverPan}>
+          <Animated.View style={[coverAnimatedStyles, styles.page_cover, {width: bookWidth, alignSelf: 'center', alignItems: 'center'}, {zIndex: 77500}]}>
+            <Image style={[{width: '100%', height: '100%', borderRadius: 15}]} source={require('../../assets/images/leather_cover.jpg')}/>
+          </Animated.View>
+          </GestureDetector>
         {posts.slice(0, 10).map((item, index) => {
           const isLast = index === currentPage
           const isPrev = index < currentPage ;
           const isTop = index === currentPage;
           const isNext = index === currentPage + 1;
-
-          const cover = (
-            <Animated.View style={[animatedStyles, styles.page,  {width: bookWidth, alignSelf: 'center', alignItems: 'center'}, {zIndex: openCover ? -5 : 1500}]}>
-            </Animated.View>
-
-          );
-
+          
           const Page = (
             <Animated.View
               key={String(item.id ?? item._id)}
@@ -582,8 +629,8 @@ const styles = StyleSheet.create({
     display: 'flex',
     marginTop: 90,
     flexDirection: 'row',
-    paddingLeft: 15,
-    paddingRight: 15,
+    paddingLeft: 30,
+    paddingRight: 30,
     width: '100%',
   },
   profile_box: {
@@ -691,7 +738,7 @@ const styles = StyleSheet.create({
     marginTop: 15,
     alignSelf: 'center',
     width: '90%',
-    height: '70%'
+
   },
   email: {
     fontSize: 14,
@@ -713,8 +760,8 @@ const styles = StyleSheet.create({
     container: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'flex-start'
-    // height: '100%',
+    justifyContent: 'flex-start',
+    height: '100%'
   },
   wrapper: {
     flex: 1,
@@ -723,7 +770,7 @@ const styles = StyleSheet.create({
   },
   page: {
     position: 'absolute',
-    height: 500,
+    height: 550,
     borderRadius: 20,
     backgroundColor: '#fff8ce',
     borderWidth: 6,
@@ -731,6 +778,12 @@ const styles = StyleSheet.create({
     // shadowColor: 'black',
     // shadowOpacity: 0.9,
     // elevation: 5,
+  },
+  page_cover: {
+    position: 'absolute',
+    height: 550,
+    borderRadius: 20,
+    backgroundColor: '#fff8ce',
   },
   post_action_box: {
     display: 'flex',

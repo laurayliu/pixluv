@@ -1,17 +1,5 @@
-import { Platform } from 'react-native';
-import Constants from 'expo-constants';
 
-function getBaseUrl() {
-  if (Platform.OS === 'web') return 'http://localhost:9090/api';
-  if (Platform.OS === 'android' && !Constants.expoConfig?.hostUri) {
-    return 'http://10.0.2.2:9090/api'; // android emulator
-  }
-  const host = Constants.expoConfig?.hostUri?.split(':')[0]; // ip from hostUri
-  if (host) return `http://${host}:9090/api`;
-  return 'http://localhost:9090/api';
-}
-
-const BASE_URL = getBaseUrl();
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 async function get(path, token) {
   const headers = {};
@@ -45,6 +33,14 @@ async function put(path, body, token) {
   return res.json();
 }
 
+async function del(path, token) {
+  const headers = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(`${BASE_URL}${path}`, { method: 'DELETE', headers });
+  if (!res.ok) throw new Error(`DELETE ${path} failed: ${res.status}`);
+  return res.json();
+}
+
 export const api = {
   hello: () => get('/'),
   getPostsByUser: (userId, token) => get(`/posts/user/${userId}`, token),
@@ -59,6 +55,11 @@ export const api = {
 
   likePost: (postId, token) => post(`/posts/${postId}/like`, {}, token),
 
+  followUser: (id, token) => post(`/users/${id}/follow`, {}, token),
+  unfollowUser: (id, token) => del(`/users/${id}/follow`, token),
+  getFollowers: (id) => get(`/users/${id}/followers`),
+  getFollowing: (id) => get(`/users/${id}/following`),
+
   getComments: (postId) => get(`/posts/${postId}/comments`),
   createComment: (postId, body, token) => post(`/posts/${postId}/comments`, {body}, token),
 
@@ -70,6 +71,7 @@ export const api = {
   getChallenges: () => get('/challenges'),
   getTodayChallenge: () => get('/challenges/today'),
   getTodayChallengePosts: (token) => get('/posts/challenge/today', token),
+  getChallengePosts: (date, token) => get(`/posts/challenge/${encodeURIComponent(date)}`, token),
   getPresignedUrl: (filename, token) =>
     get(
       `/sign-s3?fileName=${encodeURIComponent(filename)}&fileType=${encodeURIComponent('image/png')}`,

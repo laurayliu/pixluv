@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Pixluv",
-    "slug": "Pixluv",
+    "slug": "pixluv-9byggg",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -13,7 +13,8 @@
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
-        }
+        },
+        "ITSAppUsesNonExemptEncryption": false
       },
       "bundleIdentifier": "com.anonymous.Pixluv"
     },
@@ -59,6 +60,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "43d98203-8d06-46bd-bc4b-ed29f834fe64"
+      }
+    },
+    "owner": "pixluvs-organization"
   }
 }

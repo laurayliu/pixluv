@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { api } from '../../services/api';
 import PaletteImg from '../../assets/icons/palette_img.svg';
 import PencilIcon from '../../assets/icons/editor/pencil.svg';
@@ -30,6 +30,7 @@ function ColorStack({ colors }: { colors: string[] }) {
 }
 
 export default function ChallengeTab() {
+  const router = useRouter();
   const [today, setToday] = useState<Challenge | null>(null);
   const [pastChallenges, setPastChallenges] = useState<Challenge[]>([]);
 
@@ -80,7 +81,7 @@ export default function ChallengeTab() {
       <View style={styles.divider} />
 
       {pastChallenges.map((c) => (
-        <View key={c.id} style={styles.card}>
+        <Pressable key={c.id} style={styles.card} onPress={() => router.push(`/challenge_submissions/${new Date(c.date).toISOString().split('T')[0]}`)}>
           <Text style={styles.cardDate}>{formatDate(c.date)}</Text>
           <View style={styles.cardRow}>
             <Text style={styles.pastPrompt}>{c.prompt}</Text>
@@ -90,7 +91,7 @@ export default function ChallengeTab() {
             </View>
             <ColorStack colors={c.allowedColors} />
           </View>
-        </View>
+        </Pressable>
       ))}
     </ScrollView>
   );

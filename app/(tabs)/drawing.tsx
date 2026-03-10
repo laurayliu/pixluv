@@ -1,6 +1,7 @@
 import DefaultColorPanel from '../../components/color_picker';
 import React, { useState, useRef, useEffect } from 'react';
-import {StyleSheet, Text, View, TextInput, Dimensions, ActivityIndicator, PanResponder, Pressable, TouchableOpacity, Alert, Modal, } from 'react-native';
+import {StyleSheet, Text, View, TextInput, Dimensions, ActivityIndicator, PanResponder, Pressable, TouchableOpacity, Alert, Modal, Keyboard, TouchableWithoutFeedback } from 'react-native';
+
 import { captureRef } from "react-native-view-shot";
 import { api } from '../../services/api';
 import { useAuth } from '@/context/AuthContext';
@@ -69,6 +70,7 @@ export default function CreatePix() {
   const [selectedColor, setSelectedColor] = useState<string>(DEFAULT_SELECTED_COLOR);
   const activeTool = useRef('draw');
   const [isUploading, setIsUploading] = useState(false);
+  const[captionFocused, setCaptionFocused] = useState(false);
   const cellSize = GRID_CONTAINER_SIZE/gridSize;
 
   const [caption, setCaption] = useState<string>('');
@@ -303,8 +305,9 @@ export default function CreatePix() {
 
 
   return (
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
     <View style={styles.container}>
-      <Pressable style={styles.backButton} onPress={() => router.navigate('/create')}>
+      <Pressable style={styles.backButton} onPress={() => router.replace('/create')}>
         <IconSymbol name="undo" size={24} color="#ffffff" />
       </Pressable>
 
@@ -316,8 +319,11 @@ export default function CreatePix() {
       </View>
        
       <View style = {styles.gridAndTools}>
-        <Toolbar allowedTools={ALL_TOOL_NAMES} onToolChange={t => { activeTool.current = t; }} onUndo={handleUndo} onRedo={handleRedo} />
+        <View style = {{marginTop: 60}}>
+          <Toolbar allowedTools={ALL_TOOL_NAMES} onToolChange={t => { activeTool.current = t; }} onUndo={handleUndo} onRedo={handleRedo}/>
 
+        </View>
+        
           <View style = {styles.zoomable}>
           <ReactNativeZoomableView
             maxZoom={4} 
@@ -350,7 +356,7 @@ export default function CreatePix() {
       <View style={{ width: '100%' }}>
           <DefaultColorPanel value={selectedColor} onColorChange={setSelectedColor}/>
       </View>
-      <TextInput value={caption} onChangeText={setCaption} style = {[styles.caption, BORDER_FRAME, {fontFamily:'ms'}]} multiline placeholder='enter caption!' placeholderTextColor='rgba(81, 116, 207, 0.5)' autoCapitalize='none'/>
+      <TextInput value={caption} onFocus={() => setCaptionFocused(true)} onBlur = {() => setCaptionFocused(false)} onChangeText={setCaption} style = {[captionFocused ? styles.focusedCaption : styles.caption, BORDER_FRAME, {fontFamily:'ms'}]} multiline placeholder='enter caption!' placeholderTextColor='rgba(81, 116, 207, 0.5)' autoCapitalize='none'/>
       
       <View style={styles.actions}>
         <TouchableOpacity onPress={clearAlert} style={[styles.clearButton, {borderWidth: 0.25, borderColor: '#000', paddingVertical: 5, paddingHorizontal: 10}, BORDER_FRAME]}>
@@ -472,6 +478,7 @@ export default function CreatePix() {
         </Modal>
 
       </View>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -500,6 +507,18 @@ const styles = StyleSheet.create({
     height: '20%',
     borderRadius: 5,
     color: '#141415',
+    backgroundColor: 'white',
+  },
+  focusedCaption: {
+    position: 'fixed',
+    top: -475,
+    fontSize: 15,
+    borderWidth: 0.25, 
+    paddingTop: 10,
+    paddingBottom: 100, 
+    paddingHorizontal: 15,
+    width: '100%',
+    height: '20%',
     backgroundColor: 'white',
   },
   inputGroup: {
