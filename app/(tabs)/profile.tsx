@@ -1,12 +1,12 @@
 
 import React, { useCallback, useEffect, useState}from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { StyleSheet, Text, View, Button, LayoutChangeEvent, KeyboardAvoidingView, TouchableOpacity, TextInput, Pressable, FlatList, Image, ActivityIndicator, Modal, TouchableWithoutFeedback} from 'react-native';
+import { StyleSheet, Text, View, Button, LayoutChangeEvent, KeyboardAvoidingView, TouchableOpacity, TextInput, Pressable, FlatList, Image, ActivityIndicator, Modal, TouchableWithoutFeedback, Dimensions } from 'react-native';
 import { useAuth } from '@/context/AuthContext';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { api } from '../../services/api';
 import Animated, { useSharedValue, withSpring, withDecay, useAnimatedStyle, withTiming, withDelay} from 'react-native-reanimated';
-import { Dimensions } from 'react-native';
+
 import { useRouter } from 'expo-router';
 import {
   Gesture,
@@ -14,6 +14,7 @@ import {
   GestureHandlerRootView,
 } from 'react-native-gesture-handler';
 import {scheduleOnRN } from 'react-native-worklets';
+import { AnimatedView } from 'react-native-reanimated/lib/typescript/component/View';
 
 type Post = {
   id: string;
@@ -41,6 +42,19 @@ type Comment = {
 const ITEM_SIZE = (Dimensions.get('window').width - 48) / 3;
 const SHEET_HEIGHT = Dimensions.get('window').height * 0.5;
 
+const BORDER_FRAME = {
+  borderRadius: 0,
+  borderTopColor: '#c4c4c4',
+  borderLeftColor: '#c4c4c4',
+  borderBottomColor: 'hsl(0, 100%, 98%)',
+  borderRightColor: 'hsl(0, 100%, 98%)',
+  borderTopWidth: 3,
+  borderLeftWidth: 3,
+  borderBottomWidth: 3,
+  borderRightWidth: 3,
+  overflow: 'hidden',
+} as const;
+
 const Profile = () => {
   const { user, logout, token, updateUser } = useAuth();
   const [posts, setPosts] = useState<any[]>([]);
@@ -50,6 +64,8 @@ const Profile = () => {
   const [pfpPosts, setPfpPosts] = useState<{ id: string; imageUrl: string }[]>([]);
   const [pfpPostsLoading, setPfpPostsLoading] = useState(false);
   const [updatingPfp, setUpdatingPfp] = useState(false);
+  const [openCover, setOpenCover] = useState(false);
+
   const router = useRouter();
   
   const [commentsVisible, setCommentsVisible] = useState(false);
@@ -214,7 +230,8 @@ const prevPage = () => {
   )
 }
   const { width: wid, height: hei } = Dimensions.get('window')
-  const bookWidth = wid * 0.75;
+  const bookWidth = wid - 60;
+  const imagePercent = .58
   const translateX = useSharedValue(0)
 
   const pan = Gesture.Pan()
@@ -263,6 +280,7 @@ const prevPage = () => {
 
   const animatedStyles = useAnimatedStyle(() => ({
     transform: [{perspective: 8000}, {translateX: (-bookWidth/2)}, { rotateY: `${offset.value}deg`}, {translateX: bookWidth/2}],  
+    backfaceVisibility: 'hidden'
   }));
 
   useFocusEffect(
@@ -330,48 +348,46 @@ const prevPage = () => {
           <View style={styles.pallete_box}>
             <View style={styles.color_row}>
               <View style={[
-                styles.color_box, 
-              { backgroundColor: '#a22d2d' }, // take user info to fill color
+                styles.color_box, BORDER_FRAME,
+              { backgroundColor: '#d52056' }, // take user info to fill color
               ]}></View>
             <View style={[
-                styles.color_box, 
-              { backgroundColor: '#a22d2d' }, // take user info to fill color
+                styles.color_box, BORDER_FRAME,
+              { backgroundColor: '#39c08c' }, // take user info to fill color
               ]}></View>
 
             <View style={[
-                styles.color_box, 
-              { backgroundColor: '#a22d2d' }, // take user info to fill color
+                styles.color_box, BORDER_FRAME,
+              { backgroundColor: '#c2e234' }, // take user info to fill color
               ]}></View>          
             </View>
 
             <View style={styles.color_row}>
               <View style={[
-                styles.color_box, 
-              { backgroundColor: '#a22d2d' }, // take user info to fill color
-              ]}></View>
-            <View style={[
-                styles.color_box, 
-              { backgroundColor: '#a22d2d' }, // take user info to fill color
-              ]}></View>
+                  styles.color_box, BORDER_FRAME,
+                { backgroundColor: '#a22d2d' }, // take user info to fill color
+                ]}/>       
 
-            <View style={[
-                styles.color_box, 
-              { backgroundColor: '#a22d2d' }, // take user info to fill color
-              ]}></View>          
+              <View style={[
+                  styles.color_box, BORDER_FRAME,
+                { backgroundColor: '#f8ea7e' }, // take user info to fill color
+                ]}/>       
+              
+              <View style={[
+                  styles.color_box, BORDER_FRAME,
+                { backgroundColor: '#1e5de4' }, // take user info to fill color
+                ]}/>       
             </View>
           </View>
-
-
           <View>
             {/* <Text>Edit tton</Text> */}
           </View>
         </View>
       </View>
 
-      <TouchableOpacity style={styles.logoutButton} onPress={logout}>
+      {/* <TouchableOpacity style={styles.logoutButton} onPress={logout}>
         <Text style={styles.logoutText}>log out</Text>
-      </TouchableOpacity> 
-
+      </TouchableOpacity> */}
     <GestureHandlerRootView style={styles.container}>
       <View style={styles.book_container}>
         {loading && <ActivityIndicator size="large" />}
@@ -423,44 +439,86 @@ const prevPage = () => {
                     </KeyboardAvoidingView>
               </View>
       </Modal>
+      
+  
         {posts.slice(0, 10).map((item, index) => {
           const isLast = index === currentPage
           const isPrev = index < currentPage ;
           const isTop = index === currentPage;
           const isNext = index === currentPage + 1;
+
+          const cover = (
+            <Animated.View style={[animatedStyles, styles.page,  {width: bookWidth, alignSelf: 'center', alignItems: 'center'}, {zIndex: openCover ? -5 : 1500}]}>
+            </Animated.View>
+
+          );
+
           const Page = (
             <Animated.View
               key={String(item.id ?? item._id)}
-              style={[isTop && animatedStyles, styles.boxy, {width: bookWidth, alignSelf: 'center', alignItems: 'center'}, {zIndex: isTop ? 1000
+              style={[isTop && animatedStyles, styles.page, {width: bookWidth, alignSelf: 'center', alignItems: 'center'}, {zIndex: isTop ? 1000
                 : isPrev
                 ? 900 - index
                 : isNext
                 ? 950
                 : 0} 
               ]}>
-              
-              <Image
-                source={{ uri: item.imageUrl }}
-                style={{ width: 300, height: 300, justifyContent: 'center'}}
-              />
-              <View>
-                <TouchableOpacity onPress={() => handleToggleLike(item.id)} style={styles.actionButton}>
-                  <IconSymbol
-                    name={item.likedByMe ? 'liked' : 'like'}
-                    color={'currentColor'}
-                    size={24}
-                  />
-                </TouchableOpacity>
 
-                <TouchableOpacity onPress={() => openComments(item)} style={styles.actionButton}>
-                  <IconSymbol
-                    name={commentsVisible && activePost?.id === item.id ? 'commented' : 'comment'}
-                    color={'currentColor'}
-                    size={24}
-                  />
-                </TouchableOpacity>
+              <View style={[styles.art_wrapper, BORDER_FRAME, {marginTop: wid*.1}]}>
+                <Image
+                  source={{ uri: item.imageUrl }}
+                  style={{ width: wid*imagePercent, height: wid*imagePercent, justifyContent: 'center', alignItems: 'center'}}
+                />
+                <Text style={{fontSize: 17, justifyContent: 'flex-start'}}>{item.content ?? JSON.stringify(item)}</Text>
+
+                <View style={[styles.post_action_box, {width: wid*imagePercent}]}>
+                  <View style={styles.color_row}>
+                    <View style={[
+                        styles.color_box, BORDER_FRAME,
+                      { backgroundColor: '#312da2' }, // take user info to fill color
+                      ]}/>       
+
+                    <View style={[
+                        styles.color_box, BORDER_FRAME,
+                      { backgroundColor: '#687ad7' }, // take user info to fill color
+                      ]}/>       
+                    
+                    <View style={[
+                        styles.color_box, BORDER_FRAME,
+                      { backgroundColor: '#3ead3c' }, // take user info to fill color
+                      ]}/>       
+                    <View style={[
+                        styles.color_box, BORDER_FRAME,
+                      { backgroundColor: '#f798ec' }, // take user info to fill color
+                      ]}/>       
+                    
+                    <View style={[
+                        styles.color_box, BORDER_FRAME,
+                      { backgroundColor: '#a22d2d' }, // take user info to fill color
+                      ]}/> 
+                  </View>
+
+                  <View style={styles.interact_box}>
+                  <TouchableOpacity onPress={() => handleToggleLike(item.id)} style={styles.actionButton}>
+                    <IconSymbol
+                      name={item.likedByMe ? 'liked' : 'like'}
+                      color={'currentColor'}
+                      size={24}
+                    />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity onPress={() => openComments(item)} style={styles.actionButton}>
+                    <IconSymbol
+                      name={commentsVisible && activePost?.id === item.id ? 'commented' : 'comment'}
+                      color={'currentColor'}
+                      size={24}
+                    />
+                  </TouchableOpacity>          
+                  </View>
+                </View> 
               </View>
-              <Text>{item.content ?? JSON.stringify(item)}</Text>
+
+
 
             </Animated.View>
             
@@ -655,19 +713,34 @@ const styles = StyleSheet.create({
     container: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
+    justifyContent: 'flex-start'
+    // height: '100%',
   },
   wrapper: {
     flex: 1,
     width: '100%',
     justifyContent: 'center',
   },
-  boxy: {
+  page: {
     position: 'absolute',
     height: 500,
-    backgroundColor: '#511f0b',
     borderRadius: 20,
+    backgroundColor: '#fff8ce',
+    borderWidth: 6,
+    borderColor: '#3c0404',
+    // shadowColor: 'black',
+    // shadowOpacity: 0.9,
+    // elevation: 5,
+  },
+  post_action_box: {
+    display: 'flex',
+    // marginTop: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between'
+  },
+  interact_box: {
+    display: 'flex',
+    flexDirection: 'row',
   },
   pickerOverlay: {
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -732,6 +805,10 @@ const styles = StyleSheet.create({
   actionButton: {
     margin: 5,
   },
+  art_wrapper: {
+    padding: 15,
+    backgroundColor: '#e8e8e8',
+  }
 });
 
 export default Profile;
