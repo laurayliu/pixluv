@@ -21,7 +21,7 @@ export const createUser = async (req, res) => {
 export const getUser = async (req, res) => {
   const user = await prisma.user.findUnique({
     where: { id: req.params.id },
-    include: { posts: { orderBy: { createdAt: 'desc' }, select: { id: true, title: true, imageUrl: true, createdAt: true } } },
+    include: { posts: { orderBy: { createdAt: 'desc' }, select: { id: true, content: true, imageUrl: true, createdAt: true } } },
   });
   if (!user) return res.status(404).json({ error: 'user not found' });
   res.json(user);
