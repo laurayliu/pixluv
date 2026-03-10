@@ -65,6 +65,21 @@ export const getTodayChallengePosts = async (req, res) => {
   res.json({ posts, hasSubmitted });
 };
 
+export const getChallengePosts = async (req, res) => {
+  const day = new Date(req.params.date);
+  const nextDay = new Date(day);
+  nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+
+  const posts = await prisma.post.findMany({
+    where: { challengeDate: { gte: day, lt: nextDay } },
+    orderBy: { createdAt: 'desc' },
+    select: { id: true, imageUrl: true, authorId: true, author: { select: { username: true } } },
+  });
+
+  const hasSubmitted = posts.some(p => p.authorId === req.user.id);
+  res.json({ posts, hasSubmitted });
+};
+
 export const getPost = async (req, res) => {
   const userId = req.query.userId;
   const post = await prisma.post.findUnique({

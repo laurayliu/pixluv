@@ -30,6 +30,7 @@ router.get('/users/:id/following', Users.getFollowing);
 
 router.get('/posts/user/:userId', Posts.getPostsByUser);
 router.get('/posts/challenge/today', requireAuth, Posts.getTodayChallengePosts);
+router.get('/posts/challenge/:date', requireAuth, Posts.getChallengePosts);
 
 router.route('/posts')
   .get(Posts.getPosts)
