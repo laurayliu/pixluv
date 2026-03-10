@@ -199,14 +199,14 @@ const HomeScreen = () => {
         </View>
       <View style={styles.posts}>
         <FlatList
-          data={posts.slice(0, 5)}
+          data={posts.slice(0, 10)}
           keyExtractor={(item) => String(item.id ?? item._id)}
           renderItem={({ item }) => (
             <View style={[BORDER_FRAME, styles.post]}>
               {/* <Text style = {styles.title}>{item.title ?? item.caption ?? JSON.stringify(item)}</Text> */}
               <Image
                 source={{ uri: item.imageUrl }}
-                style={[BORDER_FRAME, { width: 250, height: 250, marginTop: 15 }]}
+                style={[BORDER_FRAME, { width: 285, height: 285, marginTop: 15 }]}
               />
               <View style={styles.actionsRow}>
                 <View style={styles.actionButtons}>
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     alignSelf: 'center',
-    width: '80%',
+    width: '85%',
     marginBottom: 20,
     backgroundColor: '#ececec',
   },
