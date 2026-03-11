@@ -10,6 +10,7 @@ type User = {
   username: string;
   email: string;
   profilePicture?: string;
+  bio?: string;
 };
 
 type AuthContextType = {
