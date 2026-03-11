@@ -128,7 +128,6 @@ export default function CreatePix() {
 
   const isPinching = useRef(false);
 
-
   const panResponder = PanResponder.create({
   onStartShouldSetPanResponder: (evt) => evt.nativeEvent.touches.length === 1,
   onMoveShouldSetPanResponder: (evt) => {
@@ -149,7 +148,6 @@ export default function CreatePix() {
 
   onPanResponderMove: (evt) => {
     if (evt.nativeEvent.touches.length > 1) {
-      isPinching.current = true;
       return;
     }
     if (!isPinching.current) {

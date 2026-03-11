@@ -14,12 +14,15 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
+  Keyboard
 } from 'react-native';
 import { api } from '../../services/api';
 import { useAuth } from '@/context/AuthContext';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { ProfileAvatar } from '@/components/ui/profile-avatar';
 import { useRouter } from 'expo-router';
+
+import Logo from '@/assets/logo.svg';
 
 type Post = {
   id: string;
@@ -47,8 +50,6 @@ type Comment = {
     profilePicture?: string | null;
   };
 };
-
-import Logo from '@/assets/logo.svg';
 
 const BORDER_FRAME = {
   borderRadius: 0,
@@ -244,7 +245,10 @@ const HomeScreen = () => {
             <Modal visible={commentsVisible} animationType="fade" transparent={true} onRequestClose={closeComments}>
               <View style={styles.commentsOverlay}>
                 <Pressable style={styles.backdrop} onPress={closeComments} />
+
+                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                     <KeyboardAvoidingView
+                      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                       style={styles.commentsContainer}
                     >
                       {loadingComments ? (
@@ -289,6 +293,7 @@ const HomeScreen = () => {
                         </TouchableOpacity>
                       </View>
                     </KeyboardAvoidingView>
+                    </TouchableWithoutFeedback>
               </View>
       </Modal>
     </View>
@@ -360,7 +365,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
   commentsContainer: {
-    height: '40%',
+    flex: 1,
+    height: '50%',
     backgroundColor: '#ececec',
     padding: 30,
   },
@@ -393,7 +399,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     margin: 10,
-    marginBottom: 5,
+    marginBottom: 30,
   },
   commentInput: {
     padding: 8,
