@@ -240,14 +240,14 @@ const Profile = () => {
     })
 
     .onEnd(() => {
-      if (offset.value < -90 && currentPageShared.value < posts.length - 1) {
+      if (offset.value < -90 && currentPageShared.value < posts.length - 1 && currentPageShared.value !== posts.length) {
         console.log(`Turn page ${currentPageShared.value}`)
         currentPageShared.value += 1;
         offset.value = withTiming(-109, { duration: 300 }, (finished) => {
           if (finished) {
             scheduleOnRN(nextPage);
             offset.set(0);
-            console.log(`T: Update current page ${currentPageShared.value}`)
+            console.log(`⭐ Page: ${currentPageShared.value}`)
           }
         });
       } else if (offset.get() > -90 && currentPageShared.value > 0) {
@@ -256,21 +256,21 @@ const Profile = () => {
         offset.set(withTiming(0, { duration: 300 }, (finished) => {
           if (finished) {
             scheduleOnRN(prevPage);
-            console.log(`F: Update current page ${currentPageShared.value}`)
+            console.log(`⭐ Page: ${currentPageShared.value}`)
           }
         })) 
-      } else if (offset.get() < 10 || offset.get() > 0 && currentPageShared.value === 0) {
-          coverOffset.value = withTiming(0, { duration: 100 })
+      } else if (offset.get() === 0 && currentPageShared.value === 0) {
           offset.set(withTiming(0, { duration: 0 }));
-
+          coverOffset.value = withSpring(0, { duration: 100 })
       } else {
         offset.set(withTiming(0, { duration: 300 }));
       }
     })
 
     .onChange((event) => {
+      console.log(`page at ${offset.value}`)
       offset.set((value) => value += event.changeX) ;
-      offset.set((value) => value =  Math.min(0, Math.max(-120, offset.value))); 
+      offset.set((value) => value =  Math.min(0, Math.max(-95, offset.value))); 
     })
 
     .onFinalize((event) => {
@@ -278,7 +278,7 @@ const Profile = () => {
       offset.set((value) => withDecay({
         velocity: event.velocityX * 0.3,
         rubberBandEffect: true,
-        clamp: [-110,0],
+        clamp: [-95,0],
       }))
     });
 
@@ -294,21 +294,24 @@ const Profile = () => {
     })
 
     .onEnd(() => {
-
       if (coverOffset.value < -90 && currentPageShared.value < posts.length - 1) {
+        console.log("Open cover 📖");
+        console.log(`Page: ${offset.value}`);
         coverOffset.value = withTiming(-109, { duration: 300 }, (finished) => {
           openBookCover.value = false
         });
-      } else if (coverOffset.get() > -90 && currentPageShared.value > 0) {
+      } else if (coverOffset.get() > -90 && coverOffset.get() > -90 &&  currentPageShared.value > 0) {
         console.log(`Flip back page ${currentPageShared.value}`)
-      } else {
-        coverOffset.set(withTiming(0, { duration: 300 }));
-      }
+      } 
+      // else {
+      //   coverOffset.set(withTiming(0, { duration: 300 }));
+      // }
     })
 
     .onChange((event) => {
       coverOffset.set((value) => value += event.changeX) ;
-      coverOffset.set((value) => value =  Math.min(0, Math.max(-120, coverOffset.value))); 
+      coverOffset.set((value) => value =  Math.min(0, Math.max(-95, coverOffset.value))); 
+      console.log(`cover at ${coverOffset.value}`)
     })
 
     .onFinalize((event) => {
@@ -316,7 +319,7 @@ const Profile = () => {
       coverOffset.set((value) => withDecay({
         velocity: event.velocityX * 0.3,
         rubberBandEffect: true,
-        clamp: [-110,0],
+        clamp: [-95,0],
       }))
     });
 
@@ -504,7 +507,9 @@ const Profile = () => {
             <Image style={[{width: '100%', height: '100%', borderRadius: 15}]} source={require('../../assets/images/book_cover.png')}/>
           </Animated.View>
         </GestureDetector>
-        {posts.slice(0, 10).map((item, index) => {
+        {posts.slice(0, 100).map((item, index) => {
+          // console.log("post index right now: " + index)
+
           const isLast = index === currentPage
           const isPrev = index < currentPage ;
           const isTop = index === currentPage;
@@ -579,6 +584,7 @@ const Profile = () => {
           );
 
           if (isTop || isLast) {
+
             return(
               <GestureDetector key={String(item.id ?? item._id)} gesture={pan}>
                 {Page}
