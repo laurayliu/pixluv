@@ -29,6 +29,7 @@ type Post = {
   title?: string;
   caption?: string;
   imageUrl?: string;
+  colors?: string[];
   _count?: {
     likes?: number;
     comments?: number;
@@ -205,10 +206,17 @@ const HomeScreen = () => {
           renderItem={({ item }) => (
             <View style={[BORDER_FRAME, styles.post]}>
               {/* <Text style = {styles.title}>{item.title ?? item.caption ?? JSON.stringify(item)}</Text> */}
-              <Image
-                source={{ uri: item.imageUrl }}
-                style={[BORDER_FRAME, { width: 285, height: 285, marginTop: 15 }]}
-              />
+              <View style={styles.imageRow}>
+                <View style={styles.colorSwatches}>
+                  {(item.colors ?? []).map((color: string, i: number) => (
+                    <View key={i} style={[BORDER_FRAME, styles.colorSwatch, { backgroundColor: color }]} />
+                  ))}
+                </View>
+                <Image
+                  source={{ uri: item.imageUrl }}
+                  style={[BORDER_FRAME, styles.postImage]}
+                />
+              </View>
               <View style={styles.actionsRow}>
                 <View style={styles.actionButtons}>
                   <TouchableOpacity onPress={() => handleToggleLike(item.id)} style={styles.actionButton}>
@@ -409,6 +417,24 @@ const styles = StyleSheet.create({
   },
   commentSendButton: {
     flex: 0.15,
+  },
+  imageRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 15,
+    gap: 8,
+  },
+  colorSwatches: {
+    flexDirection: 'column',
+    gap: 4,
+  },
+  colorSwatch: {
+    width: 26,
+    height: 26,
+  },
+  postImage: {
+    width: 230,
+    height: 230,
   },
 });
 

@@ -61,6 +61,7 @@ export default function CreatePix() {
     setGrid(Array(Number(size) * Number(size)).fill(DEFAULT_COLOR))
     setPrevGrid([Array(Number(size) * Number(size)).fill(DEFAULT_COLOR)])
     index.current = 0
+    drawnCells.current = Array(Number(size) * Number(size)).fill(false)
   }, [size])
 
   const[grid, setGrid] = useState<string[]>(
@@ -84,6 +85,9 @@ export default function CreatePix() {
   const zoomState = useRef({
     level: 1,
   });
+
+  const drawnCells = useRef<boolean[]>(Array(Number(size) * Number(size)).fill(false));
+
 
 
   const getCellIndex = (pageX: number, pageY: number, gridOriginX: number, gridOriginY: number) => {
@@ -122,6 +126,7 @@ export default function CreatePix() {
       if (currentGrid[cellIndex] === drawingColor) { return currentGrid }
         const newGrid = [...currentGrid];
         newGrid[cellIndex] = drawingColor;
+        drawnCells.current[cellIndex] = activeTool.current !== 'erase';
         return newGrid;
     });
   };
@@ -180,6 +185,7 @@ export default function CreatePix() {
     setGrid(Array(gridSize * gridSize).fill(DEFAULT_COLOR))
     setPrevGrid([Array(gridSize * gridSize).fill(DEFAULT_COLOR)])
     index.current = 0;
+    drawnCells.current = Array(gridSize * gridSize).fill(false);
   }
 
   const handleSaveAndUpload = async (showLikes: boolean) => {
@@ -196,7 +202,17 @@ export default function CreatePix() {
       const filename = `pix.png`;
       const { signedUrl, publicUrl } = await api.getPresignedUrl(filename, token);
       await api.uploadToS3(signedUrl, base64);
-      await api.createPost({ content: caption, imageUrl: publicUrl, showLikes }, token);
+      const counts: Record<string, number> = {};
+      for (let i = 0; i < grid.length; i++) {
+        if (drawnCells.current[i]) {
+          counts[grid[i]] = (counts[grid[i]] || 0) + 1;
+        }
+      }
+      const topColors = Object.entries(counts)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 6)
+        .map(([color]) => color);
+      await api.createPost({ content: caption, imageUrl: publicUrl, showLikes, colors: topColors }, token);
 
       handleClear(); // make sure to clear canvas
       setSelectedColor(DEFAULT_SELECTED_COLOR);
@@ -244,6 +260,7 @@ export default function CreatePix() {
         if (newGrid[currentCell] !== cellColor) continue; // if fill finds a color that is different (boundary)
 
         newGrid[currentCell] = selectedColor;
+        drawnCells.current[currentCell] = true;
 
         const row = Math.floor(currentCell / gridSize);
         const col = currentCell % gridSize;
