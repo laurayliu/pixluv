@@ -13,6 +13,19 @@ type Props = {
   onRedo: () => void;
 };
 
+const BORDER_FRAME = {
+  borderRadius: 0,
+  borderTopColor: '#7b7b7b',
+  borderLeftColor: '#7b7b7b',
+  borderBottomColor: '#ffffff',
+  borderRightColor: '#ffffff',
+  borderTopWidth: 1,
+  borderLeftWidth: 1,
+  borderBottomWidth: 1,
+  borderRightWidth: 1,
+  overflow: 'hidden',
+} as const;
+
 export default function Toolbar({ allowedTools, onToolChange, onUndo, onRedo }: Props) {
   const [activeTool, setActiveTool] = useState<ToolName>('draw');
 
@@ -30,7 +43,7 @@ export default function Toolbar({ allowedTools, onToolChange, onUndo, onRedo }: 
         <Pressable
           key={t}
           style=
-          {[activeTool === t ? styles.buttonEnabled : styles.buttonDisabled]}
+          {[BORDER_FRAME, activeTool === t ? styles.buttonEnabled : styles.buttonDisabled]}
           onPress={() => handlePress(t)}
         >
           <IconSymbol name={t} color={'currentColor'} />
@@ -45,7 +58,7 @@ const styles = StyleSheet.create({
   container: {
     width: 40,
     height: Dimensions.get('window').width - 100,
-    backgroundColor: 'rgb(85, 84, 84)',
+    backgroundColor: 'rgb(184, 184, 184)',
   },
   toolbar: {
     alignSelf: 'center',
@@ -53,14 +66,16 @@ const styles = StyleSheet.create({
   },
   buttonEnabled: {
     padding: 4,
-    width: 30,
-    height: 30,
-    backgroundColor: 'rgb(135, 135, 135)',
+    width: 32,
+    height: 32,
+    backgroundColor: 'rgb(156, 156, 156)',
+    marginBottom: 5,
   },
   buttonDisabled: {
     padding: 4,
-    width: 30,
-    height: 30,
-    backgroundColor: 'rgb(175, 175, 175)',
+    width: 32,
+    height: 32,
+    backgroundColor: 'rgb(217, 216, 216)',
+    marginBottom: 5,
   },
 });
