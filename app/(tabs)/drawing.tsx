@@ -354,9 +354,8 @@ export default function CreatePix() {
       </View>
        
       <View style = {styles.gridAndTools}>
-        <View style = {{marginTop: 60}}>
+        <View>
           <Toolbar allowedTools={ALL_TOOL_NAMES} onToolChange={t => { activeTool.current = t; }} onUndo={handleUndo} onRedo={handleRedo}/>
-
         </View>
         
           <View style = {styles.zoomable}>
@@ -589,7 +588,8 @@ const styles = StyleSheet.create({
   },
   gridAndTools: {
     flexDirection: 'row',
-    marginTop: 40,
+    alignItems: 'center',
+    marginTop: 70,
     gap: 30,
   },
   zoomable: {

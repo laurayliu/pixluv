@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { View, Pressable, StyleSheet } from 'react-native';
+import { Dimensions, View, Pressable, StyleSheet } from 'react-native';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 
-export type ToolName = 'draw' | 'erase' | 'fill' | 'lasso' | 'dropper' | 'line' | 'square' | 'circle' | 'undo' | 'redo';
+export type ToolName = 'draw' | 'erase' | 'fill' | 'dropper' | 'undo' | 'redo'; // add lasso back maybe
 
 export const ALL_TOOL_NAMES: ToolName[] = ['draw', 'erase', 'fill', 'dropper', 'undo', 'redo'];
 
@@ -25,24 +25,31 @@ export default function Toolbar({ allowedTools, onToolChange, onUndo, onRedo }: 
 
   return (
     <View style={styles.container}>
+        <View style={styles.toolbar}>
       {ALL_TOOL_NAMES.filter(t => allowedTools.includes(t)).map(t => (
         <Pressable
           key={t}
-          style={activeTool === t ? styles.buttonEnabled : styles.buttonDisabled}
+          style=
+          {[activeTool === t ? styles.buttonEnabled : styles.buttonDisabled]}
           onPress={() => handlePress(t)}
         >
           <IconSymbol name={t} color={'currentColor'} />
         </Pressable>
       ))}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    width: 20,
-    height: 20,
-    color: 'rgb(255, 0, 255)',
+    width: 40,
+    height: Dimensions.get('window').width - 100,
+    backgroundColor: 'rgb(85, 84, 84)',
+  },
+  toolbar: {
+    alignSelf: 'center',
+    marginTop: 5,
   },
   buttonEnabled: {
     padding: 4,
