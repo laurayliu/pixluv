@@ -19,6 +19,7 @@ model User {
   receivedMessages Chat[]  @relation("receiver")
   password         String
   profilePicture   String?
+  bio              String?
 
   likes    Like[]
   comments Comment[]
