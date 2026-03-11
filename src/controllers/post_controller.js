@@ -5,13 +5,14 @@ export const getPosts = async (req, res) => {
   const userId = req.query.userId;
   const posts = await prisma.post.findMany({
     orderBy: { createdAt: 'desc' },
-    select: { 
-      id: true, 
-      title: true, 
+    select: {
+      id: true,
+      title: true,
       content: true,
-      tags: true, 
-      imageUrl: true, 
-      createdAt: true, 
+      tags: true,
+      imageUrl: true,
+      colors: true,
+      createdAt: true,
       showLikes: true,
       author: { select: { username: true, profilePicture: true } },
       _count: { select: { likes: true, comments: true } },
@@ -33,17 +34,18 @@ export const getPosts = async (req, res) => {
 };
 
 export const createPost = async (req, res) => {
-  const { title, tags, content, imageUrl, challengeDate, showLikes } = req.body;
+  const { title, tags, content, imageUrl, challengeDate, showLikes, colors } = req.body;
   const post = await prisma.post.create({
-    data: { 
-      title, 
-      tags, 
-      content, 
-      imageUrl, 
-      authorId: 
-      req.user.id, 
-      challengeDate: challengeDate ? new Date(challengeDate) : null, 
-      showLikes: Boolean(showLikes), 
+    data: {
+      title,
+      tags,
+      content,
+      imageUrl,
+      authorId:
+      req.user.id,
+      challengeDate: challengeDate ? new Date(challengeDate) : null,
+      showLikes: Boolean(showLikes),
+      colors: Array.isArray(colors) ? colors : [],
     },
   });
   res.json(post);
