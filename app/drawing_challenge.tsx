@@ -76,6 +76,7 @@ export default function Challenge() {
   });
 
   const isPinching = useRef(false);
+  const drawnCells = useRef<boolean[]>(Array(GRID_SIZE * GRID_SIZE).fill(false));
 
 
   useEffect(() => {
@@ -129,6 +130,7 @@ export default function Challenge() {
       if (currentGrid[cellIndex] === drawingColor) { return currentGrid }
         const newGrid = [...currentGrid];
         newGrid[cellIndex] = drawingColor;
+        drawnCells.current[cellIndex] = activeTool.current !== 'erase';
         return newGrid;
     });
   };
@@ -186,6 +188,7 @@ export default function Challenge() {
     setGrid(Array(GRID_SIZE * GRID_SIZE).fill(DEFAULT_COLOR))
     setPrevGrid([Array(GRID_SIZE * GRID_SIZE).fill(DEFAULT_COLOR)])
     index.current = 0;
+    drawnCells.current = Array(GRID_SIZE * GRID_SIZE).fill(false);
   };
 
   const handleUndo = () => {
@@ -212,7 +215,17 @@ export default function Challenge() {
       const filename = `pix.png`;
       const { signedUrl, publicUrl } = await api.getPresignedUrl(filename, token);
       await api.uploadToS3(signedUrl, base64);
-      await api.createPost({ title: 'Challenge Post', content: caption, imageUrl: publicUrl, challengeDate: new Date().toISOString(), showLikes }, token);
+      const counts: Record<string, number> = {};
+      for (let i = 0; i < grid.length; i++) {
+        if (drawnCells.current[i]) {
+          counts[grid[i]] = (counts[grid[i]] || 0) + 1;
+        }
+      }
+      const topColors = Object.entries(counts)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 6)
+        .map(([color]) => color);
+      await api.createPost({ title: 'Challenge Post', content: caption, imageUrl: publicUrl, challengeDate: new Date().toISOString(), showLikes, colors: topColors }, token);
       const { posts } = await api.getTodayChallengePosts(token);
       setSubmissions(posts);
       setSubmitted(true);   
@@ -243,6 +256,7 @@ export default function Challenge() {
         if (newGrid[currentCell] !== cellColor) continue; // if fill finds a color that is different (boundary)
 
         newGrid[currentCell] = selectedColor;
+        drawnCells.current[currentCell] = true;
 
         const row = Math.floor(currentCell / GRID_SIZE);
         const col = currentCell % GRID_SIZE;
