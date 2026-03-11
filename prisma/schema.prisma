@@ -45,6 +45,7 @@ model Post {
   tags          String?
   content       String
   imageUrl      String?
+  colors        String[]
   challengeDate DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
