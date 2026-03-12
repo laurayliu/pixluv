@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    marginBottom: 6,
+    marginBottom: 15,
   },
   commentAuthor: {
     fontWeight: '800',
