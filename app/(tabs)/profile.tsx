@@ -1,4 +1,3 @@
-
 import React, { useCallback, useEffect, useState}from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { StyleSheet, Text, View, Button, LayoutChangeEvent, KeyboardAvoidingView, TouchableOpacity, TextInput, Pressable, FlatList, Image, ActivityIndicator, Modal, TouchableWithoutFeedback, Dimensions } from 'react-native';
@@ -6,6 +5,8 @@ import { useAuth } from '@/context/AuthContext';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { api } from '../../services/api';
 import Animated, { useSharedValue, withSpring, withDecay, useAnimatedStyle, withTiming, withDelay} from 'react-native-reanimated';
+import DefaultColorPanel from '../../components/color_picker';
+
 
 import { useRouter } from 'expo-router';
 import {
@@ -15,17 +16,23 @@ import {
 } from 'react-native-gesture-handler';
 import {scheduleOnRN } from 'react-native-worklets';
 import { opacity } from 'react-native-reanimated/lib/typescript/Colors';
+import { Colors } from '@/constants/theme';
 
 type Post = {
   id: string;
   title?: string;
   caption?: string;
   imageUrl?: string;
+  colors?: string[];
   _count?: {
     likes?: number;
     comments?: number;
   };
   likedByMe?: boolean;
+  author?: {
+    username?: string;
+    profilePicture?: string | null;
+  };
 };
 
 type Comment = {
@@ -38,9 +45,16 @@ type Comment = {
   };
 };
 
+const DEFAULT_COLOR = "#fff";
+const DEFAULT_SELECTED_COLOR = "#ff0000"
 
 const ITEM_SIZE = (Dimensions.get('window').width - 48) / 3;
 const SHEET_HEIGHT = Dimensions.get('window').height * 0.5;
+
+const defaultPallette = [
+  "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff"
+  ]
+
 
 const BORDER_FRAME = {
   borderRadius: 0,
@@ -57,7 +71,7 @@ const BORDER_FRAME = {
 
   const { width: wid, height: hei } = Dimensions.get('window')
   const bookWidth = wid - 60;
-  const bookHeight = hei - 182
+  const bookHeight = hei -380
 
 const Profile = () => {
 
@@ -65,6 +79,8 @@ const Profile = () => {
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [colorPallete, setColorPallete] = useState<string[]>(defaultPallette);
+
   const [pfpPickerVisible, setPfpPickerVisible] = useState(false);
   const [pfpPosts, setPfpPosts] = useState<{ id: string; imageUrl: string }[]>([]);
   const [pfpPostsLoading, setPfpPostsLoading] = useState(false);
@@ -79,12 +95,17 @@ const Profile = () => {
   const [loadingComments, setLoadingComments] = useState(false);
   const [submittingComment, setSubmittingComment] = useState(false);
   const openBookCover = useSharedValue(false);
-    const fade = useSharedValue(1);
+  const fade = useSharedValue(1);
 
   const [editMode, setEditMode] = useState(false);
   const [editBio, setEditBio] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
+  const [EditPallete, setEditPallete] = useState(false);
+
+  const [selectedColor, setSelectedColor] = useState<string>(DEFAULT_SELECTED_COLOR);
+
+  const [editColor, setEditColor]  = useState<string>(DEFAULT_SELECTED_COLOR);
 
   const pfpSheetY = useSharedValue(SHEET_HEIGHT);
   const pfpSheetStyle = useAnimatedStyle(() => ({
@@ -108,6 +129,18 @@ const Profile = () => {
       setPfpPostsLoading(false);
     }
   };
+
+  const handlePallette = async () => {
+    if (EditPallete) {
+      setEditPallete(false)
+    } else {
+      setEditPallete(true)
+    }
+  }
+
+  const handleColor = async () => {
+    setEditColor(selectedColor);
+  }
 
   const enterEditMode = () => {
     setEditBio(user?.bio ?? '');
@@ -317,7 +350,7 @@ const Profile = () => {
     
   const animatedStyles = useAnimatedStyle(() => ({
     opacity: fade.value,
-    transform: [{perspective: 3000}, {translateX: (-bookWidth/2)}, { rotateY: `${offset.value}deg`}, {translateX: bookWidth/2}],
+    transform: [{perspective: 6000}, {translateX: (-bookWidth/2)}, { rotateY: `${offset.value}deg`}, {translateX: bookWidth/2}],
     backfaceVisibility: 'hidden'
   }));
 
@@ -358,7 +391,7 @@ const Profile = () => {
     });
 
   const coverAnimatedStyles = useAnimatedStyle(() => ({
-    transform: [{perspective: 3000}, {translateX: (-bookWidth/2)}, { rotateY: `${coverOffset.value}deg`}, {translateX: bookWidth/2}],  
+    transform: [{perspective: 6000}, {translateX: (-bookWidth/2)}, { rotateY: `${coverOffset.value}deg`}, {translateX: bookWidth/2}],  
     backfaceVisibility: 'hidden'
   }));  
 
@@ -375,6 +408,7 @@ const Profile = () => {
           setPosts(userPosts);
           setFollowerCount(fullUser._count?.followers ?? 0);
           setFollowingCount(fullUser._count?.following ?? 0);
+          setColorPallete(fullUser?.colors ?? defaultPallette)
         })
         .catch((err: Error) => setError(err.message))
         .finally(() => setLoading(false));
@@ -447,9 +481,7 @@ const Profile = () => {
           <Text style={[styles.texts, {textAlign: 'center' }]}>Sticker Collection</Text>
           <View style={styles.sticker_box}>
             <View style={[styles.sticker,  BORDER_FRAME, {backgroundColor: '#B7E3FF'}]}>
-
               <IconSymbol name="sticker2" size={70} color={'currentColor'} />
-
               {/* use image here to display the sticker */}
               {/* <Image
                 source={{ uri: item.imageUrl }}
@@ -465,24 +497,32 @@ const Profile = () => {
         <View style={styles.main_color}>
           <Text style={[styles.texts, {textAlign: 'center'}]}>Favorite Colors</Text>
 
+
+        <Pressable onPress={handlePallette}>
           <View style={styles.pallete_box}>
             <View style={styles.color_row}>
-              <View style={[
-                styles.color_box, BORDER_FRAME,
-              { backgroundColor: '#faeb4d' }, // take user info to fill color
-              ]}></View>
-            <View style={[
-                styles.color_box, BORDER_FRAME,
-              { backgroundColor: '#d73a3a' }, // take user info to fill color
-              ]}></View>
+              {/* {colorPallete.map((item, index) => (
+                <View key={index} style={[ styles.color_box, BORDER_FRAME, { backgroundColor: item }]}/>
+              )
+              )} */}
+              
+              {/* <View style={[
+                  styles.color_box, BORDER_FRAME,
+                { backgroundColor: '#9b3b00' }, // take user info to fill color
+                ]}/>       
 
-            <View style={[
-                styles.color_box, BORDER_FRAME,
-              { backgroundColor: '#51c770' }, // take user info to fill color
-              ]}></View>          
+              <View style={[
+                  styles.color_box, BORDER_FRAME,
+                { backgroundColor: '#b74caf' }, // take user info to fill color
+                ]}/>       
+              
+              <View style={[
+                  styles.color_box, BORDER_FRAME,
+                { backgroundColor: '#3400f1' }, // take user info to fill color
+                ]}/>       
             </View>
 
-            <View style={styles.color_row}>
+            <View style={styles.color_row}> */}
               <View style={[
                   styles.color_box, BORDER_FRAME,
                 { backgroundColor: '#9b3b00' }, // take user info to fill color
@@ -499,11 +539,68 @@ const Profile = () => {
                 ]}/>       
             </View>
           </View>
+        </Pressable>
+  
+        <Modal visible={EditPallete} transparent animationType="none" >
+          <View style={styles.pallete_edit}>
+            <View>
+              <View style={styles.color_row}>
+              <Pressable onPress={handleColor} id='1'>
+                <View style={[
+                  styles.color_box_edit, BORDER_FRAME,
+                { backgroundColor: selectedColor }, // take user info to fill color
+                ]}/>       
+              </Pressable>
+
+              <Pressable onPress={handleColor} id='2'>
+                <View style={[
+                  styles.color_box_edit, BORDER_FRAME,
+                { backgroundColor: selectedColor }, // take user info to fill color
+                ]}/>       
+              </Pressable>
+
+              <Pressable id='3'>
+                <View style={[
+                  styles.color_box_edit, BORDER_FRAME,
+                { backgroundColor: '#9b3b00' }, // take user info to fill color
+                ]}/>       
+              </Pressable>
+            </View>
+
+            <View style={styles.color_row}>
+              <Pressable>
+                <View style={[
+                  styles.color_box_edit, BORDER_FRAME,
+                { backgroundColor: '#9b3b00' }, // take user info to fill color
+                ]}/>       
+              </Pressable>     
+
+              <Pressable>
+                <View style={[
+                  styles.color_box_edit, BORDER_FRAME,
+                { backgroundColor: '#9b3b00' }, // take user info to fill color
+                ]}/>       
+              </Pressable>    
+              
+              <View style={[
+                  styles.color_box_edit, BORDER_FRAME,
+                { backgroundColor: '#3400f1' }, // take user info to fill color
+                ]}/>       
+            </View>
+            </View>
 
 
-          <View>
-            {/* <Text>Edit tton</Text> */}
+
+          <View style={{ width: '100%' }}>
+              <DefaultColorPanel value={selectedColor} onColorChange={setSelectedColor}/>
           </View>
+          <Pressable onPress={handlePallette} style={[styles.actionButton, {backgroundColor: '#c14848', padding: 15}]}>
+            <Text>Done</Text>
+          </Pressable>
+          </View>
+
+        </Modal>
+
         </View>
       </View>
 
@@ -594,33 +691,13 @@ const Profile = () => {
                   source={{ uri: item.imageUrl }}
                   style={{ width: wid*imagePercent, height: wid*imagePercent, justifyContent: 'center', alignItems: 'center'}}
                 />
-                <Text style={{fontSize: 17, justifyContent: 'flex-start'}}>{item.content ?? JSON.stringify(item)}</Text>
+                <Text style={{fontSize: 17, justifyContent: 'flex-start', width: wid*imagePercent}}>{item.content ?? JSON.stringify(item)}</Text>
 
                 <View style={[styles.post_action_box, {width: wid*imagePercent}]}>
                   <View style={styles.color_row}>
-                    <View style={[
-                        styles.color_box, BORDER_FRAME,
-                      { backgroundColor: '#312da2' }, // take user info to fill color
-                      ]}/>       
-
-                    <View style={[
-                        styles.color_box, BORDER_FRAME,
-                      { backgroundColor: '#687ad7' }, // take user info to fill color
-                      ]}/>       
-                    
-                    <View style={[
-                        styles.color_box, BORDER_FRAME,
-                      { backgroundColor: '#3ead3c' }, // take user info to fill color
-                      ]}/>       
-                    <View style={[
-                        styles.color_box, BORDER_FRAME,
-                      { backgroundColor: '#f798ec' }, // take user info to fill color
-                      ]}/>       
-                    
-                    <View style={[
-                        styles.color_box, BORDER_FRAME,
-                      { backgroundColor: '#a22d2d' }, // take user info to fill color
-                      ]}/> 
+                    {(item.colors ?? []).map((color: string, i: number) => (
+                      <View key={`${item.id}${color}${i}`} style={[BORDER_FRAME, styles.color_box, { backgroundColor: color ?? "#ffffff" }]} />
+                    ))}
                   </View>
 
                   <View style={styles.interact_box}>
@@ -836,6 +913,15 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     alignSelf: 'center',
   },
+  color_box_edit: {
+    height:80,
+    width: 80,
+    margin: 5,
+    backgroundColor: '#a14c67',
+    justifyContent: 'center',
+    alignContent: 'center',
+    alignSelf: 'center',
+  },
   book_container: {
     display: 'flex',
     marginTop: 15,
@@ -881,7 +967,7 @@ const styles = StyleSheet.create({
   },
   page_cover: {
     position: 'absolute',
-    height: 550,
+    height: bookHeight,
     borderRadius: 20,
     backgroundColor: '#fff8ce',
   },
@@ -1043,6 +1129,15 @@ const styles = StyleSheet.create({
     color: '#555',
     fontFamily: 'ms',
   },
+  pallete_edit: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center', 
+    alignSelf: 'center',
+    backgroundColor: '#ffcdea',
+    width: '80%',
+    height: '80%'
+  }
 });
 
 export default Profile;
