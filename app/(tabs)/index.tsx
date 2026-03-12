@@ -208,9 +208,12 @@ const HomeScreen = () => {
               {/* <Text style = {styles.title}>{item.title ?? item.caption ?? JSON.stringify(item)}</Text> */}
               <View style={styles.imageRow}>
                 <View style={styles.colorSwatches}>
-                  {(item.colors ?? []).map((color: string, i: number) => (
-                    <View key={i} style={[BORDER_FRAME, styles.colorSwatch, { backgroundColor: color }]} />
-                  ))}
+                  {Array.from({length: 7}).map((_, i) => {
+                    const color = item.colors?.[i] ?? "#ffffff";
+                    return (
+                      <View key={i} style={[BORDER_FRAME, styles.colorSwatch, { backgroundColor: color }]} />
+                    );
+                  })}
                 </View>
                 <Image
                   source={{ uri: item.imageUrl }}
@@ -316,7 +319,7 @@ const styles = StyleSheet.create({
   posts: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 20,
   },
   post: {
     paddingBottom: 30,
@@ -427,6 +430,7 @@ const styles = StyleSheet.create({
   colorSwatches: {
     flexDirection: 'column',
     gap: 4,
+    paddingRight: 10,
   },
   colorSwatch: {
     width: 26,
