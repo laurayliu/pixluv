@@ -320,6 +320,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 20,
+    marginBottom: 140,
   },
   post: {
     paddingBottom: 30,
