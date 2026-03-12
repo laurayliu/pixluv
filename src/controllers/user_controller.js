@@ -66,10 +66,10 @@ export const getFollowing = async (req, res) => {
 };
 
 export const updateUser = async (req, res) => {
-  const { username, email, profilePicture, bio, colors } = req.body;
+  const { username, email, profilePicture, bio } = req.body;
   const user = await prisma.user.update({
     where: { id: req.params.id },
-    data: { username, email, profilePicture, bio, colors },
+    data: { username, email, profilePicture, bio },
   });
   res.json(user);
 };
