@@ -20,6 +20,7 @@ model User {
   password         String
   profilePicture   String?
   bio              String?
+  colorPalette     String[]
 
   likes    Like[]
   comments Comment[]
