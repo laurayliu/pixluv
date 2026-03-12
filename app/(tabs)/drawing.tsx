@@ -60,6 +60,8 @@ export default function CreatePix() {
   useEffect(() => {
     setGrid(Array(Number(size) * Number(size)).fill(DEFAULT_COLOR))
     setPrevGrid([Array(Number(size) * Number(size)).fill(DEFAULT_COLOR)])
+    setSelectedColor(DEFAULT_SELECTED_COLOR)
+    setPrevColor('rgb(217, 216, 216)')
     index.current = 0
     drawnCells.current = Array(Number(size) * Number(size)).fill(false)
   }, [size])
@@ -127,13 +129,13 @@ export default function CreatePix() {
     const drawingColor = activeTool.current === 'erase' ? DEFAULT_COLOR : selectedColor; // if eraser is toggled set selected color to white
     setGrid((currentGrid) => {
       if (currentGrid[cellIndex] === drawingColor) { return currentGrid }
-        if (recentColor.current !== selectedColor) {
-          setPrevColor(recentColor.current);
-        }
-        const newGrid = [...currentGrid];
-        newGrid[cellIndex] = drawingColor;
-        drawnCells.current[cellIndex] = activeTool.current !== 'erase';
-        return newGrid;
+      if (recentColor.current !== selectedColor) {
+        setPrevColor(recentColor.current);
+      }
+      const newGrid = [...currentGrid];
+      newGrid[cellIndex] = drawingColor;
+      drawnCells.current[cellIndex] = activeTool.current !== 'erase';
+      return newGrid;
     });
   };
 
@@ -225,6 +227,7 @@ export default function CreatePix() {
 
       handleClear(); // make sure to clear canvas
       setSelectedColor(DEFAULT_SELECTED_COLOR);
+      setPrevColor('rgb(217, 216, 216)');
       setCaption('');
 
       // alert(`Post Success!`);

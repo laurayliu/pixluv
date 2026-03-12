@@ -69,6 +69,8 @@ export default function Challenge() {
   const exportRef = useRef<View>(null);
 
   const [prevGrid, setPrevGrid] = useState<string[][]>([Array(GRID_SIZE * GRID_SIZE).fill(DEFAULT_COLOR)]);
+  const [prevColor, setPrevColor] = useState<string>('rgb(217, 216, 216)')
+
   const index = useRef(0);
 
   const zoomState = useRef({
@@ -77,6 +79,7 @@ export default function Challenge() {
 
   const isPinching = useRef(false);
   const drawnCells = useRef<boolean[]>(Array(GRID_SIZE * GRID_SIZE).fill(false));
+  const recentColor = useRef<string>('rgb(217, 216, 216)');
 
 
   useEffect(() => {
@@ -128,10 +131,13 @@ export default function Challenge() {
     const drawingColor = activeTool.current === 'erase' ? DEFAULT_COLOR : selectedColor; // if eraser is toggled set selected color to white
     setGrid((currentGrid) => {
       if (currentGrid[cellIndex] === drawingColor) { return currentGrid }
-        const newGrid = [...currentGrid];
-        newGrid[cellIndex] = drawingColor;
-        drawnCells.current[cellIndex] = activeTool.current !== 'erase';
-        return newGrid;
+      if (recentColor.current !== selectedColor) {
+          setPrevColor(recentColor.current);
+      }
+      const newGrid = [...currentGrid];
+      newGrid[cellIndex] = drawingColor;
+      drawnCells.current[cellIndex] = activeTool.current !== 'erase';
+      return newGrid;
     });
   };
 
@@ -181,6 +187,8 @@ export default function Challenge() {
          index.current = updatedGrid.length - 1;
          return updatedGrid;
        });
+
+       recentColor.current = selectedColor
      }
    });
 
@@ -391,7 +399,7 @@ export default function Challenge() {
       </View>
 
       <View style={styles.gridAndTools}>
-        <Toolbar allowedTools={allowedTools} onToolChange={t => { activeTool.current = t; }} onUndo={handleUndo} onRedo={handleRedo} />
+        <Toolbar allowedTools={allowedTools} onToolChange={t => { activeTool.current = t; }} onUndo={handleUndo} onRedo={handleRedo} prevColor={prevColor} onPrevColorSelect={() => setSelectedColor(prevColor)}/>
 
         <View style = {styles.zoomable}>
           <ReactNativeZoomableView
