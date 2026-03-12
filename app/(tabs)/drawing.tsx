@@ -64,6 +64,7 @@ export default function CreatePix() {
     drawnCells.current = Array(Number(size) * Number(size)).fill(false)
   }, [size])
 
+  
   const[grid, setGrid] = useState<string[]>(
     Array(Number(size) * Number(size)).fill(DEFAULT_COLOR) // fill w white 
   )
@@ -80,13 +81,15 @@ export default function CreatePix() {
   const exportRef = useRef<View>(null);
 
   const [prevGrid, setPrevGrid] = useState<string[][]>([Array(Number(size) * Number(size)).fill(DEFAULT_COLOR)]); // need the brackets!!
-  const index = useRef(0);
+  const [prevColor, setPrevColor] = useState<string>('rgb(217, 216, 216)')
 
+  const index = useRef(0);
   const zoomState = useRef({
     level: 1,
   });
 
   const drawnCells = useRef<boolean[]>(Array(Number(size) * Number(size)).fill(false));
+  const recentColor = useRef<string>('rgb(217, 216, 216)');
 
 
 
@@ -124,6 +127,9 @@ export default function CreatePix() {
     const drawingColor = activeTool.current === 'erase' ? DEFAULT_COLOR : selectedColor; // if eraser is toggled set selected color to white
     setGrid((currentGrid) => {
       if (currentGrid[cellIndex] === drawingColor) { return currentGrid }
+        if (recentColor.current !== selectedColor) {
+          setPrevColor(recentColor.current);
+        }
         const newGrid = [...currentGrid];
         newGrid[cellIndex] = drawingColor;
         drawnCells.current[cellIndex] = activeTool.current !== 'erase';
@@ -145,6 +151,7 @@ export default function CreatePix() {
   onPanResponderGrant: (evt) => { // runs once you touch screen for the first time
     if (evt.nativeEvent.touches.length > 1) return; 
     isPinching.current = false;
+    
     const { pageX, pageY } = evt.nativeEvent; // capture whatever pageX/pageY is
     gridRef.current?.measure((x, y, width, height, gridOriginX, gridOriginY) => { // gives updated gridOriginX/gridOriginY
       colorCellAtPosition(pageX, pageY, gridOriginX, gridOriginY); // callback with updated values 
@@ -178,6 +185,8 @@ export default function CreatePix() {
       index.current = updatedGrid.length - 1;
       return updatedGrid;
     });
+
+     recentColor.current = selectedColor
   }
 });
 
@@ -246,6 +255,7 @@ export default function CreatePix() {
       index.current = nextIndex;
     }
   }
+
 
   const handleFill = (cellIndex: number, cellColor: string) => {
     if (cellColor === selectedColor) return;
@@ -355,7 +365,7 @@ export default function CreatePix() {
        
       <View style = {styles.gridAndTools}>
         <View>
-          <Toolbar allowedTools={ALL_TOOL_NAMES} onToolChange={t => { activeTool.current = t; }} onUndo={handleUndo} onRedo={handleRedo}/>
+          <Toolbar allowedTools={ALL_TOOL_NAMES} onToolChange={t => { activeTool.current = t; }} onUndo={handleUndo} onRedo={handleRedo} prevColor={prevColor} onPrevColorSelect={() => setSelectedColor(prevColor)}/>
         </View>
         
           <View style = {styles.zoomable}>

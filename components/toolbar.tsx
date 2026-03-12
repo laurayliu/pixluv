@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Dimensions, View, Pressable, StyleSheet } from 'react-native';
+import { Dimensions, View, Pressable, StyleSheet, TouchableOpacity } from 'react-native';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import DefaultColorPanel from '../components/color_picker';
 
 export type ToolName = 'draw' | 'erase' | 'fill' | 'dropper' | 'undo' | 'redo'; // add lasso back maybe
 
@@ -11,6 +12,8 @@ type Props = {
   onToolChange: (tool: ToolName) => void;
   onUndo: () => void;
   onRedo: () => void;
+  prevColor: string;
+  onPrevColorSelect: () => void;
 };
 
 const BORDER_FRAME = {
@@ -26,7 +29,7 @@ const BORDER_FRAME = {
   overflow: 'hidden',
 } as const;
 
-export default function Toolbar({ allowedTools, onToolChange, onUndo, onRedo }: Props) {
+export default function Toolbar({ allowedTools, onToolChange, onUndo, onRedo, prevColor, onPrevColorSelect }: Props) {
   const [activeTool, setActiveTool] = useState<ToolName>('draw');
 
   const handlePress = (tool: ToolName) => {
@@ -49,6 +52,7 @@ export default function Toolbar({ allowedTools, onToolChange, onUndo, onRedo }: 
           <IconSymbol name={t} color={'currentColor'} />
         </Pressable>
       ))}
+      <TouchableOpacity style={[BORDER_FRAME, {backgroundColor: prevColor, width: 32, height: 58}]} onPress={onPrevColorSelect}></TouchableOpacity>
       </View>
     </View>
   );
