@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, Dimensions, ActivityIndicator, Pressable, PanResponder, Image, TouchableOpacity, ScrollView, Alert, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Dimensions, ActivityIndicator, Pressable, PanResponder, Image, TouchableOpacity, ScrollView, Alert, Keyboard, TouchableWithoutFeedback, Modal } from 'react-native';
 import { captureRef } from 'react-native-view-shot';
 import { api } from '../services/api';
 import { useAuth } from '@/context/AuthContext';
@@ -8,6 +8,7 @@ import { useRouter } from 'expo-router';
 import BackIcon from '../assets/icons/editor/undo.svg';
 import { ReactNativeZoomableView } from '@openspacelabs/react-native-zoomable-view';
 import PaletteImg from '../assets/icons/palette_img.svg';
+import { IconSymbol } from '@/components/ui/icon-symbol';
 
 const GRID_SIZE = 32;
 const DEFAULT_COLOR = '#fff';
@@ -80,6 +81,11 @@ export default function Challenge() {
   const isPinching = useRef(false);
   const drawnCells = useRef<boolean[]>(Array(GRID_SIZE * GRID_SIZE).fill(false));
   const recentColor = useRef<string>('rgb(217, 216, 216)');
+
+  const [showAlertClear, setShowAlertClear] = useState(false);
+  const [showAlertCaption, setShowAlertCaption] = useState(false);
+  const [showAlertPosting, setShowAlertPosting] = useState(false);
+  const [showAlertLike, setShowAlertLike] = useState(false);
 
 
   useEffect(() => {
@@ -237,11 +243,13 @@ export default function Challenge() {
       const { posts } = await api.getTodayChallengePosts(token);
       setSubmissions(posts);
       setSubmitted(true);   
-      router.navigate('/(tabs)');
+      // router.navigate('/(tabs)');
 
       handleClear(); // make sure to clear canvas
       setSelectedColor(DEFAULT_SELECTED_COLOR);
       setCaption('');
+
+      setShowAlertPosting(true);
 
     } catch (error) {
       console.error('Upload process failed:', error);
@@ -331,39 +339,45 @@ export default function Challenge() {
   }
 
   const clearAlert = () => {
-      Alert.alert(
-        "alert!",
-        "are you sure you want to clear the canvas?",
-        [
-          { text: "cancel" },
-          { text: "clear",
-            onPress: handleClear
-          }
-        ],
-        { cancelable: false }
-      )
+    // Alert.alert(
+    //   "alert!",
+    //   "are you sure you want to clear the canvas?",
+    //   [
+    //     { text: "cancel" },
+    //     { text: "clear",
+    //       onPress: handleClear
+    //     }
+    //   ],
+    //   { cancelable: false }
+    // )
+    setShowAlertClear(true)
+    return;
   }
 
    const captionAlert = () => {
       if (caption.trim().length === 0) {
-        Alert.alert(
-        "alert!",
-        "please add a caption!",
-        [],
-        { cancelable: true }
-      )
+        // Alert.alert(
+        //   "alert!",
+        //   "please add a caption!",
+        //   [],
+        //   { cancelable: true }
+        // )
+        setShowAlertCaption(true)
+        return;
       }
       else {
-        Alert.alert(
-          'show number of likes on this post?',
-          'the number of likes will only be visible to you if toggled on',
-          [
-            { text: 'yes!', onPress: () => handleSaveAndUpload(true) },
-            { text: 'no!', onPress: () => handleSaveAndUpload(false) },
-            { text: 'cancel', style: 'cancel' },
-          ],
-            { cancelable: true }
-        )
+        // Alert.alert(
+        //   'show number of likes on this post?',
+        //   'the number of likes will only be visible to you if toggled on',
+        //   [
+        //     { text: 'yes!', onPress: () => handleSaveAndUpload(true) },
+        //     { text: 'no!', onPress: () => handleSaveAndUpload(false) },
+        //     { text: 'cancel', style: 'cancel' },
+        //   ],
+        //     { cancelable: true }
+        // )
+        setShowAlertLike(true)
+        return;
       }
   }
 
@@ -447,6 +461,112 @@ export default function Challenge() {
           </TouchableOpacity>
           )}
        </View>
+
+       <Modal
+        visible={showAlertCaption}
+        transparent={true}
+        animationType='fade'
+        onRequestClose={() => setShowAlertCaption(false)}
+      >
+        <View style={[styles.alertOverlay]}>
+          <Pressable style={styles.backdrop} onPress={() => setShowAlertCaption(false)} />
+            <View style={[BORDER_FRAME, styles.alertBox]}>
+              <View style={[styles.captionTitle]}>
+                <Text style={{fontFamily: 'ms', fontSize: 20}}>no caption!</Text>
+              </View>
+              <View style={[styles.captionBody]}>
+                <Text style={{fontFamily: 'ms'}}>please add a caption before posting!</Text>
+              </View>
+              <TouchableOpacity style={[BORDER_FRAME, styles.alertButton]} onPress={() => setShowAlertCaption(false)}>
+                <Text style={{fontFamily: 'ms'}} >ok</Text>
+              </TouchableOpacity>
+            </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={showAlertLike}
+        transparent={true}
+        animationType='fade'
+        onRequestClose={() => setShowAlertLike(false)}
+      >
+        <View style={[styles.alertOverlay]}>
+          <Pressable style={styles.backdrop} onPress={() => setShowAlertLike(false)} />
+            <View style={[BORDER_FRAME, styles.alertBox]}>
+              <View style={[styles.captionTitle]}>
+                <Text style={{fontFamily: 'ms', fontSize: 20}}>show number of likes on this post?</Text>
+              </View>
+              <View style={[styles.captionBody]}>
+                <Text style={{fontFamily: 'ms'}}>the number of likes will only be visible to you if toggled on.</Text>
+              </View>
+              <View style={styles.alertButtons}>
+                <TouchableOpacity style={[BORDER_FRAME, styles.alertButton]} onPress={() => {setShowAlertLike(false); handleSaveAndUpload(true);}}>
+                  <Text style={{fontFamily: 'ms'}} >yes!</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[BORDER_FRAME, styles.alertButton]} onPress={() => {setShowAlertLike(false); handleSaveAndUpload(false);}}>
+                  <Text style={{fontFamily: 'ms'}} >no!</Text>
+                </TouchableOpacity>
+              </View>
+              
+            </View> 
+        </View>
+      </Modal>
+
+      <Modal
+        visible={showAlertPosting}
+        transparent={true}
+        animationType='fade'
+        onRequestClose={() => setShowAlertPosting(false)}
+      >
+        <View style={[styles.alertOverlay]}>
+          <Pressable style={styles.backdrop} onPress={() => setShowAlertPosting(false)} />
+            <View style={[BORDER_FRAME, styles.alertBox]}>
+              <View style={[styles.captionTitle]}>
+                <Text style={{fontFamily: 'ms', fontSize: 20}}>submission success!</Text>
+              </View>
+              <View style={styles.goHome}>
+                <View>
+                  <Text style={{fontFamily: 'ms'}}>go home and view?</Text>
+                </View>
+                  <TouchableOpacity style={[BORDER_FRAME, styles.homeButton]} onPress={() => 
+                    {setShowAlertPosting(false);
+                      router.push({pathname: '/(tabs)'});
+                    }
+                    }>
+                    <IconSymbol name={'home'} color={'currentColor'} />
+                  </TouchableOpacity>   
+              </View>
+            </View>
+        </View>
+      </Modal>
+      
+      <Modal
+        visible={showAlertClear}
+        transparent={true}
+        animationType='fade'
+        onRequestClose={() => setShowAlertClear(false)}
+      >
+        <View style={[styles.alertOverlay]}>
+          <Pressable style={styles.backdrop} onPress={() => setShowAlertClear(false)} />
+            <View style={[BORDER_FRAME, styles.alertBox]}>
+              <View style={[styles.captionTitle]}>
+                <Text style={{fontFamily: 'ms', fontSize: 20}}>warning!</Text>
+              </View>
+              <View style={[styles.captionBody]}>
+                <Text style={{fontFamily: 'ms'}}>are you sure you want to clear?? think carefully!</Text>
+              </View>
+              <View style={styles.alertButtons}>
+                <TouchableOpacity style={[BORDER_FRAME, styles.alertButton]} onPress={() => {setShowAlertClear(false); handleClear()}}>
+                  <Text style={{fontFamily: 'ms'}} >yes!</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[BORDER_FRAME, styles.alertButton]} onPress={() => setShowAlertClear(false)}>
+                  <Text style={{fontFamily: 'ms'}} >no!</Text>
+                </TouchableOpacity>
+              </View>
+              
+            </View> 
+        </View>
+      </Modal>
 
     </View>
   );
@@ -576,6 +696,53 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#fff',
   },
+  alertOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'  
+  },
+  alertBox: {
+    width: '80%',
+    padding: 10,
+    alignItems: 'center',
+    flexDirection: 'column',
+    backgroundColor: '#ececec',
+  },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  captionTitle: {
+    alignSelf: "flex-start",
+    marginBottom: 10,
+  },
+  captionBody: {
+    margin: 5,
+    marginBottom: 15,
+    alignSelf: 'flex-start'
+  },
+  alertButton: {
+    padding: 2,
+    backgroundColor: 'white',
+    paddingHorizontal: 5,
+    alignSelf: 'flex-end',
+  },
+  alertButtons: {
+    flexDirection: 'row',
+    alignSelf: 'flex-end',
+    gap: 15,
+  },
+  homeButton: {
+    padding: 5,
+    backgroundColor: 'white',
+  },
+  goHome: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-evenly',
+    marginBottom: 10,
+  }
 });
 
 const submissionStyles = StyleSheet.create({
