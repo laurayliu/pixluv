@@ -1,4 +1,3 @@
-
 import React, { useCallback, useEffect, useState}from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { StyleSheet, Text, View, Button, LayoutChangeEvent, KeyboardAvoidingView, TouchableOpacity, TextInput, Pressable, FlatList, Image, ActivityIndicator, Modal, TouchableWithoutFeedback, Dimensions } from 'react-native';
@@ -6,6 +5,8 @@ import { useAuth } from '@/context/AuthContext';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { api } from '../../services/api';
 import Animated, { useSharedValue, withSpring, withDecay, useAnimatedStyle, withTiming, withDelay} from 'react-native-reanimated';
+import DefaultColorPanel from '../../components/color_picker';
+
 
 import { useRouter } from 'expo-router';
 import {
@@ -38,6 +39,8 @@ type Comment = {
   };
 };
 
+const DEFAULT_COLOR = "#fff";
+const DEFAULT_SELECTED_COLOR = "#ff0000"
 
 const ITEM_SIZE = (Dimensions.get('window').width - 48) / 3;
 const SHEET_HEIGHT = Dimensions.get('window').height * 0.5;
@@ -57,7 +60,7 @@ const BORDER_FRAME = {
 
   const { width: wid, height: hei } = Dimensions.get('window')
   const bookWidth = wid - 60;
-  const bookHeight = hei - 182
+  const bookHeight = hei -380
 
 const Profile = () => {
 
@@ -79,12 +82,16 @@ const Profile = () => {
   const [loadingComments, setLoadingComments] = useState(false);
   const [submittingComment, setSubmittingComment] = useState(false);
   const openBookCover = useSharedValue(false);
-    const fade = useSharedValue(1);
+  const fade = useSharedValue(1);
 
   const [editMode, setEditMode] = useState(false);
   const [editBio, setEditBio] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
+  const [EditPallete, setEditPallete] = useState(false);
+
+  const [selectedColor, setSelectedColor] = useState<string>(DEFAULT_SELECTED_COLOR);
+  const [editColor, setEditColor]  = useState<string>(DEFAULT_SELECTED_COLOR);
 
   const pfpSheetY = useSharedValue(SHEET_HEIGHT);
   const pfpSheetStyle = useAnimatedStyle(() => ({
@@ -108,6 +115,18 @@ const Profile = () => {
       setPfpPostsLoading(false);
     }
   };
+
+  const handlePallette = async () => {
+    if (EditPallete) {
+      setEditPallete(false)
+    } else {
+      setEditPallete(true)
+    }
+  }
+
+  const handleColor = async () => {
+    setEditColor(selectedColor);
+  }
 
   const enterEditMode = () => {
     setEditBio(user?.bio ?? '');
@@ -317,7 +336,7 @@ const Profile = () => {
     
   const animatedStyles = useAnimatedStyle(() => ({
     opacity: fade.value,
-    transform: [{perspective: 3000}, {translateX: (-bookWidth/2)}, { rotateY: `${offset.value}deg`}, {translateX: bookWidth/2}],
+    transform: [{perspective: 6000}, {translateX: (-bookWidth/2)}, { rotateY: `${offset.value}deg`}, {translateX: bookWidth/2}],
     backfaceVisibility: 'hidden'
   }));
 
@@ -358,7 +377,7 @@ const Profile = () => {
     });
 
   const coverAnimatedStyles = useAnimatedStyle(() => ({
-    transform: [{perspective: 3000}, {translateX: (-bookWidth/2)}, { rotateY: `${coverOffset.value}deg`}, {translateX: bookWidth/2}],  
+    transform: [{perspective: 6000}, {translateX: (-bookWidth/2)}, { rotateY: `${coverOffset.value}deg`}, {translateX: bookWidth/2}],  
     backfaceVisibility: 'hidden'
   }));  
 
@@ -465,21 +484,25 @@ const Profile = () => {
         <View style={styles.main_color}>
           <Text style={[styles.texts, {textAlign: 'center'}]}>Favorite Colors</Text>
 
+
+        <Pressable onPress={handlePallette}>
           <View style={styles.pallete_box}>
             <View style={styles.color_row}>
+              {/* .map here */}
               <View style={[
-                styles.color_box, BORDER_FRAME,
-              { backgroundColor: '#faeb4d' }, // take user info to fill color
-              ]}></View>
-            <View style={[
-                styles.color_box, BORDER_FRAME,
-              { backgroundColor: '#d73a3a' }, // take user info to fill color
-              ]}></View>
+                  styles.color_box, BORDER_FRAME,
+                { backgroundColor: '#9b3b00' }, // take user info to fill color
+                ]}/>       
 
-            <View style={[
-                styles.color_box, BORDER_FRAME,
-              { backgroundColor: '#51c770' }, // take user info to fill color
-              ]}></View>          
+              <View style={[
+                  styles.color_box, BORDER_FRAME,
+                { backgroundColor: '#b74caf' }, // take user info to fill color
+                ]}/>       
+              
+              <View style={[
+                  styles.color_box, BORDER_FRAME,
+                { backgroundColor: '#3400f1' }, // take user info to fill color
+                ]}/>       
             </View>
 
             <View style={styles.color_row}>
@@ -499,11 +522,68 @@ const Profile = () => {
                 ]}/>       
             </View>
           </View>
+        </Pressable>
+  
+        <Modal visible={EditPallete} transparent animationType="none" >
+          <View style={styles.pallete_edit}>
+            <View>
+              <View style={styles.color_row}>
+              <Pressable onPress={handleColor} id='1'>
+                <View style={[
+                  styles.color_box_edit, BORDER_FRAME,
+                { backgroundColor: selectedColor }, // take user info to fill color
+                ]}/>       
+              </Pressable>
+
+              <Pressable onPress={handleColor} id='2'>
+                <View style={[
+                  styles.color_box_edit, BORDER_FRAME,
+                { backgroundColor: selectedColor }, // take user info to fill color
+                ]}/>       
+              </Pressable>
+
+              <Pressable id='3'>
+                <View style={[
+                  styles.color_box_edit, BORDER_FRAME,
+                { backgroundColor: '#9b3b00' }, // take user info to fill color
+                ]}/>       
+              </Pressable>
+            </View>
+
+            <View style={styles.color_row}>
+              <Pressable>
+                <View style={[
+                  styles.color_box_edit, BORDER_FRAME,
+                { backgroundColor: '#9b3b00' }, // take user info to fill color
+                ]}/>       
+              </Pressable>     
+
+              <Pressable>
+                <View style={[
+                  styles.color_box_edit, BORDER_FRAME,
+                { backgroundColor: '#9b3b00' }, // take user info to fill color
+                ]}/>       
+              </Pressable>    
+              
+              <View style={[
+                  styles.color_box_edit, BORDER_FRAME,
+                { backgroundColor: '#3400f1' }, // take user info to fill color
+                ]}/>       
+            </View>
+            </View>
 
 
-          <View>
-            {/* <Text>Edit tton</Text> */}
+
+          <View style={{ width: '100%' }}>
+              <DefaultColorPanel value={selectedColor} onColorChange={setSelectedColor}/>
           </View>
+          <Pressable onPress={handlePallette} style={[styles.actionButton, {backgroundColor: '#c14848', padding: 15}]}>
+            <Text>Done</Text>
+          </Pressable>
+          </View>
+
+        </Modal>
+
         </View>
       </View>
 
@@ -836,6 +916,15 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     alignSelf: 'center',
   },
+  color_box_edit: {
+    height:80,
+    width: 80,
+    margin: 5,
+    backgroundColor: '#a14c67',
+    justifyContent: 'center',
+    alignContent: 'center',
+    alignSelf: 'center',
+  },
   book_container: {
     display: 'flex',
     marginTop: 15,
@@ -881,7 +970,7 @@ const styles = StyleSheet.create({
   },
   page_cover: {
     position: 'absolute',
-    height: 550,
+    height: bookHeight,
     borderRadius: 20,
     backgroundColor: '#fff8ce',
   },
@@ -1043,6 +1132,15 @@ const styles = StyleSheet.create({
     color: '#555',
     fontFamily: 'ms',
   },
+  pallete_edit: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center', 
+    alignSelf: 'center',
+    backgroundColor: '#ffcdea',
+    width: '80%',
+    height: '80%'
+  }
 });
 
 export default Profile;
