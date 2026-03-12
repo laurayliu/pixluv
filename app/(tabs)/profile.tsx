@@ -14,6 +14,7 @@ import {
   GestureHandlerRootView,
 } from 'react-native-gesture-handler';
 import {scheduleOnRN } from 'react-native-worklets';
+import { opacity } from 'react-native-reanimated/lib/typescript/Colors';
 
 type Post = {
   id: string;
@@ -54,7 +55,12 @@ const BORDER_FRAME = {
   overflow: 'hidden',
 } as const;
 
+  const { width: wid, height: hei } = Dimensions.get('window')
+  const bookWidth = wid - 60;
+  const bookHeight = hei - 182
+
 const Profile = () => {
+
   const { user, logout, token, updateUser } = useAuth();
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,10 +78,8 @@ const Profile = () => {
   const [newComment, setNewComment] = useState('');
   const [loadingComments, setLoadingComments] = useState(false);
   const [submittingComment, setSubmittingComment] = useState(false);
-  const [openCover, setOpenCover] = useState(false);
   const openBookCover = useSharedValue(false);
-
-
+    const fade = useSharedValue(1);
 
   const [editMode, setEditMode] = useState(false);
   const [editBio, setEditBio] = useState('');
@@ -183,8 +187,6 @@ const Profile = () => {
       );
     }
   };
-  
-  
     const openComments = async (post: Post) => {
       setActivePost(post);
       setCommentsVisible(true);
@@ -246,17 +248,9 @@ const Profile = () => {
   const [currentPage, setCurrentPage] = useState(0)
   const currentPageShared = useSharedValue(0);
 
-  // const next = Math.min(p + 1, posts.length - 1);
-  // currentPageShared.set(next);  
-  useEffect(() => {
-    currentPageShared.set(currentPage);
-  })
-
-
   const nextPage = () => {
     setCurrentPage(p => 
       Math.min(p + 1, posts.length - 1))
-      // currentPageShared.set(next); 
   }
 
   const prevPage = () => {
@@ -264,31 +258,48 @@ const Profile = () => {
       Math.max(p - 1, 0)
     )
   }
-  const { width: wid, height: hei } = Dimensions.get('window')
-  const bookWidth = wid - 60;
+
   const imagePercent = .60
   const translateX = useSharedValue(0)
 
   const pan = Gesture.Pan()
-    .onUpdate((e) => {
-      translateX.value = e.translationX;
+    .onChange((event) => {
+      console.log(`page at ${offset.value}`)
+      offset.set((value) => value += event.translationX*0.8) ;
+      console.log(`change in x: ${event.changeX}`)
+      offset.set((value) => value =  Math.min(0, Math.max(-92, offset.value))); 
+      console.log(`update value x: ${offset.value}`)
+    })
+
+  .onFinalize((event) => {
+      console.log(`Finalize: ${offset.get()}`)
+      if (offset.get() < -80) return; 
+
+      offset.set((value) => withDecay({
+        velocity: event.velocityX * 0.3,
+        rubberBandEffect: true,
+        clamp: [-92,0],
+      }))
     })
 
     .onEnd(() => {
-      if (offset.value < -90 && currentPageShared.value < posts.length - 1 && currentPageShared.value !== posts.length) {
+      console.log(`😍${offset.value}`)
+      if (offset.get() < -45 && offset.get() > -125 && currentPageShared.get() < posts.length - 1 && currentPageShared.get() !== posts.length) {    
         console.log(`Turn page ${currentPageShared.value}`)
-        currentPageShared.value += 1;
-        offset.value = withTiming(-109, { duration: 300 }, (finished) => {
-          if (finished) {
-            scheduleOnRN(nextPage);
-            offset.set(0);
-            console.log(`⭐ Page: ${currentPageShared.value}`)
-          }
-        });
-      } else if (offset.get() > -90 && currentPageShared.value > 0) {
-        console.log(`Flip back page ${currentPageShared.value}`)
+        fade.value = withTiming(0, {duration: 300})
+        offset.value = withTiming(-90, { duration: 100 }, (finished) => {
+        fade.value = withTiming(1, {duration: 320})
+        scheduleOnRN(nextPage);
+        currentPageShared.set(value => value + 1);
+        setTimeout(() => {
+          offset.set(0);
+        }, 250);
+        console.log(`⭐ Page: ${currentPageShared.value}`)
+      });
+      } else if (offset.get() > -90 && currentPageShared.value > 0 && currentPageShared.value !== posts.length && currentPageShared.value !== posts.length) {
+        console.log(`📔 Flip back page ${currentPageShared.value}`)
         currentPageShared.value -= 1;
-        offset.set(withTiming(0, { duration: 300 }, (finished) => {
+        offset.set(withTiming(0, { duration: 200 }, (finished) => {
           if (finished) {
             scheduleOnRN(prevPage);
             console.log(`⭐ Page: ${currentPageShared.value}`)
@@ -296,29 +307,17 @@ const Profile = () => {
         })) 
       } else if (offset.get() === 0 && currentPageShared.value === 0) {
           offset.set(withTiming(0, { duration: 0 }));
-          coverOffset.value = withSpring(0, { duration: 100 })
+          coverOffset.value = withSpring(0, { duration: 300 })
       } else {
         offset.set(withTiming(0, { duration: 300 }));
       }
     })
+    
 
-    .onChange((event) => {
-      console.log(`page at ${offset.value}`)
-      offset.set((value) => value += event.changeX) ;
-      offset.set((value) => value =  Math.min(0, Math.max(-95, offset.value))); 
-    })
-
-    .onFinalize((event) => {
-      if (offset.get() < -90) return; 
-      offset.set((value) => withDecay({
-        velocity: event.velocityX * 0.3,
-        rubberBandEffect: true,
-        clamp: [-95,0],
-      }))
-    });
-
+    
   const animatedStyles = useAnimatedStyle(() => ({
-    transform: [{perspective: 8000}, {translateX: (-bookWidth/2)}, { rotateY: `${offset.value}deg`}, {translateX: bookWidth/2}],  
+    opacity: fade.value,
+    transform: [{perspective: 3000}, {translateX: (-bookWidth/2)}, { rotateY: `${offset.value}deg`}, {translateX: bookWidth/2}],
     backfaceVisibility: 'hidden'
   }));
 
@@ -330,12 +329,12 @@ const Profile = () => {
 
     .onEnd(() => {
       if (coverOffset.value < -90 && currentPageShared.value < posts.length - 1) {
-        console.log("Open cover 📖");
+        console.log("Opening cover 📖");
         console.log(`Page: ${offset.value}`);
-        coverOffset.value = withTiming(-109, { duration: 300 }, (finished) => {
+        coverOffset.value = withTiming(-109, { duration: 200 }, (finished) => {
           openBookCover.value = false
         });
-      } else if (coverOffset.get() > -90 && coverOffset.get() > -90 &&  currentPageShared.value > 0) {
+      } else if (coverOffset.get() > -90&&  currentPageShared.value > 0) {
         console.log(`Flip back page ${currentPageShared.value}`)
       } 
       // else {
@@ -345,7 +344,7 @@ const Profile = () => {
 
     .onChange((event) => {
       coverOffset.set((value) => value += event.changeX) ;
-      coverOffset.set((value) => value =  Math.min(0, Math.max(-95, coverOffset.value))); 
+      coverOffset.set((value) => value =  Math.min(0, Math.max(-90.1, coverOffset.value))); 
       console.log(`cover at ${coverOffset.value}`)
     })
 
@@ -354,12 +353,12 @@ const Profile = () => {
       coverOffset.set((value) => withDecay({
         velocity: event.velocityX * 0.3,
         rubberBandEffect: true,
-        clamp: [-95,0],
+        clamp: [-92,0],
       }))
     });
 
   const coverAnimatedStyles = useAnimatedStyle(() => ({
-    transform: [{perspective: 8000}, {translateX: (-bookWidth/2)}, { rotateY: `${coverOffset.value}deg`}, {translateX: bookWidth/2}],  
+    transform: [{perspective: 3000}, {translateX: (-bookWidth/2)}, { rotateY: `${coverOffset.value}deg`}, {translateX: bookWidth/2}],  
     backfaceVisibility: 'hidden'
   }));  
 
@@ -570,13 +569,15 @@ const Profile = () => {
             <Image style={[{width: '100%', height: '100%', borderRadius: 15}]} source={require('../../assets/images/book_cover.png')}/>
           </Animated.View>
         </GestureDetector>
-        {posts.slice(0, 100).map((item, index) => {
-          // console.log("post index right now: " + index)
+        
+          <View style={[styles.page, {width: bookWidth, alignSelf: 'center', alignItems: 'center'}]}/>
 
-          const isLast = index === currentPage
-          const isPrev = index < currentPage ;
+
+        {posts.slice(0, 100).map((item, index) => {
+          const isLast = index === currentPage;
+          const isPrev = index === currentPage - 1;
           const isTop = index === currentPage;
-          const isNext = index === currentPage + 1;
+          const isNext = index === currentPage;
           
           const Page = (
             <Animated.View
@@ -724,15 +725,15 @@ const styles = StyleSheet.create({
   },
   profile_header: {
     display: 'flex',
-    marginTop: 90,
+    marginTop: 45,
     flexDirection: 'row',
     paddingLeft: 30,
     paddingRight: 30,
     width: '100%',
   },
   profile_box: {
-    height: 92,
-    width: 92,
+    height: 110,
+    width: 110,
     padding: 12,
     backgroundColor: '#ffffff',
     justifyContent: 'center',
@@ -872,14 +873,11 @@ const styles = StyleSheet.create({
   },
   page: {
     position: 'absolute',
-    height: 550,
+    height: bookHeight,
     borderRadius: 20,
     backgroundColor: '#fff8ce',
     borderWidth: 6,
     borderColor: '#3c0404',
-    // shadowColor: 'black',
-    // shadowOpacity: 0.9,
-    // elevation: 5,
   },
   page_cover: {
     position: 'absolute',
