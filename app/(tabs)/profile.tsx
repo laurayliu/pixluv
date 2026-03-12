@@ -77,9 +77,19 @@ const Profile = () => {
 
 
 
+  const [editMode, setEditMode] = useState(false);
+  const [editBio, setEditBio] = useState('');
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [settingsVisible, setSettingsVisible] = useState(false);
+
   const pfpSheetY = useSharedValue(SHEET_HEIGHT);
   const pfpSheetStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: pfpSheetY.value }],
+  }));
+
+  const settingsSheetY = useSharedValue(SHEET_HEIGHT);
+  const settingsSheetStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: settingsSheetY.value }],
   }));
 
   const openPfpPicker = async () => {
@@ -93,6 +103,31 @@ const Profile = () => {
     } finally {
       setPfpPostsLoading(false);
     }
+  };
+
+  const enterEditMode = () => {
+    setEditBio(user?.bio ?? '');
+    setEditMode(true);
+  };
+
+  const handleSaveProfile = async () => {
+    setSavingProfile(true);
+    try {
+      await updateUser({ bio: editBio });
+      setEditMode(false);
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const openSettings = () => {
+    setSettingsVisible(true);
+    settingsSheetY.value = withTiming(0, { duration: 300 });
+  };
+
+  const closeSettings = () => {
+    settingsSheetY.value = withTiming(SHEET_HEIGHT, { duration: 250 });
+    setTimeout(() => setSettingsVisible(false), 260);
   };
 
   const closePfpPicker = () => {
@@ -353,7 +388,7 @@ const Profile = () => {
 
     <View style={styles.main_container}>
       <View style={styles.profile_header}>
-        <TouchableOpacity style={styles.profile_box} onPress={openPfpPicker} disabled={updatingPfp}>
+        <TouchableOpacity style={styles.profile_box} onPress={editMode ? openPfpPicker : undefined} disabled={updatingPfp || !editMode}>
           {updatingPfp ? (
             <ActivityIndicator />
           ) : user?.profilePicture ? (
@@ -361,21 +396,49 @@ const Profile = () => {
           ) : (
             <IconSymbol name="profile" color={"currentColor"}/>
           )}
+          {editMode && (
+            <View style={styles.pfpEditOverlay}>
+              <Text style={styles.pfpEditText}>tap to{'\n'}edit</Text>
+            </View>
+          )}
         </TouchableOpacity>
 
         <View style={styles.info_container}>
           <Text style={styles.username}>{user?.username ?? 'your profile'}</Text>
           <Text style={styles.texts}>{followerCount} followers · {followingCount} following</Text>
-          <Text style={styles.texts}>Bio goes here oooh</Text>
+          {editMode ? (
+            <TextInput
+              style={[styles.texts, styles.bioInput]}
+              value={editBio}
+              onChangeText={setEditBio}
+              placeholder="Write a bio!"
+              placeholderTextColor="rgba(255,255,255,0.5)"
+              multiline
+              autoFocus
+            />
+          ) : (
+            <Text style={styles.texts}>{user?.bio ?? 'Welcome to Pixluv!'}</Text>
+          )}
           <View style={styles.action_container}>
-            {/* Needd to add edit button instead for personal profile view */}
-            {/* <Pressable style={styles.action_button}>
-              <Text style={styles.button_text}>Follow</Text>
-            </Pressable>
-
-            <Pressable style={styles.action_button}>
-              <Text  style={styles.button_text}>Pix Me!</Text>
-            </Pressable> */}
+            {editMode ? (
+              <>
+                <Pressable style={styles.action_button} onPress={handleSaveProfile} disabled={savingProfile}>
+                  <Text style={styles.button_text}>{savingProfile ? '...' : 'Save'}</Text>
+                </Pressable>
+                <Pressable style={[styles.action_button, styles.action_button_cancel]} onPress={() => setEditMode(false)}>
+                  <Text style={styles.button_text}>Cancel</Text>
+                </Pressable>
+              </>
+            ) : (
+              <>
+                <Pressable style={styles.action_button} onPress={enterEditMode}>
+                  <Text style={styles.button_text}>Edit Profile</Text>
+                </Pressable>
+                <Pressable style={styles.action_button} onPress={openSettings}>
+                  <Text style={styles.button_text}>Settings</Text>
+                </Pressable>
+              </>
+            )}
           </View>
         </View>
       </View>
@@ -599,13 +662,36 @@ const Profile = () => {
         </View>
       </GestureHandlerRootView>
 
+      <Modal visible={settingsVisible} transparent animationType="none" onRequestClose={closeSettings}>
+        <View style={{ flex: 1, justifyContent: 'flex-end' }}>
+          <TouchableOpacity style={[StyleSheet.absoluteFillObject, styles.pickerOverlay]} activeOpacity={1} onPress={closeSettings} />
+          <Animated.View style={[styles.modalSheet, settingsSheetStyle, { height: undefined }]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Settings</Text>
+              <TouchableOpacity onPress={closeSettings} style={styles.closeBtn}>
+                <Text style={styles.closeBtnText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity style={styles.settingsRow} onPress={logout}>
+              <Text style={styles.settingsLogout}>Log Out</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.settingsRow} onPress={closeSettings}>
+              <Text style={styles.settingsCancel}>Cancel</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </View>
+      </Modal>
+
       <Modal visible={pfpPickerVisible} transparent animationType="none" onRequestClose={closePfpPicker}>
         <View style={{ flex: 1, justifyContent: 'flex-end' }}>
-          <TouchableWithoutFeedback onPress={closePfpPicker}>
-            <View style={[StyleSheet.absoluteFillObject, styles.pickerOverlay]} />
-          </TouchableWithoutFeedback>
-          <Animated.View style={[styles.pickerSheet, pfpSheetStyle]}>
-            <Text style={styles.pickerTitle}>Choose your profile picture</Text>
+          <TouchableOpacity style={[StyleSheet.absoluteFillObject, styles.pickerOverlay]} activeOpacity={1} onPress={closePfpPicker} />
+          <Animated.View style={[styles.modalSheet, pfpSheetStyle]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Choose your profile picture</Text>
+              <TouchableOpacity onPress={closePfpPicker} style={styles.closeBtn}>
+                <Text style={styles.closeBtnText}>✕</Text>
+              </TouchableOpacity>
+            </View>
             {pfpPostsLoading ? (
               <ActivityIndicator style={{ marginTop: 24 }} />
             ) : (
@@ -613,17 +699,15 @@ const Profile = () => {
                 data={pfpPosts}
                 keyExtractor={(item) => String((item as any).id ?? (item as any)._id)}
                 numColumns={3}
+                contentContainerStyle={{ gap: 4 }}
                 renderItem={({ item }) => (
                   <TouchableOpacity onPress={() => handleSelectPfp(item.imageUrl)}>
                     <Image source={{ uri: item.imageUrl }} style={styles.pickerThumb} />
                   </TouchableOpacity>
                 )}
-                ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 24, color: '#888' }}>No posts yet</Text>}
+                ListEmptyComponent={<Text style={styles.emptyText}>No posts yet</Text>}
               />
             )}
-            <Pressable onPress={closePfpPicker} style={{ alignItems: 'center', paddingVertical: 12 }}>
-              <Text style={{ fontSize: 16, color: '#555' }}>Cancel</Text>
-            </Pressable>
           </Animated.View>
         </View>
       </Modal>
@@ -693,17 +777,20 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     justifyContent: 'center',
     alignContent: 'center',
-    textAlign: 'center'
+    textAlign: 'center',
+    fontFamily: 'ms',
   },
   username: {
     fontSize: 25,
     fontWeight: '700',
     color: '#ffffff',
+    fontFamily: 'ms',
   },
   texts: {
     fontSize: 15,
     color: '#ffffff',
     marginBottom: 5,
+    fontFamily: 'ms',
   },
   favorite_container: {
     display: 'flex',
@@ -811,25 +898,65 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   pickerOverlay: {
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.3)',
   },
-  pickerSheet: {
+  modalSheet: {
     height: SHEET_HEIGHT,
     backgroundColor: '#fff',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    padding: 16,
+    borderTopWidth: 2,
+    borderTopColor: '#ffffff',
+    paddingHorizontal: 16,
+    paddingBottom: 16,
   },
-  pickerTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    textAlign: 'center',
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    backgroundColor: '#5174CF',
+    marginHorizontal: -16,
     marginBottom: 12,
+  },
+  modalTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#fff',
+    letterSpacing: 1,
+    fontFamily: 'ms',
+  },
+  closeBtn: {
+    borderTopWidth: 2,
+    borderLeftWidth: 2,
+    borderRightWidth: 2,
+    borderBottomWidth: 2,
+    borderTopColor: '#7f9fe0',
+    borderLeftColor: '#7f9fe0',
+    borderRightColor: '#3a5499',
+    borderBottomColor: '#3a5499',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    backgroundColor: '#5174CF',
+  },
+  closeBtnText: {
+    fontSize: 14,
+    color: '#fff',
+    fontWeight: '700',
+    fontFamily: 'ms',
   },
   pickerThumb: {
     width: ITEM_SIZE,
     height: ITEM_SIZE,
-    margin: 4,
+    margin: 2,
+    borderWidth: 1,
+    borderColor: '#eee',
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 24,
+    color: '#888',
+    fontSize: 14,
+    fontFamily: 'ms',
   },  
   commentsOverlay: {
     flex: 1,
@@ -852,10 +979,11 @@ const styles = StyleSheet.create({
     gap: 40,
   },
   commentAuthor: {
-    fontWeight: '800'
+    fontWeight: '800',
+    fontFamily: 'ms',
   },
   commentBody: {
-
+    fontFamily: 'ms',
   },
   commentInputRow: {
     flexDirection: 'row',
@@ -877,7 +1005,46 @@ const styles = StyleSheet.create({
   art_wrapper: {
     padding: 15,
     backgroundColor: '#e8e8e8',
-  }
+  },
+  action_button_cancel: {
+    backgroundColor: '#888',
+  },
+  bioInput: {
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.6)',
+    paddingVertical: 2,
+    marginBottom: 5,
+    color: '#ffffff',
+  },
+  pfpEditOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  pfpEditText: {
+    color: '#ffffff',
+    fontSize: 12,
+    textAlign: 'center',
+    fontWeight: '600',
+    fontFamily: 'ms',
+  },
+  settingsRow: {
+    paddingVertical: 14,
+    alignItems: 'center',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#ddd',
+  },
+  settingsLogout: {
+    fontSize: 16,
+    color: '#e02020',
+    fontFamily: 'ms',
+  },
+  settingsCancel: {
+    fontSize: 16,
+    color: '#555',
+    fontFamily: 'ms',
+  },
 });
 
 export default Profile;
