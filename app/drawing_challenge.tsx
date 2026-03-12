@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, Dimensions, ActivityIndicator, Pressable, PanResponder, Image, TouchableOpacity, ScrollView, Alert, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Dimensions, ActivityIndicator, Pressable, PanResponder, Image, TouchableOpacity, ScrollView, Alert, Keyboard, TouchableWithoutFeedback, Modal } from 'react-native';
 import { captureRef } from 'react-native-view-shot';
 import { api } from '../services/api';
 import { useAuth } from '@/context/AuthContext';
@@ -80,6 +80,11 @@ export default function Challenge() {
   const isPinching = useRef(false);
   const drawnCells = useRef<boolean[]>(Array(GRID_SIZE * GRID_SIZE).fill(false));
   const recentColor = useRef<string>('rgb(217, 216, 216)');
+
+  const [showAlertClear, setShowAlertClear] = useState(false);
+  const [showAlertCaption, setShowAlertCaption] = useState(false);
+  const [showAlertPosting, setShowAlertPosting] = useState(false);
+  const [showAlertLike, setShowAlertLike] = useState(false);
 
 
   useEffect(() => {
@@ -346,24 +351,28 @@ export default function Challenge() {
 
    const captionAlert = () => {
       if (caption.trim().length === 0) {
-        Alert.alert(
-        "alert!",
-        "please add a caption!",
-        [],
-        { cancelable: true }
-      )
+        // Alert.alert(
+        //   "alert!",
+        //   "please add a caption!",
+        //   [],
+        //   { cancelable: true }
+        // )
+        setShowAlertCaption(true)
+        return;
       }
       else {
-        Alert.alert(
-          'show number of likes on this post?',
-          'the number of likes will only be visible to you if toggled on',
-          [
-            { text: 'yes!', onPress: () => handleSaveAndUpload(true) },
-            { text: 'no!', onPress: () => handleSaveAndUpload(false) },
-            { text: 'cancel', style: 'cancel' },
-          ],
-            { cancelable: true }
-        )
+        // Alert.alert(
+        //   'show number of likes on this post?',
+        //   'the number of likes will only be visible to you if toggled on',
+        //   [
+        //     { text: 'yes!', onPress: () => handleSaveAndUpload(true) },
+        //     { text: 'no!', onPress: () => handleSaveAndUpload(false) },
+        //     { text: 'cancel', style: 'cancel' },
+        //   ],
+        //     { cancelable: true }
+        // )
+        setShowAlertLike(true)
+        return;
       }
   }
 
@@ -447,6 +456,30 @@ export default function Challenge() {
           </TouchableOpacity>
           )}
        </View>
+
+       <Modal
+          visible={showAlertCaption}
+          transparent={true}
+          animationType='fade'
+          onRequestClose={() => setShowAlertCaption(false)}
+        >
+          <View style={[styles.alertOverlay]}>
+            <Pressable style={styles.backdrop} onPress={() => setShowAlertCaption(false)} />
+              <View style={[BORDER_FRAME, styles.alertBox]}>
+                <View style={[styles.captionTitle]}>
+                  <Text style={{fontFamily: 'ms', fontSize: 20}}>no caption!</Text>
+                </View>
+                <View style={[styles.captionBody]}>
+                  <Text style={{fontFamily: 'ms'}}>please add a caption before posting!</Text>
+                </View>
+                <TouchableOpacity style={[BORDER_FRAME, styles.alertButton]} onPress={() => setShowAlertCaption(false)}>
+                  <Text style={{fontFamily: 'ms'}} >ok</Text>
+                </TouchableOpacity>
+              </View>
+          </View>
+        </Modal>
+
+        
 
     </View>
   );
@@ -576,6 +609,53 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#fff',
   },
+  alertOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'  
+  },
+  alertBox: {
+    width: '80%',
+    padding: 10,
+    alignItems: 'center',
+    flexDirection: 'column',
+    backgroundColor: '#ececec',
+  },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  captionTitle: {
+    alignSelf: "flex-start",
+    marginBottom: 10,
+  },
+  captionBody: {
+    margin: 5,
+    marginBottom: 15,
+    alignSelf: 'flex-start'
+  },
+  alertButton: {
+    padding: 2,
+    backgroundColor: 'white',
+    paddingHorizontal: 5,
+    alignSelf: 'flex-end',
+  },
+  alertButtons: {
+    flexDirection: 'row',
+    alignSelf: 'flex-end',
+    gap: 15,
+  },
+  homeButton: {
+    padding: 5,
+    backgroundColor: 'white',
+  },
+  goHome: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-evenly',
+    marginBottom: 10,
+  }
 });
 
 const submissionStyles = StyleSheet.create({
