@@ -16,17 +16,23 @@ import {
 } from 'react-native-gesture-handler';
 import {scheduleOnRN } from 'react-native-worklets';
 import { opacity } from 'react-native-reanimated/lib/typescript/Colors';
+import { Colors } from '@/constants/theme';
 
 type Post = {
   id: string;
   title?: string;
   caption?: string;
   imageUrl?: string;
+  colors?: string[];
   _count?: {
     likes?: number;
     comments?: number;
   };
   likedByMe?: boolean;
+  author?: {
+    username?: string;
+    profilePicture?: string | null;
+  };
 };
 
 type Comment = {
@@ -44,6 +50,11 @@ const DEFAULT_SELECTED_COLOR = "#ff0000"
 
 const ITEM_SIZE = (Dimensions.get('window').width - 48) / 3;
 const SHEET_HEIGHT = Dimensions.get('window').height * 0.5;
+
+const defaultPallette = [
+  "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff"
+  ]
+
 
 const BORDER_FRAME = {
   borderRadius: 0,
@@ -68,6 +79,8 @@ const Profile = () => {
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [colorPallete, setColorPallete] = useState<string[]>(defaultPallette);
+
   const [pfpPickerVisible, setPfpPickerVisible] = useState(false);
   const [pfpPosts, setPfpPosts] = useState<{ id: string; imageUrl: string }[]>([]);
   const [pfpPostsLoading, setPfpPostsLoading] = useState(false);
@@ -91,6 +104,7 @@ const Profile = () => {
   const [EditPallete, setEditPallete] = useState(false);
 
   const [selectedColor, setSelectedColor] = useState<string>(DEFAULT_SELECTED_COLOR);
+
   const [editColor, setEditColor]  = useState<string>(DEFAULT_SELECTED_COLOR);
 
   const pfpSheetY = useSharedValue(SHEET_HEIGHT);
@@ -394,6 +408,7 @@ const Profile = () => {
           setPosts(userPosts);
           setFollowerCount(fullUser._count?.followers ?? 0);
           setFollowingCount(fullUser._count?.following ?? 0);
+          setColorPallete(fullUser?.colors ?? defaultPallette)
         })
         .catch((err: Error) => setError(err.message))
         .finally(() => setLoading(false));
@@ -466,9 +481,7 @@ const Profile = () => {
           <Text style={[styles.texts, {textAlign: 'center' }]}>Sticker Collection</Text>
           <View style={styles.sticker_box}>
             <View style={[styles.sticker,  BORDER_FRAME, {backgroundColor: '#B7E3FF'}]}>
-
               <IconSymbol name="sticker2" size={70} color={'currentColor'} />
-
               {/* use image here to display the sticker */}
               {/* <Image
                 source={{ uri: item.imageUrl }}
@@ -488,8 +501,12 @@ const Profile = () => {
         <Pressable onPress={handlePallette}>
           <View style={styles.pallete_box}>
             <View style={styles.color_row}>
-              {/* .map here */}
-              <View style={[
+              {/* {colorPallete.map((item, index) => (
+                <View key={index} style={[ styles.color_box, BORDER_FRAME, { backgroundColor: item }]}/>
+              )
+              )} */}
+              
+              {/* <View style={[
                   styles.color_box, BORDER_FRAME,
                 { backgroundColor: '#9b3b00' }, // take user info to fill color
                 ]}/>       
@@ -505,7 +522,7 @@ const Profile = () => {
                 ]}/>       
             </View>
 
-            <View style={styles.color_row}>
+            <View style={styles.color_row}> */}
               <View style={[
                   styles.color_box, BORDER_FRAME,
                 { backgroundColor: '#9b3b00' }, // take user info to fill color
@@ -674,33 +691,13 @@ const Profile = () => {
                   source={{ uri: item.imageUrl }}
                   style={{ width: wid*imagePercent, height: wid*imagePercent, justifyContent: 'center', alignItems: 'center'}}
                 />
-                <Text style={{fontSize: 17, justifyContent: 'flex-start'}}>{item.content ?? JSON.stringify(item)}</Text>
+                <Text style={{fontSize: 17, justifyContent: 'flex-start', width: wid*imagePercent}}>{item.content ?? JSON.stringify(item)}</Text>
 
                 <View style={[styles.post_action_box, {width: wid*imagePercent}]}>
                   <View style={styles.color_row}>
-                    <View style={[
-                        styles.color_box, BORDER_FRAME,
-                      { backgroundColor: '#312da2' }, // take user info to fill color
-                      ]}/>       
-
-                    <View style={[
-                        styles.color_box, BORDER_FRAME,
-                      { backgroundColor: '#687ad7' }, // take user info to fill color
-                      ]}/>       
-                    
-                    <View style={[
-                        styles.color_box, BORDER_FRAME,
-                      { backgroundColor: '#3ead3c' }, // take user info to fill color
-                      ]}/>       
-                    <View style={[
-                        styles.color_box, BORDER_FRAME,
-                      { backgroundColor: '#f798ec' }, // take user info to fill color
-                      ]}/>       
-                    
-                    <View style={[
-                        styles.color_box, BORDER_FRAME,
-                      { backgroundColor: '#a22d2d' }, // take user info to fill color
-                      ]}/> 
+                    {(item.colors ?? []).map((color: string, i: number) => (
+                      <View key={`${item.id}${color}${i}`} style={[BORDER_FRAME, styles.color_box, { backgroundColor: color ?? "#ffffff" }]} />
+                    ))}
                   </View>
 
                   <View style={styles.interact_box}>
