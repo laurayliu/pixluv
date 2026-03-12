@@ -396,16 +396,18 @@ const styles = StyleSheet.create({
   },
   commentRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: 10,
     marginBottom: 15,
   },
   commentAuthor: {
     fontWeight: '800',
+    fontSize: 18,
     fontFamily:'ms',
+    marginTop: -5,
   },
   commentBody: {
-    fontFamily:'ms'
+    fontFamily:'ms',
   },
   commentInputRow: {
     flexDirection: 'row',
