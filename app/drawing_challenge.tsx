@@ -336,17 +336,19 @@ export default function Challenge() {
   }
 
   const clearAlert = () => {
-      Alert.alert(
-        "alert!",
-        "are you sure you want to clear the canvas?",
-        [
-          { text: "cancel" },
-          { text: "clear",
-            onPress: handleClear
-          }
-        ],
-        { cancelable: false }
-      )
+    // Alert.alert(
+    //   "alert!",
+    //   "are you sure you want to clear the canvas?",
+    //   [
+    //     { text: "cancel" },
+    //     { text: "clear",
+    //       onPress: handleClear
+    //     }
+    //   ],
+    //   { cancelable: false }
+    // )
+    setShowAlertClear(true)
+    return;
   }
 
    const captionAlert = () => {
@@ -458,28 +460,54 @@ export default function Challenge() {
        </View>
 
        <Modal
-          visible={showAlertCaption}
-          transparent={true}
-          animationType='fade'
-          onRequestClose={() => setShowAlertCaption(false)}
-        >
-          <View style={[styles.alertOverlay]}>
-            <Pressable style={styles.backdrop} onPress={() => setShowAlertCaption(false)} />
-              <View style={[BORDER_FRAME, styles.alertBox]}>
-                <View style={[styles.captionTitle]}>
-                  <Text style={{fontFamily: 'ms', fontSize: 20}}>no caption!</Text>
-                </View>
-                <View style={[styles.captionBody]}>
-                  <Text style={{fontFamily: 'ms'}}>please add a caption before posting!</Text>
-                </View>
-                <TouchableOpacity style={[BORDER_FRAME, styles.alertButton]} onPress={() => setShowAlertCaption(false)}>
-                  <Text style={{fontFamily: 'ms'}} >ok</Text>
+        visible={showAlertCaption}
+        transparent={true}
+        animationType='fade'
+        onRequestClose={() => setShowAlertCaption(false)}
+      >
+        <View style={[styles.alertOverlay]}>
+          <Pressable style={styles.backdrop} onPress={() => setShowAlertCaption(false)} />
+            <View style={[BORDER_FRAME, styles.alertBox]}>
+              <View style={[styles.captionTitle]}>
+                <Text style={{fontFamily: 'ms', fontSize: 20}}>no caption!</Text>
+              </View>
+              <View style={[styles.captionBody]}>
+                <Text style={{fontFamily: 'ms'}}>please add a caption before posting!</Text>
+              </View>
+              <TouchableOpacity style={[BORDER_FRAME, styles.alertButton]} onPress={() => setShowAlertCaption(false)}>
+                <Text style={{fontFamily: 'ms'}} >ok</Text>
+              </TouchableOpacity>
+            </View>
+        </View>
+      </Modal>
+      
+      <Modal
+        visible={showAlertClear}
+        transparent={true}
+        animationType='fade'
+        onRequestClose={() => setShowAlertClear(false)}
+      >
+        <View style={[styles.alertOverlay]}>
+          <Pressable style={styles.backdrop} onPress={() => setShowAlertClear(false)} />
+            <View style={[BORDER_FRAME, styles.alertBox]}>
+              <View style={[styles.captionTitle]}>
+                <Text style={{fontFamily: 'ms', fontSize: 20}}>warning!</Text>
+              </View>
+              <View style={[styles.captionBody]}>
+                <Text style={{fontFamily: 'ms'}}>are you sure you want to clear?? think carefully!</Text>
+              </View>
+              <View style={styles.alertButtons}>
+                <TouchableOpacity style={[BORDER_FRAME, styles.alertButton]} onPress={() => {setShowAlertClear(false); handleClear()}}>
+                  <Text style={{fontFamily: 'ms'}} >yes!</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[BORDER_FRAME, styles.alertButton]} onPress={() => setShowAlertClear(false)}>
+                  <Text style={{fontFamily: 'ms'}} >no!</Text>
                 </TouchableOpacity>
               </View>
-          </View>
-        </Modal>
-
-        
+              
+            </View> 
+        </View>
+      </Modal>
 
     </View>
   );
