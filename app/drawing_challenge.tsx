@@ -8,6 +8,7 @@ import { useRouter } from 'expo-router';
 import BackIcon from '../assets/icons/editor/undo.svg';
 import { ReactNativeZoomableView } from '@openspacelabs/react-native-zoomable-view';
 import PaletteImg from '../assets/icons/palette_img.svg';
+import { IconSymbol } from '@/components/ui/icon-symbol';
 
 const GRID_SIZE = 32;
 const DEFAULT_COLOR = '#fff';
@@ -242,11 +243,13 @@ export default function Challenge() {
       const { posts } = await api.getTodayChallengePosts(token);
       setSubmissions(posts);
       setSubmitted(true);   
-      router.navigate('/(tabs)');
+      // router.navigate('/(tabs)');
 
       handleClear(); // make sure to clear canvas
       setSelectedColor(DEFAULT_SELECTED_COLOR);
       setCaption('');
+
+      setShowAlertPosting(true);
 
     } catch (error) {
       console.error('Upload process failed:', error);
@@ -506,6 +509,34 @@ export default function Challenge() {
               </View>
               
             </View> 
+        </View>
+      </Modal>
+
+      <Modal
+        visible={showAlertPosting}
+        transparent={true}
+        animationType='fade'
+        onRequestClose={() => setShowAlertPosting(false)}
+      >
+        <View style={[styles.alertOverlay]}>
+          <Pressable style={styles.backdrop} onPress={() => setShowAlertPosting(false)} />
+            <View style={[BORDER_FRAME, styles.alertBox]}>
+              <View style={[styles.captionTitle]}>
+                <Text style={{fontFamily: 'ms', fontSize: 20}}>submission success!</Text>
+              </View>
+              <View style={styles.goHome}>
+                <View>
+                  <Text style={{fontFamily: 'ms'}}>go home and view?</Text>
+                </View>
+                  <TouchableOpacity style={[BORDER_FRAME, styles.homeButton]} onPress={() => 
+                    {setShowAlertPosting(false);
+                      router.push({pathname: '/(tabs)'});
+                    }
+                    }>
+                    <IconSymbol name={'home'} color={'currentColor'} />
+                  </TouchableOpacity>   
+              </View>
+            </View>
         </View>
       </Modal>
       
