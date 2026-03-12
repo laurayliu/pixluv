@@ -22,7 +22,7 @@ export const getUser = async (req, res) => {
   const user = await prisma.user.findUnique({
     where: { id: req.params.id },
     include: {
-      posts: { orderBy: { createdAt: 'desc' }, select: { id: true, content: true, colors: true, imageUrl: true, createdAt: true } },
+      posts: { orderBy: { createdAt: 'desc' }, select: { id: true, content: true, imageUrl: true, createdAt: true } },
       _count: { select: { followers: true, following: true } },
     },
   });
@@ -66,11 +66,10 @@ export const getFollowing = async (req, res) => {
 };
 
 export const updateUser = async (req, res) => {
-  const { username, email, profilePicture, bio, colors } = req.body;
+  const { username, email, profilePicture, bio } = req.body;
   const user = await prisma.user.update({
     where: { id: req.params.id },
-    data: { username, email, profilePicture, bio, colors: Array.isArray(colors) ? colors : [],
- },
+    data: { username, email, profilePicture, bio },
   });
   res.json(user);
 };

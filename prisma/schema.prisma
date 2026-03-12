@@ -20,7 +20,6 @@ model User {
   password         String
   profilePicture   String?
   bio              String?
-  colors           String[] @default(["#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff"])
 
   likes    Like[]
   comments Comment[]
