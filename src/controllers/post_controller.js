@@ -112,6 +112,7 @@ export const getPostsByUser = async (req, res) => {
       id: true, 
       title: true, 
       content: true,
+      colors: true,
       tags: true, 
       imageUrl: true, 
       createdAt: true, 
