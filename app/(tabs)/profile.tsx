@@ -500,105 +500,36 @@ const Profile = () => {
 
         <Pressable onPress={handlePallette}>
           <View style={styles.pallete_box}>
-            <View style={styles.color_row}>
-              {/* {colorPallete.map((item, index) => (
+            <View style={styles.color_pallette}>
+              {colorPallete.map((item, index) => (
                 <View key={index} style={[ styles.color_box, BORDER_FRAME, { backgroundColor: item }]}/>
-              )
-              )} */}
-              
-              {/* <View style={[
-                  styles.color_box, BORDER_FRAME,
-                { backgroundColor: '#9b3b00' }, // take user info to fill color
-                ]}/>       
-
-              <View style={[
-                  styles.color_box, BORDER_FRAME,
-                { backgroundColor: '#b74caf' }, // take user info to fill color
-                ]}/>       
-              
-              <View style={[
-                  styles.color_box, BORDER_FRAME,
-                { backgroundColor: '#3400f1' }, // take user info to fill color
-                ]}/>       
-            </View>
-
-            <View style={styles.color_row}> */}
-              <View style={[
-                  styles.color_box, BORDER_FRAME,
-                { backgroundColor: '#9b3b00' }, // take user info to fill color
-                ]}/>       
-
-              <View style={[
-                  styles.color_box, BORDER_FRAME,
-                { backgroundColor: '#b74caf' }, // take user info to fill color
-                ]}/>       
-              
-              <View style={[
-                  styles.color_box, BORDER_FRAME,
-                { backgroundColor: '#3400f1' }, // take user info to fill color
-                ]}/>       
+              ))}
             </View>
           </View>
         </Pressable>
   
-        <Modal visible={EditPallete} transparent animationType="none" >
+        <Modal style={styles.pallete_modal} visible={EditPallete} transparent animationType="none" >
           <View style={styles.pallete_edit}>
-            <View>
-              <View style={styles.color_row}>
-              <Pressable onPress={handleColor} id='1'>
-                <View style={[
-                  styles.color_box_edit, BORDER_FRAME,
-                { backgroundColor: selectedColor }, // take user info to fill color
-                ]}/>       
-              </Pressable>
-
-              <Pressable onPress={handleColor} id='2'>
-                <View style={[
-                  styles.color_box_edit, BORDER_FRAME,
-                { backgroundColor: selectedColor }, // take user info to fill color
-                ]}/>       
-              </Pressable>
-
-              <Pressable id='3'>
-                <View style={[
-                  styles.color_box_edit, BORDER_FRAME,
-                { backgroundColor: '#9b3b00' }, // take user info to fill color
-                ]}/>       
-              </Pressable>
+            <Text>Edit Pallete</Text>
+            <View style={styles.small_pallete_edit}>
+              {colorPallete.map((item, index) => (
+                <Pressable key={index} onPress={handleColor} style={[ styles.color_box, BORDER_FRAME, { backgroundColor: editColor ?? item , width: 70, height: 70, margin: 10 }]}/>              
+              ))}
             </View>
-
-            <View style={styles.color_row}>
-              <Pressable>
-                <View style={[
-                  styles.color_box_edit, BORDER_FRAME,
-                { backgroundColor: '#9b3b00' }, // take user info to fill color
-                ]}/>       
-              </Pressable>     
-
-              <Pressable>
-                <View style={[
-                  styles.color_box_edit, BORDER_FRAME,
-                { backgroundColor: '#9b3b00' }, // take user info to fill color
-                ]}/>       
-              </Pressable>    
-              
-              <View style={[
-                  styles.color_box_edit, BORDER_FRAME,
-                { backgroundColor: '#3400f1' }, // take user info to fill color
-                ]}/>       
-            </View>
-            </View>
-
-
 
           <View style={{ width: '100%' }}>
               <DefaultColorPanel value={selectedColor} onColorChange={setSelectedColor}/>
           </View>
-          <Pressable onPress={handlePallette} style={[styles.actionButton, {backgroundColor: '#c14848', padding: 15}]}>
-            <Text>Done</Text>
-          </Pressable>
-          </View>
 
+          <View style={styles.button_row}>
+            <Pressable onPress={handlePallette} style={[styles.actionButton, {backgroundColor: '#fff396', padding: 15}]}>
+              <Text>Cancel</Text>
+            </Pressable>
+            <Pressable onPress={handlePallette} style={[styles.actionButton, {backgroundColor: '#998be8', padding: 15}]}>
+              <Text>Done</Text>
+            </Pressable>
+          </View>
+        </View>
         </Modal>
 
         </View>
@@ -696,7 +627,7 @@ const Profile = () => {
                 <View style={[styles.post_action_box, {width: wid*imagePercent}]}>
                   <View style={styles.color_row}>
                     {(item.colors ?? []).map((color: string, i: number) => (
-                      <View key={`${item.id}${color}${i}`} style={[BORDER_FRAME, styles.color_box, { backgroundColor: color ?? "#ffffff" }]} />
+                      <View key={`${item.id}${color}${i}`} style={[BORDER_FRAME, styles.color_box_post, { backgroundColor: color ?? "#ffffff" }]} />
                     ))}
                   </View>
 
@@ -902,13 +833,27 @@ const styles = StyleSheet.create({
     backgroundColor: '#d0d0d0',
     height: 75,
     width: 110,
+    justifyContent: 'center',
+    alignContent: 'center'
+  },
+
+  color_pallette: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    alignContent: 'center',
     justifyContent: 'center'
   },
   color_box: {
+    display: 'flex',
+    flexWrap: 'wrap',
     height: 28,
     width: 28,
     margin: 2,
-    backgroundColor: '#a14c67',
+  },
+  color_box_post: {
+    height: 28,
+    width: 28,
+    margin: 2,
     justifyContent: 'center',
     alignContent: 'center',
     alignSelf: 'center',
@@ -1130,13 +1075,33 @@ const styles = StyleSheet.create({
     fontFamily: 'ms',
   },
   pallete_edit: {
+    marginTop: 200,
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center', 
     alignSelf: 'center',
-    backgroundColor: '#ffcdea',
+    backgroundColor: '#ffc5e7',
     width: '80%',
-    height: '80%'
+    height: '50%'
+  },
+  small_pallete_edit: {
+    backgroundColor: '#6260c392',
+    display: 'flex',
+    width: 300,
+    height: 200,
+    flexWrap: 'wrap',
+    alignContent: 'center',
+    justifyContent: 'center'
+  }, 
+  pallete_modal: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignContent: 'center'
+  },
+  button_row: {
+    display: 'flex',
+    flexDirection: 'row'
   }
 });
 
