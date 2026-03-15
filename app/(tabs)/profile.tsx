@@ -450,7 +450,7 @@ const Profile = () => {
               autoFocus
             />
           ) : (
-            <Text style={styles.texts}>{user?.bio ?? 'Welcome to Pixluv!'}</Text>
+            <Text style={styles.texts}>{user?.bio ?? 'No bio yet!'}</Text>
           )}
           <View style={styles.action_container}>
             {editMode ? (
