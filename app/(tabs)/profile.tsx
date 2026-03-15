@@ -45,8 +45,12 @@ type Comment = {
   };
 };
 
+type ColorProp = {
+  color: string;
+}
+
 const DEFAULT_COLOR = "#fff";
-const DEFAULT_SELECTED_COLOR = "#ff0000"
+const DEFAULT_SELECTED_COLOR = "#ffffff"
 
 const ITEM_SIZE = (Dimensions.get('window').width - 48) / 3;
 const SHEET_HEIGHT = Dimensions.get('window').height * 0.5;
@@ -138,9 +142,9 @@ const Profile = () => {
     }
   }
 
-  const handleColor = async () => {
-    setEditColor(selectedColor);
-  }
+  const handleColor =  (props: ColorProp) => {
+    
+  };
 
   const enterEditMode = () => {
     setEditBio(user?.bio ?? '');
@@ -513,7 +517,7 @@ const Profile = () => {
             <Text>Edit Pallete</Text>
             <View style={styles.small_pallete_edit}>
               {colorPallete.map((item, index) => (
-                <Pressable key={index} onPress={handleColor} style={[ styles.color_box, BORDER_FRAME, { backgroundColor: editColor ?? item , width: 70, height: 70, margin: 10 }]}/>              
+                <Pressable key={index} onPress={handleColor({color: item})} style={[ styles.color_box, BORDER_FRAME, { backgroundColor: item , width: 70, height: 70, margin: 10 }]}/>  
               ))}
             </View>
 
