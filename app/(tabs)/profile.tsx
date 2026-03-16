@@ -78,7 +78,7 @@ const BORDER_FRAME = {
 
   const { width: wid, height: hei } = Dimensions.get('window')
   const bookWidth = wid - 60;
-  const bookHeight = hei -380
+  const bookHeight = hei - 400
 
 const Profile = () => {
 
@@ -534,7 +534,6 @@ const Profile = () => {
   
         <Modal style={styles.pallete_modal} visible={EditPallete} transparent animationType="none" >
           <View style={styles.pallete_edit}>
-            <Text>Edit Pallete</Text>
             <View style={styles.small_pallete_edit}>
               {colorPallete.map((item, index) => (
                 <Pressable key={index} onPress={() => handleColor({color: item, index})} style={[ styles.color_box, BORDER_FRAME, { backgroundColor: item , width: 70, height: 70, margin: 10 }]}/>  
@@ -566,7 +565,6 @@ const Profile = () => {
     <GestureHandlerRootView style={styles.container}>
       <View style={styles.book_container}>
         {loading && <ActivityIndicator size="large" />}
-        {posts.length === 0 && !loading && (<Text>No post yet</Text>)}
             <Modal visible={commentsVisible} animationType="fade" transparent={true} onRequestClose={closeComments}>
               <View style={styles.commentsOverlay}>
                 <Pressable style={styles.backdrop} onPress={closeComments} />
@@ -622,8 +620,11 @@ const Profile = () => {
           </Animated.View>
         </GestureDetector>
         
-          <View style={[styles.page, {width: bookWidth, alignSelf: 'center', alignItems: 'center'}]}/>
-
+        <GestureDetector key={'last'} gesture={pan}>
+          <View style={[styles.page, {width: bookWidth, alignSelf: 'center', alignItems: 'center'}]}>
+            {posts.length === 0 && !loading && (<Text style={styles.no_post}>No pix in sketchbook yet!</Text>)}
+          </View>
+        </GestureDetector>
 
         {posts.slice(0, 100).map((item, index) => {
           const isLast = index === currentPage;
@@ -646,7 +647,7 @@ const Profile = () => {
                   source={{ uri: item.imageUrl }}
                   style={{ width: wid*imagePercent, height: wid*imagePercent, justifyContent: 'center', alignItems: 'center'}}
                 />
-                <Text style={{fontSize: 17, justifyContent: 'flex-start', width: wid*imagePercent}}>{item.content ?? JSON.stringify(item)}</Text>
+                <Text style={{fontFamily: 'ms', fontSize: 17, justifyContent: 'flex-start', width: wid*imagePercent}}>{item.content ?? JSON.stringify(item)}</Text>
 
                 <View style={[styles.post_action_box, {width: wid*imagePercent}]}>
                   <View style={styles.color_row}>
@@ -758,7 +759,7 @@ const styles = StyleSheet.create({
   },
   profile_header: {
     display: 'flex',
-    marginTop: 45,
+    marginTop: 80,
     flexDirection: 'row',
     paddingLeft: 30,
     paddingRight: 30,
@@ -1127,6 +1128,13 @@ const styles = StyleSheet.create({
   button_row: {
     display: 'flex',
     flexDirection: 'row'
+  },
+  no_post: {
+    marginTop: 230,
+    fontFamily: 'ms',
+    fontSize: 25,
+    justifyContent: 'center',
+    alignContent: 'center'
   }
 });
 
