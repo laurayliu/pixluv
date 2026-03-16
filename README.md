@@ -13,15 +13,9 @@ Key screens (see below):
 * Profile
 
 
-
 ## Architecture
-
 Tools and libraries used (for frontend):
-React Native
-
-## Setup
-
-npm install && npm run build
+React Native for mobile application development, Expo
 
 ## Deployment
 
