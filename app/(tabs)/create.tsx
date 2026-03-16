@@ -24,6 +24,16 @@ export default function ChooseSize() {
 
       <Text style = {{fontSize: 25, fontFamily: 'PixelifySans_700Bold', marginBottom: 45, marginTop: 100, color:'#5174cf'}}>pick canvas size:</Text>
       <View style = {styles.buttons}>
+        <TouchableOpacity style = {styles.firstGridButton} onPress={() => router.push({
+            pathname: '/drawing',
+            params: {
+              size: 8,
+            },
+          })}>
+          <Image style = {[BORDER_FRAME, styles.image]} source={require('../../assets/images/8x8-grid.png')}/>
+          <Text style = {{fontFamily: 'ms', color:'#5174cf', fontSize: 18}}>8 x 8</Text>
+        </TouchableOpacity>
+        
         <TouchableOpacity style = {styles.gridButton} onPress={() => router.push({
             pathname: '/drawing',
             params: {
@@ -44,15 +54,6 @@ export default function ChooseSize() {
           <Text style = {{fontFamily: 'ms', color:'#5174cf', fontSize: 18}}>32 x 32</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style = {styles.gridButton} onPress={() => router.push({
-            pathname: '/drawing',
-            params: {
-              size: 64,
-            },
-          })}>
-          <Image style = {[BORDER_FRAME, styles.image]} source={require('../../assets/images/64x64-grid.png')}/>
-          <Text style = {{fontFamily: 'ms', color:'#5174cf', fontSize: 18}}>64 x 64</Text>
-        </TouchableOpacity>
       </View>
     </View>
   );
@@ -67,6 +68,12 @@ const styles = StyleSheet.create({
     width: '70%',
     alignItems: 'flex-end',
     gap: 30,
+  },
+  firstGridButton: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 70,
   },
   gridButton: {
     flexDirection: 'row',

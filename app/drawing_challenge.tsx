@@ -80,6 +80,8 @@ export default function Challenge() {
   });
 
   const isPinching = useRef(false);
+  const storePosition = useRef<{pageX: number, pageY: number} | null>(null);
+
   const drawnCells = useRef<boolean[]>(Array(GRID_SIZE * GRID_SIZE).fill(false));
   const recentColor = useRef<string>('rgb(217, 216, 216)');
 
@@ -151,42 +153,67 @@ export default function Challenge() {
    const panResponder = PanResponder.create({
      onStartShouldSetPanResponder: (evt) => evt.nativeEvent.touches.length === 1,
      onMoveShouldSetPanResponder: (evt) => {
-       if (evt.nativeEvent.touches.length > 1) {
+       if (evt.nativeEvent.touches.length > 1) { // user pinched to zoom; stored position not needed
          isPinching.current = true; 
-         return false; // This gives control back to the ZoomableView
+         storePosition.current = null;
+         return false; 
        }
-       return true;
+       return true; 
      },
      onPanResponderGrant: (evt) => { // runs once you touch screen for the first time
        if (evt.nativeEvent.touches.length > 1) return; 
        isPinching.current = false;
-       const { pageX, pageY } = evt.nativeEvent; // capture whatever pageX/pageY is
-       gridRef.current?.measure((x, y, width, height, gridOriginX, gridOriginY) => { // gives updated gridOriginX/gridOriginY
-         colorCellAtPosition(pageX, pageY, gridOriginX, gridOriginY); // callback with updated values 
-       });
+       storePosition.current = { pageX: evt.nativeEvent.pageX, pageY: evt.nativeEvent.pageY }; // store the position you clicked at
      },
    
      onPanResponderMove: (evt) => {
        if (evt.nativeEvent.touches.length > 1) {
-         isPinching.current = true;
          return;
        }
        if (!isPinching.current) {
          const { pageX, pageY } = evt.nativeEvent;
-         gridRef.current?.measure((x, y, width, height, gridOriginX, gridOriginY) => {
-         colorCellAtPosition(pageX, pageY, gridOriginX, gridOriginY);
-       });
+         if (storePosition.current) { // color the cell at stored position
+           const { pageX: grantX, pageY: grantY } = storePosition.current;
+           storePosition.current = null;
+           gridRef.current?.measure((x, y, width, height, gridOriginX, gridOriginY) => {
+             colorCellAtPosition(grantX, grantY, gridOriginX, gridOriginY);
+           });
+         }
+         gridRef.current?.measure((x, y, width, height, gridOriginX, gridOriginY) => { // color cell where your finger moved
+           colorCellAtPosition(pageX, pageY, gridOriginX, gridOriginY);
+         });
        }
-      
      },
    
-     onPanResponderRelease: (evt) => {
-       //if (evt.nativeEvent.touches.length > 0) return; 
+      onPanResponderRelease: (evt) => {
        if (isPinching.current) {
-         isPinching.current = false;
+         isPinching.current = false; // zoom is done
+         storePosition.current = null;
          return;
        }
-       if (activeTool.current === 'dropper') return; // don't call setPrevGrid if using dropper 
+   
+       if (storePosition.current) {
+         const { pageX, pageY } = storePosition.current;
+         storePosition.current = null;
+         
+         gridRef.current?.measure((x, y, width, height, gridOriginX, gridOriginY) => {
+           colorCellAtPosition(pageX, pageY, gridOriginX, gridOriginY);
+   
+           if (activeTool.current !== 'dropper') {
+              setPrevGrid((prevHistory) => {
+               const newGrid = prevHistory.slice(0, index.current + 1); // prevents weird things if someone undos then starts drawing again
+               const updatedGrid = [...newGrid, [...grid]];  // takes saved states and adds on current grid at the end
+               index.current = updatedGrid.length - 1;
+               return updatedGrid;
+             });
+           }
+         });
+   
+         recentColor.current = selectedColor
+         return;
+       }
+   
+       if (activeTool.current === 'dropper') return; // don't call setPrevGrid if using dropper
    
        setPrevGrid((prevHistory) => {
          const newGrid = prevHistory.slice(0, index.current + 1); // prevents weird things if someone undos then starts drawing again
@@ -194,10 +221,11 @@ export default function Challenge() {
          index.current = updatedGrid.length - 1;
          return updatedGrid;
        });
-
-       recentColor.current = selectedColor
+   
+       recentColor.current = selectedColor;
      }
    });
+   
 
   const handleClear = () => {
     setGrid(Array(GRID_SIZE * GRID_SIZE).fill(DEFAULT_COLOR))
