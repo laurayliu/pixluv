@@ -80,7 +80,10 @@ export default function CreatePix() {
 
   const [caption, setCaption] = useState<string>('');
 
+  
   const gridRef = useRef<View>(null);
+  const gridRef2 = useRef<string[]>(Array(Number(size) * Number(size)).fill(DEFAULT_COLOR));
+
   const exportRef = useRef<View>(null);
 
   const [prevGrid, setPrevGrid] = useState<string[][]>([Array(Number(size) * Number(size)).fill(DEFAULT_COLOR)]); // need the brackets!!
@@ -140,8 +143,15 @@ export default function CreatePix() {
       const newGrid = [...currentGrid];
       newGrid[cellIndex] = drawingColor;
       drawnCells.current[cellIndex] = activeTool.current !== 'erase';
+
+      gridRef2.current = newGrid;
       return newGrid;
     });
+  };
+
+  const setGridAndRef = (newGrid: string[]) => {
+    gridRef2.current = newGrid;
+    setGrid(newGrid);
   };
 
   const panResponder = PanResponder.create({
@@ -196,7 +206,7 @@ export default function CreatePix() {
         if (activeTool.current !== 'dropper') {
            setPrevGrid((prevHistory) => {
             const newGrid = prevHistory.slice(0, index.current + 1); // prevents weird things if someone undos then starts drawing again
-            const updatedGrid = [...newGrid, [...grid]];  // takes saved states and adds on current grid at the end
+            const updatedGrid = [...newGrid, [...gridRef2.current]];  // takes saved states and adds on current grid at the end
             index.current = updatedGrid.length - 1;
             return updatedGrid;
           });
@@ -211,7 +221,7 @@ export default function CreatePix() {
 
     setPrevGrid((prevHistory) => {
       const newGrid = prevHistory.slice(0, index.current + 1); // prevents weird things if someone undos then starts drawing again
-      const updatedGrid = [...newGrid, [...grid]];  // takes saved states and adds on current grid at the end
+      const updatedGrid = [...newGrid, [...gridRef2.current]];  // takes saved states and adds on current grid at the end
       index.current = updatedGrid.length - 1;
       return updatedGrid;
     });
@@ -222,7 +232,7 @@ export default function CreatePix() {
 
 
   const handleClear = () => {
-    setGrid(Array(gridSize * gridSize).fill(DEFAULT_COLOR))
+    setGridAndRef(Array(gridSize * gridSize).fill(DEFAULT_COLOR))
     setPrevGrid([Array(gridSize * gridSize).fill(DEFAULT_COLOR)])
     index.current = 0;
     drawnCells.current = Array(gridSize * gridSize).fill(false);
@@ -277,7 +287,7 @@ export default function CreatePix() {
   const handleUndo = () => {
     if (index.current > 0) {
       const prevIndex = index.current - 1;
-      setGrid(prevGrid[prevIndex]);
+      setGridAndRef(prevGrid[prevIndex]);
       index.current = prevIndex;
     }
   }
@@ -285,7 +295,7 @@ export default function CreatePix() {
   const handleRedo = () => {
     if (index.current < prevGrid.length - 1) {
       const nextIndex = index.current + 1;
-      setGrid(prevGrid[nextIndex]);
+      setGridAndRef(prevGrid[nextIndex]);
       index.current = nextIndex;
     }
   }
@@ -323,6 +333,7 @@ export default function CreatePix() {
           neighborCells.push(currentCell + 1); // right neighbor cell
         } 
       }
+      gridRef2.current = newGrid;
       return newGrid;
     });
 
