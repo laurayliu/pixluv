@@ -21,6 +21,7 @@ model User {
   profilePicture   String?
   bio              String?
   colorPalette     String[]
+  stickers         String[]
 
   likes    Like[]
   comments Comment[]
