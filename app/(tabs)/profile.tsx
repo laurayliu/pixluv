@@ -47,10 +47,11 @@ type Comment = {
 
 type ColorProp = {
   color: string;
+  index: number;
 }
 
-const DEFAULT_COLOR = "#fff";
-const DEFAULT_SELECTED_COLOR = "#ffffff"
+const DEFAULT_COLOR = "#FF0000";
+const DEFAULT_SELECTED_COLOR = "#FF0000"
 
 const ITEM_SIZE = (Dimensions.get('window').width - 48) / 3;
 const SHEET_HEIGHT = Dimensions.get('window').height * 0.5;
@@ -106,8 +107,9 @@ const Profile = () => {
   const [savingProfile, setSavingProfile] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [EditPallete, setEditPallete] = useState(false);
-
+  const [selectedPaletteIndex, setSelectedPaletteIndex] = useState<number | null>(null);
   const [selectedColor, setSelectedColor] = useState<string>(DEFAULT_SELECTED_COLOR);
+  const [savedPallete, setSavedPallete] = useState<string[]>(defaultPallette);
 
   const [editColor, setEditColor]  = useState<string>(DEFAULT_SELECTED_COLOR);
 
@@ -134,16 +136,25 @@ const Profile = () => {
     }
   };
 
-  const handlePallette = async () => {
-    if (EditPallete) {
-      setEditPallete(false)
-    } else {
-      setEditPallete(true)
-    }
-  }
+  const handlePallette = () => {
+    setSavedPallete([...colorPallete]);
+    setEditPallete(true);
+  };
 
-  const handleColor =  (props: ColorProp) => {
-    
+  const handlePalletteCancel = () => {
+    setColorPallete([...savedPallete]);
+    setEditPallete(false);
+  };
+
+  const handlePalletteDone = async () => {
+    await updateUser({ colorPalette: colorPallete });
+    setEditPallete(false);
+  };
+
+  const handleColor = (props: ColorProp) => {
+    const updated = [...colorPallete];
+    updated[props.index] = selectedColor;
+    setColorPallete(updated);
   };
 
   const enterEditMode = () => {
@@ -412,7 +423,7 @@ const Profile = () => {
           setPosts(userPosts);
           setFollowerCount(fullUser._count?.followers ?? 0);
           setFollowingCount(fullUser._count?.following ?? 0);
-          setColorPallete(fullUser?.colors ?? defaultPallette)
+          setColorPallete(fullUser?.colorPalette?.length ? fullUser.colorPalette : defaultPallette)
         })
         .catch((err: Error) => setError(err.message))
         .finally(() => setLoading(false));
@@ -517,7 +528,7 @@ const Profile = () => {
             <Text>Edit Pallete</Text>
             <View style={styles.small_pallete_edit}>
               {colorPallete.map((item, index) => (
-                <Pressable key={index} onPress={handleColor({color: item})} style={[ styles.color_box, BORDER_FRAME, { backgroundColor: item , width: 70, height: 70, margin: 10 }]}/>  
+                <Pressable key={index} onPress={() => handleColor({color: item, index})} style={[ styles.color_box, BORDER_FRAME, { backgroundColor: item , width: 70, height: 70, margin: 10 }]}/>  
               ))}
             </View>
 
@@ -526,10 +537,10 @@ const Profile = () => {
           </View>
 
           <View style={styles.button_row}>
-            <Pressable onPress={handlePallette} style={[styles.actionButton, {backgroundColor: '#fff396', padding: 15}]}>
+            <Pressable onPress={handlePalletteCancel} style={[styles.actionButton, {backgroundColor: '#fff396', padding: 15}]}>
               <Text>Cancel</Text>
             </Pressable>
-            <Pressable onPress={handlePallette} style={[styles.actionButton, {backgroundColor: '#998be8', padding: 15}]}>
+            <Pressable onPress={handlePalletteDone} style={[styles.actionButton, {backgroundColor: '#998be8', padding: 15}]}>
               <Text>Done</Text>
             </Pressable>
           </View>
