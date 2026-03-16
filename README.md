@@ -31,7 +31,7 @@ npm install && npm start
 EXPO CREDENTIALS:  
 username: pixluvapp@gmail.com  
 password: pixluv@firstsight  
-+ npx expo start --tunnel
+npx expo start --tunnel
 
 ## Authors
 
