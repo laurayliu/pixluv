@@ -9,6 +9,8 @@ import DefaultColorPanel from '../../components/color_picker';
 
 
 import { useRouter } from 'expo-router';
+import { unlockSticker } from '@/utils/unlockSticker';
+import { STICKER_DEFS } from '@/constants/stickers';
 import {
   Gesture,
   GestureDetector,
@@ -269,7 +271,7 @@ const Profile = () => {
         const created = await api.createComment(activePost.id, body, token);
         setComments((prev) => [...prev, created]);
         setNewComment('');
-  
+
         // optionally bump comment count on the post list
         setPosts((prev) =>
           prev.map((p) =>
@@ -284,6 +286,8 @@ const Profile = () => {
               : p,
           ),
         );
+
+        await unlockSticker('FIRST_COMMENT', user?.stickers ?? [], updateUser);
       } finally {
         setSubmittingComment(false);
       }
@@ -492,22 +496,27 @@ const Profile = () => {
       </View>
 
       <View style={styles.favorite_container}>
-        <View style={styles.sticker_container}>
+        <Pressable style={styles.sticker_container} onPress={() => router.push(`/sticker-collection/${user?.id}` as any)}>
           <Text style={[styles.texts, {textAlign: 'center' }]}>Sticker Collection</Text>
           <View style={styles.sticker_box}>
-            <View style={[styles.sticker,  BORDER_FRAME, {backgroundColor: '#B7E3FF'}]}>
-              <IconSymbol name="sticker2" size={70} color={'currentColor'} />
-              {/* use image here to display the sticker */}
-              {/* <Image
-                source={{ uri: item.imageUrl }}
-              /> */}
-            </View>
-
-            <View style={[styles.sticker, BORDER_FRAME, {backgroundColor: '#ffffff'}]}>
-              <IconSymbol name="sticker1" size={70} color={'currentColor'} />
-            </View>
+            {(user?.stickers ?? []).length === 0 ? (
+              <>
+                <View style={[styles.sticker, BORDER_FRAME, {backgroundColor: '#e0e0e0', opacity: 0.5}]} />
+                <View style={[styles.sticker, BORDER_FRAME, {backgroundColor: '#e0e0e0', opacity: 0.5}]} />
+              </>
+            ) : (
+              (user?.stickers ?? []).slice(0, 2).map((stickerId) => {
+                const def = STICKER_DEFS.find(s => s.id === stickerId);
+                if (!def) return null;
+                return (
+                  <View key={stickerId} style={[styles.sticker, BORDER_FRAME, {backgroundColor: '#ffffff'}]}>
+                    <IconSymbol name={def.iconName as any} size={70} color={'currentColor'} />
+                  </View>
+                );
+              })
+            )}
           </View>
-        </View>
+        </Pressable>
 
         <View style={styles.main_color}>
           <Text style={[styles.texts, {textAlign: 'center'}]}>Favorite Colors</Text>
@@ -735,6 +744,7 @@ const Profile = () => {
           </Animated.View>
         </View>
       </Modal>
+
     </View>
   );
 };

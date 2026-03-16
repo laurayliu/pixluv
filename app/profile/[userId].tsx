@@ -5,6 +5,8 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { api } from '@/services/api';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { unlockSticker } from '@/utils/unlockSticker';
+import { STICKER_DEFS } from '@/constants/stickers';
 import Animated, { useSharedValue, withSpring, withDecay, useAnimatedStyle, withTiming, withDelay} from 'react-native-reanimated';
 
 
@@ -54,10 +56,10 @@ const BORDER_FRAME = {
 
 
 export default function UserProfile() {
-  const { user, token } = useAuth();
+  const { user, token, updateUser } = useAuth();
 
   const { userId } = useLocalSearchParams<{ userId: string }>();
-  const [profile, setProfile] = useState<{ username: string; profilePicture?: string; bio?: string; _count?: { followers: number; following: number } } | null>(null);
+  const [profile, setProfile] = useState<{ username: string; profilePicture?: string; bio?: string; stickers?: string[]; _count?: { followers: number; following: number } } | null>(null);
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -171,7 +173,7 @@ export default function UserProfile() {
         const created = await api.createComment(activePost.id, body, token);
         setComments((prev) => [...prev, created]);
         setNewComment('');
-  
+
         // optionally bump comment count on the post list
         setPosts((prev) =>
           prev.map((p) =>
@@ -186,6 +188,8 @@ export default function UserProfile() {
               : p,
           ),
         );
+
+        await unlockSticker('FIRST_COMMENT', user?.stickers ?? [], updateUser);
       } finally {
         setSubmittingComment(false);
       }
@@ -384,24 +388,27 @@ const pan = Gesture.Pan()
       </View>
 
       <View style={styles.favorite_container}>
-        <View style={styles.sticker_container}>
+        <Pressable style={styles.sticker_container} onPress={() => router.push(`/sticker-collection/${userId}` as any)}>
           <Text style={[styles.texts, {textAlign: 'center' }]}>Sticker Collection</Text>
           <View style={styles.sticker_box}>
-            <View style={[styles.sticker, BORDER_FRAME, {backgroundColor: '#B7E3FF'}]}>
-
-              <IconSymbol name="sticker2" size={70} color={'currentColor'} />
-
-              {/* use image here to display the sticker */}
-              {/* <Image
-                source={{ uri: item.imageUrl }}
-              /> */}
-            </View>
-
-            <View style={[styles.sticker,BORDER_FRAME, {backgroundColor: '#ffffff'}]}>
-              <IconSymbol name="sticker1" size={70} color={'currentColor'} />
-            </View>
+            {(profile?.stickers ?? []).length === 0 ? (
+              <>
+                <View style={[styles.sticker, BORDER_FRAME, {backgroundColor: '#e0e0e0', opacity: 0.5}]} />
+                <View style={[styles.sticker, BORDER_FRAME, {backgroundColor: '#e0e0e0', opacity: 0.5}]} />
+              </>
+            ) : (
+              (profile?.stickers ?? []).slice(0, 2).map((stickerId) => {
+                const def = STICKER_DEFS.find(s => s.id === stickerId);
+                if (!def) return null;
+                return (
+                  <View key={stickerId} style={[styles.sticker, BORDER_FRAME, {backgroundColor: '#ffffff'}]}>
+                    <IconSymbol name={def.iconName as any} size={70} color={'currentColor'} />
+                  </View>
+                );
+              })
+            )}
           </View>
-        </View>
+        </Pressable>
 
         <View style={styles.main_color}>
           <Text style={[styles.texts, {textAlign: 'center'}]}>Favorite Colors</Text>
@@ -600,7 +607,6 @@ const pan = Gesture.Pan()
 
         </View>
       </GestureHandlerRootView>
-
 
     </View>
   );
