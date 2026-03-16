@@ -11,6 +11,7 @@ type User = {
   email: string;
   profilePicture?: string;
   bio?: string;
+  colorPalette?: string[];
 };
 
 type AuthContextType = {
