@@ -9,6 +9,7 @@ import Toolbar, { ALL_TOOL_NAMES } from '@/components/toolbar';
 import { ReactNativeZoomableView } from '@openspacelabs/react-native-zoomable-view';
 import { useLocalSearchParams , useRouter } from 'expo-router';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { unlockSticker } from '@/utils/unlockSticker';
 
 
 const DEFAULT_COLOR = "#fff";
@@ -49,7 +50,7 @@ const BORDER_FRAME = {
 } as const;
 
 export default function CreatePix() {
-  const { token } = useAuth();
+  const { token, user, updateUser } = useAuth();
 
   const router = useRouter()
   const params = useLocalSearchParams();
@@ -225,6 +226,8 @@ export default function CreatePix() {
         .map(([color]) => color);
       await api.createPost({ content: caption, imageUrl: publicUrl, showLikes, colors: topColors }, token);
 
+      await unlockSticker('FIRST_POST', user?.stickers ?? [], updateUser);
+
       handleClear(); // make sure to clear canvas
       setSelectedColor(DEFAULT_SELECTED_COLOR);
       setPrevColor('rgb(217, 216, 216)');
@@ -353,6 +356,7 @@ export default function CreatePix() {
 
 
   return (
+    <>
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
     <View style={styles.container}>
       <Pressable style={styles.backButton} onPress={() => router.replace('/create')}>
@@ -533,6 +537,8 @@ export default function CreatePix() {
 
       </View>
     </TouchableWithoutFeedback>
+
+    </>
   );
 };
 

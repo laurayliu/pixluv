@@ -12,6 +12,7 @@ type User = {
   profilePicture?: string;
   bio?: string;
   colorPalette?: string[];
+  stickers?: string[];
 };
 
 type AuthContextType = {

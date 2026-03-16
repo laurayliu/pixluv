@@ -9,6 +9,7 @@ import BackIcon from '../assets/icons/editor/undo.svg';
 import { ReactNativeZoomableView } from '@openspacelabs/react-native-zoomable-view';
 import PaletteImg from '../assets/icons/palette_img.svg';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { unlockSticker } from '@/utils/unlockSticker';
 
 const GRID_SIZE = 32;
 const DEFAULT_COLOR = '#fff';
@@ -49,7 +50,7 @@ const BORDER_FRAME = {
 
 export default function Challenge() {
   const router = useRouter();
-  const { token, user } = useAuth();
+  const { token, user, updateUser } = useAuth();
   const [submissions, setSubmissions] = useState<{ id: string; imageUrl: string; author: { username: string } }[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const [allowedColors, setAllowedColors] = useState<string[]>([]);
@@ -240,6 +241,9 @@ export default function Challenge() {
         .slice(0, 6)
         .map(([color]) => color);
       await api.createPost({ title: 'Challenge Post', content: caption, imageUrl: publicUrl, challengeDate: new Date().toISOString(), showLikes, colors: topColors }, token);
+
+      await unlockSticker('DAILY_CHALLENGE', user?.stickers ?? [], updateUser);
+
       const { posts } = await api.getTodayChallengePosts(token);
       setSubmissions(posts);
       setSubmitted(true);   
