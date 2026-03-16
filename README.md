@@ -1,6 +1,6 @@
-# pixluv api
+# Pixluv API
 
-A REST API for pixluv built with Express 5.
+A REST API for Pixluv built with Express 5.
 
 ## Setup
 
