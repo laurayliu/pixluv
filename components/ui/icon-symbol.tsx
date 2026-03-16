@@ -79,9 +79,9 @@ const MAPPING = {
   profile:        { component: Profile,         fixed: true,     scale: 1.0  },
   sticker1:       { component: Sticker1,        fixed: true,     scale: 1.0  },
   sticker2:       { component: Sticker2,        fixed: true,     scale: 1.0  },
-  sticker3:       { component: Sticker3,        fixed: true,     scale: 1.0  },
-  sticker4:       { component: Sticker4,        fixed: true,     scale: 1.0  },
-  sticker5:       { component: Sticker5,        fixed: true,     scale: 1.0  },
+  sticker3:       { component: Sticker3,        fixed: true,     scale: 0.36 },
+  sticker4:       { component: Sticker4,        fixed: true,     scale: 0.36 },
+  sticker5:       { component: Sticker5,        fixed: true,     scale: 0.44 },
   send:           { component: SendIcon,        fixed: true,     scale: 1.0  },
 } as const;
 
