@@ -73,6 +73,7 @@ export default function UserProfile() {
   const [submittingComment, setSubmittingComment] = useState(false);
   const [openCover, setOpenCover] = useState(false);
   const openBookCover = useSharedValue(false);
+  const fade = useSharedValue(1);
 
 
   const handleFollowToggle = async () => {
@@ -221,63 +222,66 @@ export default function UserProfile() {
       const imagePercent = .60
       const translateX = useSharedValue(0)
 
-  
-    
+
+const pan = Gesture.Pan()
+    .onChange((event) => {
+      console.log(`page at ${offset.value}`)
+      offset.set((value) => value += event.translationX*0.8) ;
+      console.log(`change in x: ${event.changeX}`)
+      offset.set((value) => value =  Math.min(0, Math.max(-92, offset.value))); 
+      console.log(`update value x: ${offset.value}`)
+    })
+
+  .onFinalize((event) => {
+      console.log(`Finalize: ${offset.get()}`)
+      if (offset.get() < -80) return; 
+
+      offset.set((value) => withDecay({
+        velocity: event.velocityX * 0.3,
+        rubberBandEffect: true,
+        clamp: [-92,0],
+      }))
+    })
+
+    .onEnd(() => {
+      console.log(`😍${offset.value}`)
+      if (offset.get() < -45 && offset.get() > -125 && currentPageShared.get() < posts.length - 1 && currentPageShared.get() !== posts.length) {    
+        console.log(`Turn page ${currentPageShared.value}`)
+        fade.value = withTiming(0, {duration: 300})
+        offset.value = withTiming(-90, { duration: 100 }, (finished) => {
+        fade.value = withTiming(1, {duration: 320})
+        scheduleOnRN(nextPage);
+        currentPageShared.set(value => value + 1);
+        setTimeout(() => {
+          offset.set(0);
+        }, 250);
+        console.log(`⭐ Page: ${currentPageShared.value}`)
+      });
+      } else if (offset.get() > -90 && currentPageShared.value > 0 && currentPageShared.value !== posts.length && currentPageShared.value !== posts.length) {
+        console.log(`📔 Flip back page ${currentPageShared.value}`)
+        currentPageShared.value -= 1;
+        offset.set(withTiming(0, { duration: 200 }, (finished) => {
+          if (finished) {
+            scheduleOnRN(prevPage);
+            console.log(`⭐ Page: ${currentPageShared.value}`)
+          }
+        })) 
+      } else if (offset.get() === 0 && currentPageShared.value === 0) {
+          offset.set(withTiming(0, { duration: 0 }));
+          coverOffset.value = withSpring(0, { duration: 300 })
+      } else {
+        offset.set(withTiming(0, { duration: 300 }));
+      }
+    })
     
 
-    const pan = Gesture.Pan()
-      .onUpdate((e) => {
-        translateX.value = e.translationX;
-      })
-  
-      .onEnd(() => {
-        if (offset.value < -90 && currentPageShared.value < posts.length - 1) {
-          console.log(`Turn page ${currentPageShared.value}`)
-          currentPageShared.value += 1;
-          offset.value = withTiming(-109, { duration: 300 }, (finished) => {
-            if (finished) {
-              scheduleOnRN(nextPage);
-              offset.set(0);
-              console.log(`T: Update current page ${currentPageShared.value}`)
-            }
-          });
-        } else if (offset.get() > -90 && currentPageShared.value > 0) {
-          console.log(`Flip back page ${currentPageShared.value}`)
-          currentPageShared.value -= 1;
-          offset.set(withTiming(0, { duration: 300 }, (finished) => {
-            if (finished) {
-              scheduleOnRN(prevPage);
-              console.log(`F: Update current page ${currentPageShared.value}`)
-            }
-          })) 
-        } else if (offset.get() < 10 || offset.get() > 0 && currentPageShared.value === 0) {
-            coverOffset.value = withTiming(0, { duration: 100 })
-            offset.set(withTiming(0, { duration: 0 }));
-  
-        } else {
-          offset.set(withTiming(0, { duration: 300 }));
-        }
-      })
-  
-      .onChange((event) => {
-        offset.set((value) => value += event.changeX) ;
-        offset.set((value) => value =  Math.min(0, Math.max(-120, offset.value))); 
-      })
-  
-      .onFinalize((event) => {
-        if (offset.get() < -90) return; 
-        offset.set((value) => withDecay({
-          velocity: event.velocityX * 0.3,
-          rubberBandEffect: true,
-          clamp: [-110,0],
-        }))
-      });
     
-      const animatedStyles = useAnimatedStyle(() => ({
-        transform: [{perspective: 8000}, {translateX: (-bookWidth/2)}, { rotateY: `${offset.value}deg`}, {translateX: bookWidth/2}],  
-        backfaceVisibility: 'hidden'
-      }));
-    
+  const animatedStyles = useAnimatedStyle(() => ({
+    opacity: fade.value,
+    transform: [{perspective: 6000}, {translateX: (-bookWidth/2)}, { rotateY: `${offset.value}deg`}, {translateX: bookWidth/2}],
+    backfaceVisibility: 'hidden'
+  }));
+
 
   const coverPan = Gesture.Pan()
     .onUpdate((e) => {
@@ -285,21 +289,19 @@ export default function UserProfile() {
     })
 
     .onEnd(() => {
-
       if (coverOffset.value < -90 && currentPageShared.value < posts.length - 1) {
-        coverOffset.value = withTiming(-109, { duration: 300 }, (finished) => {
+        coverOffset.value = withTiming(-109, { duration: 200 }, (finished) => {
           openBookCover.value = false
         });
-      } else if (coverOffset.get() > -90 && currentPageShared.value > 0) {
+      } else if (coverOffset.get() > -90 &&  currentPageShared.value > 0) {
         console.log(`Flip back page ${currentPageShared.value}`)
-      } else {
-        coverOffset.set(withTiming(0, { duration: 300 }));
-      }
+      } 
     })
 
     .onChange((event) => {
       coverOffset.set((value) => value += event.changeX) ;
-      coverOffset.set((value) => value =  Math.min(0, Math.max(-120, coverOffset.value))); 
+      coverOffset.set((value) => value =  Math.min(0, Math.max(-90.1, coverOffset.value))); 
+      console.log(`cover at ${coverOffset.value}`)
     })
 
     .onFinalize((event) => {
@@ -307,12 +309,12 @@ export default function UserProfile() {
       coverOffset.set((value) => withDecay({
         velocity: event.velocityX * 0.3,
         rubberBandEffect: true,
-        clamp: [-110,0],
+        clamp: [-92,0],
       }))
     });
 
   const coverAnimatedStyles = useAnimatedStyle(() => ({
-    transform: [{perspective: 8000}, {translateX: (-bookWidth/2)}, { rotateY: `${coverOffset.value}deg`}, {translateX: bookWidth/2}],  
+    transform: [{perspective: 6000}, {translateX: (-bookWidth/2)}, { rotateY: `${coverOffset.value}deg`}, {translateX: bookWidth/2}],  
     backfaceVisibility: 'hidden'
   }));  
 
@@ -446,24 +448,9 @@ export default function UserProfile() {
         </View>
       </View>
 
-      {/* <View style={styles.book_container}>
-        <FlatList
-          data={posts.slice(0, 5)}
-          keyExtractor={(item) => String(item.id ?? item._id)}
-          renderItem={({ item }) => (
-            <View>
-              <Text>{item.title ?? item.caption ?? ''}</Text>
-              <Image source={{ uri: item.imageUrl }} style={{ width: 200, height: 200 }} />
-            </View>
-          )}
-          ListEmptyComponent={<Text style={styles.emptyText}>No posts yet</Text>}
-        />
-      </View> */}
-
     <GestureHandlerRootView style={styles.container}>
       <View style={styles.book_container}>
         {loading && <ActivityIndicator size="large" />}
-        {posts.length === 0 && !loading && (<Text>No post yet</Text>)}
             <Modal visible={commentsVisible} animationType="fade" transparent={true} onRequestClose={closeComments}>
               <View style={styles.commentsOverlay}>
                 <Pressable style={styles.backdrop} onPress={closeComments} />
@@ -518,11 +505,18 @@ export default function UserProfile() {
             <Image style={[{width: '100%', height: '100%', borderRadius: 15}]} source={require('../../assets/images/book_cover.png')}/>
           </Animated.View>
         </GestureDetector>
+
+        <GestureDetector key={'last'} gesture={pan}>
+          <View style={[styles.page, {width: bookWidth, alignSelf: 'center', alignItems: 'center'}]}>
+            {posts.length === 0 && !loading && (<Text>No post yet</Text>)}
+          </View>
+        </GestureDetector>
+        
         {posts.slice(0, 10).map((item, index) => {
           const isLast = index === currentPage
           const isPrev = index < currentPage ;
           const isTop = index === currentPage;
-          const isNext = index === currentPage + 1;
+          const isNext = index === currentPage;
           
           const Page = (
             <Animated.View
@@ -539,7 +533,7 @@ export default function UserProfile() {
                   source={{ uri: item.imageUrl }}
                   style={{ width: wid*imagePercent, height: wid*imagePercent, justifyContent: 'center', alignItems: 'center'}}
                 />
-                <Text style={{fontSize: 17, justifyContent: 'flex-start'}}>{item.content ?? JSON.stringify(item)}</Text>
+                <Text style={{fontSize: 17, justifyContent: 'flex-start', width: wid*imagePercent}}>{item.content ?? JSON.stringify(item)}</Text>
 
                 <View style={[styles.post_action_box, {width: wid*imagePercent}]}>
                   <View style={styles.color_row}>
