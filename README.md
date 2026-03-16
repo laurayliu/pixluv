@@ -22,6 +22,10 @@ Key screens (see below):
 Tools and libraries used (for frontend):
 React Native for mobile application development, Expo
 
+## Setup
+
+npm install && npm start
+
 ## Deployment
 
 EXPO CREDENTIALS:  
