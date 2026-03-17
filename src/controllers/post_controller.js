@@ -14,7 +14,7 @@ export const getPosts = async (req, res) => {
       colors: true,
       createdAt: true,
       showLikes: true,
-      author: { select: { username: true, profilePicture: true } },
+      author: { select: { id: true, username: true, profilePicture: true } },
       _count: { select: { likes: true, comments: true } },
       ...(userId && {
         likes: {
@@ -117,7 +117,7 @@ export const getPostsByUser = async (req, res) => {
       imageUrl: true, 
       createdAt: true, 
       showLikes: true,
-      author: { select: { username: true, profilePicture: true } },
+      author: { select: { id: true, username: true, profilePicture: true } },
       _count: { select: { likes: true, comments: true } },
       ...(userId && {
         likes: {
