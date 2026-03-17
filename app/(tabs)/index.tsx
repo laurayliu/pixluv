@@ -211,7 +211,7 @@ const HomeScreen = () => {
               {/* <Text style = {styles.title}>{item.title ?? item.caption ?? JSON.stringify(item)}</Text> */}
               <View style={styles.imageRow}>
                 <View style={styles.colorSwatches}>
-                  {Array.from({length: 7}).map((_, i) => {
+                  {Array.from({length: 6}).map((_, i) => {
                     const color = item.colors?.[i] ?? "#ffffff";
                     return (
                       <View key={i} style={[BORDER_FRAME, styles.colorSwatch, { backgroundColor: color }]} />
@@ -436,12 +436,12 @@ const styles = StyleSheet.create({
   },
   colorSwatches: {
     flexDirection: 'column',
-    gap: 4,
+    gap: 5,
     paddingRight: 10,
   },
   colorSwatch: {
-    width: 26,
-    height: 26,
+    width: 34,
+    height: 34,
   },
   postImage: {
     width: 230,
