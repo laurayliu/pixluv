@@ -78,7 +78,7 @@ const BORDER_FRAME = {
 
   const { width: wid, height: hei } = Dimensions.get('window')
   const bookWidth = wid - 60;
-  const bookHeight = hei -380
+  const bookHeight = hei - 400
 
 const Profile = () => {
 
@@ -361,11 +361,38 @@ const Profile = () => {
           offset.set(withTiming(0, { duration: 0 }));
           coverOffset.value = withSpring(0, { duration: 300 })
       } else {
+        console.log('thi si sthe else')
         offset.set(withTiming(0, { duration: 300 }));
       }
     })
     
 
+  const lastPan = Gesture.Pan()
+    .onChange((event) => {
+      offset.set((value) => value += event.translationX*0.8) ;
+      offset.set((value) => value =  Math.min(0, Math.max(-92, offset.value))); 
+    })
+
+  .onFinalize((event) => {
+      console.log(`Finalize: ${offset.get()}`)
+      if (offset.get() < -80) return; 
+
+      offset.set((value) => withDecay({
+        velocity: event.velocityX * 0.3,
+        rubberBandEffect: true,
+        clamp: [-92,0],
+      }))
+    })
+
+   .onEnd(() => {
+      console.log(`😍${offset.value}`)
+      if (offset.get() === 0 && currentPageShared.value === 0) {
+        offset.set(withTiming(0, { duration: 0 }));
+        coverOffset.value = withSpring(0, { duration: 300 })
+      }
+    })
+    
+    
     
   const animatedStyles = useAnimatedStyle(() => ({
     opacity: fade.value,
@@ -534,7 +561,6 @@ const Profile = () => {
   
         <Modal style={styles.pallete_modal} visible={EditPallete} transparent animationType="none" >
           <View style={styles.pallete_edit}>
-            <Text>Edit Pallete</Text>
             <View style={styles.small_pallete_edit}>
               {colorPallete.map((item, index) => (
                 <Pressable key={index} onPress={() => handleColor({color: item, index})} style={[ styles.color_box, BORDER_FRAME, { backgroundColor: item , width: 70, height: 70, margin: 10 }]}/>  
@@ -566,7 +592,6 @@ const Profile = () => {
     <GestureHandlerRootView style={styles.container}>
       <View style={styles.book_container}>
         {loading && <ActivityIndicator size="large" />}
-        {posts.length === 0 && !loading && (<Text>No post yet</Text>)}
             <Modal visible={commentsVisible} animationType="fade" transparent={true} onRequestClose={closeComments}>
               <View style={styles.commentsOverlay}>
                 <Pressable style={styles.backdrop} onPress={closeComments} />
@@ -622,8 +647,13 @@ const Profile = () => {
           </Animated.View>
         </GestureDetector>
         
-          <View style={[styles.page, {width: bookWidth, alignSelf: 'center', alignItems: 'center'}]}/>
-
+        <GestureDetector key={'last'} gesture={lastPan}>
+          <View style={[styles.page, {width: bookWidth, alignSelf: 'center', alignItems: 'center'}]}>
+            <View style={styles.last_page}>
+              {posts.length === 0 && !loading && (<Text style={styles.no_post}>No pix in sketchbook yet!</Text>)}
+            </View>
+          </View>
+        </GestureDetector>
 
         {posts.slice(0, 100).map((item, index) => {
           const isLast = index === currentPage;
@@ -646,7 +676,7 @@ const Profile = () => {
                   source={{ uri: item.imageUrl }}
                   style={{ width: wid*imagePercent, height: wid*imagePercent, justifyContent: 'center', alignItems: 'center'}}
                 />
-                <Text style={{fontSize: 17, justifyContent: 'flex-start', width: wid*imagePercent}}>{item.content ?? JSON.stringify(item)}</Text>
+                <Text style={{fontFamily: 'ms', fontSize: 17, justifyContent: 'flex-start', width: wid*imagePercent}}>{item.content ?? JSON.stringify(item)}</Text>
 
                 <View style={[styles.post_action_box, {width: wid*imagePercent}]}>
                   <View style={styles.color_row}>
@@ -758,7 +788,7 @@ const styles = StyleSheet.create({
   },
   profile_header: {
     display: 'flex',
-    marginTop: 45,
+    marginTop: 80,
     flexDirection: 'row',
     paddingLeft: 30,
     paddingRight: 30,
@@ -1127,6 +1157,17 @@ const styles = StyleSheet.create({
   button_row: {
     display: 'flex',
     flexDirection: 'row'
+  },
+  no_post: {
+    fontFamily: 'ms',
+    fontSize: 25,
+    alignSelf: 'center'
+  },
+  last_page: {
+    width: '100%',    
+    height: '100%',
+    justifyContent: 'center',
+    alignSelf: 'center'
   }
 });
 

@@ -54,10 +54,12 @@ const BORDER_FRAME = {
   overflow: 'hidden',
 } as const;
 
+const defaultPallette = [
+  "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff"
+  ]
 
 export default function UserProfile() {
   const { user, token, updateUser } = useAuth();
-
   const { userId } = useLocalSearchParams<{ userId: string }>();
   const [profile, setProfile] = useState<{ username: string; profilePicture?: string; bio?: string; stickers?: string[]; _count?: { followers: number; following: number } } | null>(null);
   const [posts, setPosts] = useState<any[]>([]);
@@ -77,7 +79,7 @@ export default function UserProfile() {
   const openBookCover = useSharedValue(false);
   const fade = useSharedValue(1);
 
-
+  const [colorPallete, setColorPallete] = useState<string[]>(defaultPallette);
   const handleFollowToggle = async () => {
     if (!token) { router.replace('/login'); return; }
     setFollowLoading(true);
@@ -279,7 +281,34 @@ const pan = Gesture.Pan()
     })
     
 
+
+  const lastPan = Gesture.Pan()
+    .onChange((event) => {
+      offset.set((value) => value += event.translationX*0.8) ;
+      offset.set((value) => value =  Math.min(0, Math.max(-92, offset.value))); 
+    })
+
+  .onFinalize((event) => {
+      console.log(`Finalize: ${offset.get()}`)
+      if (offset.get() < -80) return; 
+
+      offset.set((value) => withDecay({
+        velocity: event.velocityX * 0.3,
+        rubberBandEffect: true,
+        clamp: [-92,0],
+      }))
+    })
+
+   .onEnd(() => {
+      console.log(`😍${offset.value}`)
+      if (offset.get() === 0 && currentPageShared.value === 0) {
+        offset.set(withTiming(0, { duration: 0 }));
+        coverOffset.value = withSpring(0, { duration: 300 })
+      }
+    })
     
+    
+
   const animatedStyles = useAnimatedStyle(() => ({
     opacity: fade.value,
     transform: [{perspective: 6000}, {translateX: (-bookWidth/2)}, { rotateY: `${offset.value}deg`}, {translateX: bookWidth/2}],
@@ -336,6 +365,7 @@ const pan = Gesture.Pan()
           setProfile(profileData);
           setPosts(userPosts);
           setFollowerCount(profileData._count?.followers ?? followers.length);
+          setColorPallete(profileData?.colorPalette?.length ? profileData.colorPalette : defaultPallette)
           if (user?.id) {
             setIsFollowing(followers.some((f: any) => f.id === user.id));
           }
@@ -414,37 +444,10 @@ const pan = Gesture.Pan()
           <Text style={[styles.texts, {textAlign: 'center'}]}>Favorite Colors</Text>
 
           <View style={styles.pallete_box}>
-            <View style={styles.color_row}>
-              <View style={[
-                styles.color_box, BORDER_FRAME,
-              { backgroundColor: '#faeb4d' }, // take user info to fill color
-              ]}></View>
-            <View style={[
-                styles.color_box, BORDER_FRAME,
-              { backgroundColor: '#d73a3a' }, // take user info to fill color
-              ]}></View>
-
-            <View style={[
-                styles.color_box, BORDER_FRAME,
-              { backgroundColor: '#51c770' }, // take user info to fill color
-              ]}></View>          
-            </View>
-
-            <View style={styles.color_row}>
-              <View style={[
-                  styles.color_box, BORDER_FRAME,
-                { backgroundColor: '#9b3b00' }, // take user info to fill color
-                ]}/>       
-
-              <View style={[
-                  styles.color_box, BORDER_FRAME,
-                { backgroundColor: '#b74caf' }, // take user info to fill color
-                ]}/>       
-              
-              <View style={[
-                  styles.color_box, BORDER_FRAME,
-                { backgroundColor: '#3400f1' }, // take user info to fill color
-                ]}/>       
+            <View style={styles.color_pallette}>
+              {colorPallete.map((item, index) => (
+                <View key={index} style={[ styles.color_box, BORDER_FRAME, { backgroundColor: item }]}/>
+              ))}
             </View>
           </View>
 
@@ -513,12 +516,14 @@ const pan = Gesture.Pan()
           </Animated.View>
         </GestureDetector>
 
-        <GestureDetector key={'last'} gesture={pan}>
+        <GestureDetector key={'last'} gesture={lastPan}>
           <View style={[styles.page, {width: bookWidth, alignSelf: 'center', alignItems: 'center'}]}>
-            {posts.length === 0 && !loading && (<Text>No post yet</Text>)}
+            <View style={styles.last_page}>
+              {posts.length === 0 && !loading && (<Text style={styles.no_post}>No pix in sketchbook yet!</Text>)}
+            </View>
           </View>
         </GestureDetector>
-        
+
         {posts.slice(0, 10).map((item, index) => {
           const isLast = index === currentPage
           const isPrev = index < currentPage ;
@@ -843,6 +848,25 @@ const styles = StyleSheet.create({
   art_wrapper: {
     padding: 15,
     backgroundColor: '#e8e8e8',
+  }, 
+  color_pallette: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    alignContent: 'center',
+    justifyContent: 'center'
+  },
+  no_post: {
+    fontFamily: 'ms',
+    fontSize: 25,
+    // justifyContent: 'center',
+    alignContent: 'center',
+    alignSelf: 'center'
+  },
+  last_page: {
+    display: 'flex',
+    height: '100%',
+    width: '100%',
+    alignContent: 'center',
+    justifyContent: 'center'
   }
-
 });
