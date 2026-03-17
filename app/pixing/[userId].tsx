@@ -113,8 +113,10 @@ export default function PixingThread() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <IconSymbol name="undo" size={24} color="#000" />
         </TouchableOpacity>
-        <ProfileAvatar imageUrl={otherUserPfp} size={40} />
-        <Text style={styles.topUsername}>{username}</Text>
+        <TouchableOpacity onPress={() => router.push(`/profile/${userId}` as any)} style={styles.topUserInfo}>
+          <ProfileAvatar imageUrl={otherUserPfp} size={40} />
+          <Text style={styles.topUsername}>{username}</Text>
+        </TouchableOpacity>
       </View>
 
       <KeyboardAvoidingView
@@ -139,7 +141,11 @@ export default function PixingThread() {
                 <View style={[styles.messageRow, mine ? styles.rowRight : styles.rowLeft]}>
                   {!mine && (
                     <View style={styles.avatarSlot}>
-                      {showAvatar && <ProfileAvatar imageUrl={otherUserPfp} size={24} />}
+                      {showAvatar && (
+                        <TouchableOpacity onPress={() => router.push(`/profile/${userId}` as any)}>
+                          <ProfileAvatar imageUrl={otherUserPfp} size={24} />
+                        </TouchableOpacity>
+                      )}
                     </View>
                   )}
                   <View style={[styles.bubble, !item.imageUrl && styles.bubbleWithText, !item.imageUrl && (mine ? styles.bubbleMine : styles.bubbleTheirs)]}>
@@ -230,6 +236,11 @@ const styles = StyleSheet.create({
   },
   backBtn: {
     padding: 4,
+  },
+  topUserInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   topUsername: {
     fontSize: 16,
