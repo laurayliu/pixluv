@@ -131,7 +131,7 @@ const Profile = () => {
     pfpSheetY.value = withTiming(0, { duration: 300 });
     setPfpPostsLoading(true);
     try {
-      const fetched = await api.getPostsByUser(user?.id, token);
+      const fetched = await api.getPostsByUser(user?.id, token, user?.id);
       setPfpPosts(fetched);
     } catch {
     } finally {
@@ -421,7 +421,7 @@ const Profile = () => {
       if (!user?.id) return;
       setLoading(true);
       Promise.all([
-        api.getPostsByUser(user.id, token),
+        api.getPostsByUser(user.id, token, user.id),
         api.getUser(user.id),
       ])
         .then(([userPosts, fullUser]) => {
