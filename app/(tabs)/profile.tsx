@@ -1,12 +1,11 @@
-import React, { useCallback, useEffect, useState}from 'react';
+import React, { useCallback, useState}from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { StyleSheet, Text, View, Button, LayoutChangeEvent, KeyboardAvoidingView, TouchableOpacity, TextInput, Pressable, FlatList, Image, ActivityIndicator, Modal, TouchableWithoutFeedback, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, KeyboardAvoidingView, TouchableOpacity, TextInput, Pressable, FlatList, Image, ActivityIndicator, Modal, Dimensions } from 'react-native';
 import { useAuth } from '@/context/AuthContext';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { api } from '../../services/api';
-import Animated, { useSharedValue, withSpring, withDecay, useAnimatedStyle, withTiming, withDelay} from 'react-native-reanimated';
+import Animated, { useSharedValue, withSpring, withDecay, useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import DefaultColorPanel from '../../components/color_picker';
-
 
 import { useRouter } from 'expo-router';
 import { unlockSticker } from '@/utils/unlockSticker';
@@ -17,8 +16,6 @@ import {
   GestureHandlerRootView,
 } from 'react-native-gesture-handler';
 import {scheduleOnRN } from 'react-native-worklets';
-import { opacity } from 'react-native-reanimated/lib/typescript/Colors';
-import { Colors } from '@/constants/theme';
 
 type Post = {
   id: string;
@@ -53,16 +50,10 @@ type ColorProp = {
   index: number;
 }
 
-const DEFAULT_COLOR = "#FF0000";
 const DEFAULT_SELECTED_COLOR = "#FF0000"
-
 const ITEM_SIZE = (Dimensions.get('window').width - 48) / 3;
 const SHEET_HEIGHT = Dimensions.get('window').height * 0.5;
-
-const defaultPallette = [
-  "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff"
-  ]
-
+const defaultPallette = ["#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff"]
 
 const BORDER_FRAME = {
   borderRadius: 0,
@@ -77,18 +68,16 @@ const BORDER_FRAME = {
   overflow: 'hidden',
 } as const;
 
-  const { width: wid, height: hei } = Dimensions.get('window')
-  const bookWidth = wid - 60;
-  const bookHeight = hei - 400
+const { width: wid, height: hei } = Dimensions.get('window')
+const bookWidth = wid - 60;
+const bookHeight = hei - 400
 
 const Profile = () => {
-
   const { user, logout, token, updateUser } = useAuth();
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [colorPallete, setColorPallete] = useState<string[]>(defaultPallette);
-
   const [pfpPickerVisible, setPfpPickerVisible] = useState(false);
   const [pfpPosts, setPfpPosts] = useState<{ id: string; imageUrl: string }[]>([]);
   const [pfpPostsLoading, setPfpPostsLoading] = useState(false);
@@ -110,12 +99,8 @@ const Profile = () => {
   const [savingProfile, setSavingProfile] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [EditPallete, setEditPallete] = useState(false);
-  const [selectedPaletteIndex, setSelectedPaletteIndex] = useState<number | null>(null);
   const [selectedColor, setSelectedColor] = useState<string>(DEFAULT_SELECTED_COLOR);
   const [savedPallete, setSavedPallete] = useState<string[]>(defaultPallette);
-
-  const [editColor, setEditColor]  = useState<string>(DEFAULT_SELECTED_COLOR);
-
   const pfpSheetY = useSharedValue(SHEET_HEIGHT);
   const pfpSheetStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: pfpSheetY.value }],
@@ -238,66 +223,62 @@ const Profile = () => {
       );
     }
   };
-    const openComments = async (post: Post) => {
-      setActivePost(post);
-      setCommentsVisible(true);
-      setLoadingComments(true);
-      setNewComment('');
-  
-      try {
-        const data = await api.getComments(post.id);
-        setComments(data);
-      } catch (err) {
-        console.error('Failed to load comments', err);
-  
-      } finally {
-        setLoadingComments(false);
-      }
-    };
-  
-    const closeComments = () => {
-      setCommentsVisible(false);
-      setActivePost(null);
-      setComments([]);
-      setNewComment('');
-    };
-  
-    const handleSubmitComment = async () => {
-      if (!token || !activePost) return;
-      const body = newComment.trim();
-      if (!body) return;
-  
-      setSubmittingComment(true);
-      try {
-        const created = await api.createComment(activePost.id, body, token);
-        setComments((prev) => [...prev, created]);
-        setNewComment('');
+  const openComments = async (post: Post) => {
+    setActivePost(post);
+    setCommentsVisible(true);
+    setLoadingComments(true);
+    setNewComment('');
 
-        // optionally bump comment count on the post list
-        setPosts((prev) =>
-          prev.map((p) =>
-            p.id === activePost.id
-              ? {
-                  ...p,
-                  _count: {
-                    ...(p._count ?? {}),
-                    comments: (p._count?.comments ?? 0) + 1,
-                  },
-                }
-              : p,
-          ),
-        );
+    try {
+      const data = await api.getComments(post.id);
+      setComments(data);
+    } catch (err) {
+      console.error('Failed to load comments', err);
+    } finally {
+      setLoadingComments(false);
+    }
+  };
 
-        await unlockSticker('FIRST_COMMENT', user?.stickers ?? [], updateUser);
-      } finally {
-        setSubmittingComment(false);
-      }
-    };
+  const closeComments = () => {
+    setCommentsVisible(false);
+    setActivePost(null);
+    setComments([]);
+    setNewComment('');
+  };
+
+  const handleSubmitComment = async () => {
+    if (!token || !activePost) return;
+    const body = newComment.trim();
+    if (!body) return;
+
+    setSubmittingComment(true);
+    try {
+      const created = await api.createComment(activePost.id, body, token);
+      setComments((prev) => [...prev, created]);
+      setNewComment('');
+      // optionally bump comment count on the post list
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === activePost.id
+            ? {
+                ...p,
+                _count: {
+                  ...(p._count ?? {}),
+                  comments: (p._count?.comments ?? 0) + 1,
+                },
+              }
+            : p,
+        ),
+      );
+
+      await unlockSticker('FIRST_COMMENT', user?.stickers ?? [], updateUser);
+    } finally {
+      setSubmittingComment(false);
+    }
+  };
   
   const offset = useSharedValue<number>(0);
   const coverOffset = useSharedValue<number>(0);
-  const width = useSharedValue<number>(0);
-  const pageWidth = useSharedValue(0);
   const [currentPage, setCurrentPage] = useState(0)
   const currentPageShared = useSharedValue(0);
 
@@ -317,15 +298,11 @@ const Profile = () => {
 
   const pan = Gesture.Pan()
     .onChange((event) => {
-      console.log(`page at ${offset.value}`)
       offset.set((value) => value += event.translationX*0.8) ;
-      console.log(`change in x: ${event.changeX}`)
       offset.set((value) => value =  Math.min(0, Math.max(-92, offset.value))); 
-      console.log(`update value x: ${offset.value}`)
     })
 
-  .onFinalize((event) => {
-      console.log(`Finalize: ${offset.get()}`)
+    .onFinalize((event) => {
       if (offset.get() < -80) return; 
 
       offset.set((value) => withDecay({
@@ -336,9 +313,7 @@ const Profile = () => {
     })
 
     .onEnd(() => {
-      console.log(`😍${offset.value}`)
       if (offset.get() < -45 && offset.get() > -125 && currentPageShared.get() < posts.length - 1 && currentPageShared.get() !== posts.length) {    
-        console.log(`Turn page ${currentPageShared.value}`)
         fade.value = withTiming(0, {duration: 300})
         offset.value = withTiming(-90, { duration: 100 }, (finished) => {
         fade.value = withTiming(1, {duration: 320})
@@ -347,60 +322,49 @@ const Profile = () => {
         setTimeout(() => {
           offset.set(0);
         }, 250);
-        console.log(`⭐ Page: ${currentPageShared.value}`)
       });
       } else if (offset.get() > -90 && currentPageShared.value > 0 && currentPageShared.value !== posts.length && currentPageShared.value !== posts.length) {
-        console.log(`📔 Flip back page ${currentPageShared.value}`)
         currentPageShared.value -= 1;
         offset.set(withTiming(0, { duration: 200 }, (finished) => {
-          if (finished) {
-            scheduleOnRN(prevPage);
-            console.log(`⭐ Page: ${currentPageShared.value}`)
-          }
-        })) 
+        if (finished) {
+          scheduleOnRN(prevPage);
+        }})) 
       } else if (offset.get() === 0 && currentPageShared.value === 0) {
-          offset.set(withTiming(0, { duration: 0 }));
-          coverOffset.value = withSpring(0, { duration: 300 })
+        offset.set(withTiming(0, { duration: 0 }));
+        coverOffset.value = withSpring(0, { duration: 300 })
       } else {
-        console.log('thi si sthe else')
         offset.set(withTiming(0, { duration: 300 }));
       }
     })
     
-
   const lastPan = Gesture.Pan()
     .onChange((event) => {
       offset.set((value) => value += event.translationX*0.8) ;
       offset.set((value) => value =  Math.min(0, Math.max(-92, offset.value))); 
     })
 
-  .onFinalize((event) => {
-      console.log(`Finalize: ${offset.get()}`)
-      if (offset.get() < -80) return; 
+    .onFinalize((event) => {
+        if (offset.get() < -80) return; 
 
-      offset.set((value) => withDecay({
-        velocity: event.velocityX * 0.3,
-        rubberBandEffect: true,
-        clamp: [-92,0],
-      }))
-    })
+        offset.set((value) => withDecay({
+          velocity: event.velocityX * 0.3,
+          rubberBandEffect: true,
+          clamp: [-92,0],
+        }))
+      })
 
-   .onEnd(() => {
-      console.log(`😍${offset.value}`)
-      if (offset.get() === 0 && currentPageShared.value === 0) {
-        offset.set(withTiming(0, { duration: 0 }));
-        coverOffset.value = withSpring(0, { duration: 300 })
-      }
-    })
-    
-    
+    .onEnd(() => {
+        if (offset.get() === 0 && currentPageShared.value === 0) {
+          offset.set(withTiming(0, { duration: 0 }));
+          coverOffset.value = withSpring(0, { duration: 300 })
+        }
+      })
     
   const animatedStyles = useAnimatedStyle(() => ({
     opacity: fade.value,
     transform: [{perspective: 6000}, {translateX: (-bookWidth/2)}, { rotateY: `${offset.value}deg`}, {translateX: bookWidth/2}],
     backfaceVisibility: 'hidden'
   }));
-
 
   const coverPan = Gesture.Pan()
     .onUpdate((e) => {
@@ -409,23 +373,15 @@ const Profile = () => {
 
     .onEnd(() => {
       if (coverOffset.value < -90 && currentPageShared.value < posts.length - 1) {
-        console.log("Opening cover 📖");
-        console.log(`Page: ${offset.value}`);
         coverOffset.value = withTiming(-109, { duration: 200 }, (finished) => {
           openBookCover.value = false
         });
-      } else if (coverOffset.get() > -90&&  currentPageShared.value > 0) {
-        console.log(`Flip back page ${currentPageShared.value}`)
       } 
-      // else {
-      //   coverOffset.set(withTiming(0, { duration: 300 }));
-      // }
     })
 
     .onChange((event) => {
       coverOffset.set((value) => value += event.changeX) ;
       coverOffset.set((value) => value =  Math.min(0, Math.max(-90.1, coverOffset.value))); 
-      console.log(`cover at ${coverOffset.value}`)
     })
 
     .onFinalize((event) => {
@@ -441,7 +397,6 @@ const Profile = () => {
     transform: [{perspective: 6000}, {translateX: (-bookWidth/2)}, { rotateY: `${coverOffset.value}deg`}, {translateX: bookWidth/2}],  
     backfaceVisibility: 'hidden'
   }));  
-
 
   useFocusEffect(
     useCallback(() => {
@@ -465,7 +420,6 @@ const Profile = () => {
   if (error) return <Text>{error}</Text>;
 
   return (
-
     <View style={styles.main_container}>
       <View style={styles.profile_header}>
         <TouchableOpacity style={styles.profile_box} onPress={editMode ? openPfpPicker : undefined} disabled={updatingPfp || !editMode}>
@@ -549,98 +503,93 @@ const Profile = () => {
         <View style={styles.main_color}>
           <Text style={[styles.texts, {textAlign: 'center'}]}>Favorite Colors</Text>
 
-
-        <Pressable onPress={handlePallette}>
-          <View style={styles.pallete_box}>
-            <View style={styles.color_pallette}>
-              {colorPallete.map((item, index) => (
-                <View key={index} style={[ styles.color_box, BORDER_FRAME, { backgroundColor: item }]}/>
-              ))}
+          <Pressable onPress={handlePallette}>
+            <View style={styles.pallete_box}>
+              <View style={styles.color_pallette}>
+                {colorPallete.map((item, index) => (
+                  <View key={index} style={[ styles.color_box, BORDER_FRAME, { backgroundColor: item }]}/>
+                ))}
+              </View>
             </View>
-          </View>
-        </Pressable>
-  
-        <Modal style={styles.pallete_modal} visible={EditPallete} transparent animationType="none" >
-          <View style={styles.pallete_edit}>
-            <View style={styles.small_pallete_edit}>
-              {colorPallete.map((item, index) => (
-                <Pressable key={index} onPress={() => handleColor({color: item, index})} style={[ styles.color_box, BORDER_FRAME, { backgroundColor: item , width: 70, height: 70, margin: 10 }]}/>  
-              ))}
+          </Pressable>
+
+          <Modal style={styles.pallete_modal} visible={EditPallete} transparent animationType="none" >
+            <View style={styles.pallete_edit}>
+              <Text style={{fontFamily: 'ms', marginBottom: 10}}> Pick a color then click the square to fill in the color </Text>
+              <View style={styles.small_pallete_edit}>
+                {colorPallete.map((item, index) => (
+                  <Pressable key={index} onPress={() => handleColor({color: item, index})} style={[ styles.color_box, BORDER_FRAME, { backgroundColor: item , width: 70, height: 70, margin: 10 }]}/>  
+                ))}
+              </View>
+
+              <View style={{ width: '100%' }}>
+                  <DefaultColorPanel value={selectedColor} onColorChange={setSelectedColor}/>
+              </View>
+            
+              <View style={styles.button_row}>
+                <Pressable onPress={handlePalletteCancel} style={[styles.actionButton, {backgroundColor: '#fff396', padding: 15, width: '30%', alignSelf: 'center', justifyContent: 'center', alignItems: 'center'}]}>
+                  <Text>Cancel</Text>
+                </Pressable>
+                <Pressable onPress={handlePalletteDone} style={[styles.actionButton, {backgroundColor: '#998be8', padding: 15, width: '30%', alignSelf: 'center', justifyContent: 'center', alignItems: 'center'}]}>
+                  <Text style={{fontFamily: 'ms'}}>Done</Text>
+                </Pressable>
+              </View>
             </View>
-
-          <View style={{ width: '100%' }}>
-              <DefaultColorPanel value={selectedColor} onColorChange={setSelectedColor}/>
-          </View>
-
-          <View style={styles.button_row}>
-            <Pressable onPress={handlePalletteCancel} style={[styles.actionButton, {backgroundColor: '#fff396', padding: 15}]}>
-              <Text>Cancel</Text>
-            </Pressable>
-            <Pressable onPress={handlePalletteDone} style={[styles.actionButton, {backgroundColor: '#998be8', padding: 15}]}>
-              <Text>Done</Text>
-            </Pressable>
-          </View>
-        </View>
-        </Modal>
-
+          </Modal>
         </View>
       </View>
 
-      {/* <TouchableOpacity style={styles.logoutButton} onPress={logout}>
-        <Text style={styles.logoutText}>log out</Text>
-      </TouchableOpacity> */}
 
     <GestureHandlerRootView style={styles.container}>
       <View style={styles.book_container}>
         {loading && <ActivityIndicator size="large" />}
-            <Modal visible={commentsVisible} animationType="fade" transparent={true} onRequestClose={closeComments}>
-              <View style={styles.commentsOverlay}>
-                <Pressable style={styles.backdrop} onPress={closeComments} />
-                    <KeyboardAvoidingView
-                      style={styles.commentsContainer}
-                    >
-                      {loadingComments ? (
-                        <ActivityIndicator size="large" />
-                      ) : (
-                        <FlatList
-                          data={comments}
-                          keyExtractor={(c) => c.id}
-                          contentContainerStyle={styles.commentsList}
-                          renderItem={({ item }) => (
-                            <View style={styles.commentRow}>
-                              <Text style={styles.commentAuthor}>{item.user.username}</Text>
-                              <Text style={styles.commentBody}>{item.body}</Text>
-                            </View>
-                          )}
-                          ListEmptyComponent={<Text>be the first comment!</Text>}
-                        />
-                      )}
+          <Modal visible={commentsVisible} animationType="fade" transparent={true} onRequestClose={closeComments}>
+            <View style={styles.commentsOverlay}>
+              <Pressable style={styles.backdrop} onPress={closeComments} />
+                  <KeyboardAvoidingView
+                    style={styles.commentsContainer}
+                  >
+                    {loadingComments ? (
+                      <ActivityIndicator size="large" />
+                    ) : (
+                      <FlatList
+                        data={comments}
+                        keyExtractor={(c) => c.id}
+                        contentContainerStyle={styles.commentsList}
+                        renderItem={({ item }) => (
+                          <View style={styles.commentRow}>
+                            <Text style={styles.commentAuthor}>{item.user.username}</Text>
+                            <Text style={styles.commentBody}>{item.body}</Text>
+                          </View>
+                        )}
+                        ListEmptyComponent={<Text>be the first comment!</Text>}
+                      />
+                    )}
 
-                      <View style={styles.commentInputRow}>
-                        <TextInput
-                          style={[styles.commentInput]}
-                          placeholder="leave a comment..."
-                          value={newComment}
-                          onChangeText={setNewComment}
-                          placeholderTextColor='rgba(81, 116, 207, 0.5)' 
-                          autoCapitalize='none'
+                    <View style={styles.commentInputRow}>
+                      <TextInput
+                        style={[styles.commentInput]}
+                        placeholder="leave a comment..."
+                        value={newComment}
+                        onChangeText={setNewComment}
+                        placeholderTextColor='rgba(81, 116, 207, 0.5)' 
+                        autoCapitalize='none'
+                      />
+                      <TouchableOpacity
+                        onPress={handleSubmitComment}
+                        disabled={submittingComment || !newComment.trim()}
+                        style={[styles.commentSendButton]}
+                      >
+                        <IconSymbol
+                          name={'mail'}
+                          color={'currentColor'}
+                          size={20}
                         />
-                        <TouchableOpacity
-                          onPress={handleSubmitComment}
-                          disabled={submittingComment || !newComment.trim()}
-                          style={[styles.commentSendButton]}
-                        >
-                          <IconSymbol
-                            name={'mail'}
-                            color={'currentColor'}
-                            size={20}
-                          />
-                        </TouchableOpacity>
-                      </View>
-                    </KeyboardAvoidingView>
-              </View>
-       
-      </Modal>
+                      </TouchableOpacity>
+                    </View>
+                  </KeyboardAvoidingView>
+            </View>
+          </Modal>
 
         <GestureDetector key={'cover'} gesture={coverPan}>
           <Animated.View style={[coverAnimatedStyles, styles.page_cover, {width: bookWidth, alignSelf: 'center', alignItems: 'center'}, {zIndex: 77500}]}>
@@ -677,7 +626,7 @@ const Profile = () => {
                   source={{ uri: item.imageUrl }}
                   style={{ width: wid*imagePercent, height: wid*imagePercent, justifyContent: 'center', alignItems: 'center'}}
                 />
-                <Text style={{fontFamily: 'ms', fontSize: 17, justifyContent: 'flex-start', width: wid*imagePercent}}>{item.content ?? JSON.stringify(item)}</Text>
+                <Text style={{fontFamily: 'ms', fontSize: 17, justifyContent: 'flex-start', width: wid*imagePercent, marginTop: 5, maxHeight: 110}}>{item.content ?? JSON.stringify(item)}</Text>
 
                 <View style={[styles.post_action_box, {width: wid*imagePercent}]}>
                   <View style={styles.color_row}>
@@ -709,13 +658,10 @@ const Profile = () => {
                   </View>
                 </View> 
               </View>
-
             </Animated.View>
-            
           );
 
           if (isTop || isLast) {
-
             return(
               <GestureDetector key={String(item.id ?? item._id)} gesture={pan}>
                 {Page}
@@ -726,7 +672,6 @@ const Profile = () => {
           } 
           return null;
         })}
-
         </View>
       </GestureHandlerRootView>
 
@@ -779,7 +724,6 @@ const Profile = () => {
           </Animated.View>
         </View>
       </Modal>
-
     </View>
   );
 };
@@ -1142,8 +1086,9 @@ const styles = StyleSheet.create({
     alignItems: 'center', 
     alignSelf: 'center',
     backgroundColor: '#ffc5e7',
-    width: '80%',
-    height: '50%'
+    paddingTop: 30,
+    width: '83%',
+    height: 500
   },
   small_pallete_edit: {
     backgroundColor: '#6260c392',
@@ -1193,6 +1138,3 @@ const styles = StyleSheet.create({
 });
 
 export default Profile;
-
-
-

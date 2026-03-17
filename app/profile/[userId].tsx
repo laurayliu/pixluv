@@ -231,15 +231,11 @@ export default function UserProfile() {
 
 const pan = Gesture.Pan()
     .onChange((event) => {
-      console.log(`page at ${offset.value}`)
       offset.set((value) => value += event.translationX*0.8) ;
-      console.log(`change in x: ${event.changeX}`)
       offset.set((value) => value =  Math.min(0, Math.max(-92, offset.value))); 
-      console.log(`update value x: ${offset.value}`)
     })
 
   .onFinalize((event) => {
-      console.log(`Finalize: ${offset.get()}`)
       if (offset.get() < -80) return; 
 
       offset.set((value) => withDecay({
@@ -250,9 +246,7 @@ const pan = Gesture.Pan()
     })
 
     .onEnd(() => {
-      console.log(`😍${offset.value}`)
       if (offset.get() < -45 && offset.get() > -125 && currentPageShared.get() < posts.length - 1 && currentPageShared.get() !== posts.length) {    
-        console.log(`Turn page ${currentPageShared.value}`)
         fade.value = withTiming(0, {duration: 300})
         offset.value = withTiming(-90, { duration: 100 }, (finished) => {
         fade.value = withTiming(1, {duration: 320})
@@ -261,15 +255,12 @@ const pan = Gesture.Pan()
         setTimeout(() => {
           offset.set(0);
         }, 250);
-        console.log(`⭐ Page: ${currentPageShared.value}`)
       });
       } else if (offset.get() > -90 && currentPageShared.value > 0 && currentPageShared.value !== posts.length && currentPageShared.value !== posts.length) {
-        console.log(`📔 Flip back page ${currentPageShared.value}`)
         currentPageShared.value -= 1;
         offset.set(withTiming(0, { duration: 200 }, (finished) => {
           if (finished) {
             scheduleOnRN(prevPage);
-            console.log(`⭐ Page: ${currentPageShared.value}`)
           }
         })) 
       } else if (offset.get() === 0 && currentPageShared.value === 0) {
@@ -289,7 +280,6 @@ const pan = Gesture.Pan()
     })
 
   .onFinalize((event) => {
-      console.log(`Finalize: ${offset.get()}`)
       if (offset.get() < -80) return; 
 
       offset.set((value) => withDecay({
@@ -300,7 +290,6 @@ const pan = Gesture.Pan()
     })
 
    .onEnd(() => {
-      console.log(`😍${offset.value}`)
       if (offset.get() === 0 && currentPageShared.value === 0) {
         offset.set(withTiming(0, { duration: 0 }));
         coverOffset.value = withSpring(0, { duration: 300 })
@@ -326,15 +315,12 @@ const pan = Gesture.Pan()
         coverOffset.value = withTiming(-109, { duration: 200 }, (finished) => {
           openBookCover.value = false
         });
-      } else if (coverOffset.get() > -90 &&  currentPageShared.value > 0) {
-        console.log(`Flip back page ${currentPageShared.value}`)
       } 
     })
 
     .onChange((event) => {
       coverOffset.set((value) => value += event.changeX) ;
       coverOffset.set((value) => value =  Math.min(0, Math.max(-90.1, coverOffset.value))); 
-      console.log(`cover at ${coverOffset.value}`)
     })
 
     .onFinalize((event) => {
@@ -377,7 +363,6 @@ const pan = Gesture.Pan()
 
   if (error) return <Text>{error}</Text>;
 
-  
   return (
     <View style={styles.main_container}>
       <Pressable style={styles.back_button} onPress={() => router.back()}>
@@ -401,7 +386,7 @@ const pan = Gesture.Pan()
               onPress={handleFollowToggle}
               disabled={followLoading}
             >
-              <Text style={styles.button_text}>{isFollowing ? 'Following' : 'Follow'}</Text>
+            <Text style={styles.button_text}>{isFollowing ? 'Following' : 'Follow'}</Text>
             </Pressable>
             <Pressable
               style={styles.action_button}
@@ -411,7 +396,7 @@ const pan = Gesture.Pan()
                 )
               }
             >
-              <Text style={styles.button_text}>Pix Me!</Text>
+            <Text style={styles.button_text}>Pix Me!</Text>
             </Pressable>
           </View>
         </View>
@@ -450,65 +435,59 @@ const pan = Gesture.Pan()
               ))}
             </View>
           </View>
-
-
-          <View>
-            {/* <Text>Edit tton</Text> */}
-          </View>
         </View>
       </View>
 
     <GestureHandlerRootView style={styles.container}>
       <View style={styles.book_container}>
         {loading && <ActivityIndicator size="large" />}
-            <Modal visible={commentsVisible} animationType="fade" transparent={true} onRequestClose={closeComments}>
-              <View style={styles.commentsOverlay}>
-                <Pressable style={styles.backdrop} onPress={closeComments} />
-                    <KeyboardAvoidingView
-                      style={styles.commentsContainer}
-                    >
-                      {loadingComments ? (
-                        <ActivityIndicator size="large" />
-                      ) : (
-                        <FlatList
-                          data={comments}
-                          keyExtractor={(c) => c.id}
-                          contentContainerStyle={styles.commentsList}
-                          renderItem={({ item }) => (
-                            <View style={styles.commentRow}>
-                              <Text style={styles.commentAuthor}>{item.user.username}</Text>
-                              <Text style={styles.commentBody}>{item.body}</Text>
-                            </View>
-                          )}
-                          ListEmptyComponent={<Text>be the first comment!</Text>}
-                        />
+        <Modal visible={commentsVisible} animationType="fade" transparent={true} onRequestClose={closeComments}>
+          <View style={styles.commentsOverlay}>
+            <Pressable style={styles.backdrop} onPress={closeComments} />
+                <KeyboardAvoidingView
+                  style={styles.commentsContainer}
+                >
+                  {loadingComments ? (
+                    <ActivityIndicator size="large" />
+                  ) : (
+                    <FlatList
+                      data={comments}
+                      keyExtractor={(c) => c.id}
+                      contentContainerStyle={styles.commentsList}
+                      renderItem={({ item }) => (
+                        <View style={styles.commentRow}>
+                          <Text style={styles.commentAuthor}>{item.user.username}</Text>
+                          <Text style={styles.commentBody}>{item.body}</Text>
+                        </View>
                       )}
+                      ListEmptyComponent={<Text>be the first comment!</Text>}
+                    />
+                  )}
 
-                      <View style={styles.commentInputRow}>
-                        <TextInput
-                          style={[styles.commentInput]}
-                          placeholder="leave a comment..."
-                          value={newComment}
-                          onChangeText={setNewComment}
-                          placeholderTextColor='rgba(81, 116, 207, 0.5)' 
-                          autoCapitalize='none'
-                        />
-                        <TouchableOpacity
-                          onPress={handleSubmitComment}
-                          disabled={submittingComment || !newComment.trim()}
-                          style={[styles.commentSendButton]}
-                        >
-                          <IconSymbol
-                            name={'mail'}
-                            color={'currentColor'}
-                            size={20}
-                          />
-                        </TouchableOpacity>
-                      </View>
-                    </KeyboardAvoidingView>
-              </View>
-       
-      </Modal>
+                  <View style={styles.commentInputRow}>
+                    <TextInput
+                      style={[styles.commentInput]}
+                      placeholder="leave a comment..."
+                      value={newComment}
+                      onChangeText={setNewComment}
+                      placeholderTextColor='rgba(81, 116, 207, 0.5)' 
+                      autoCapitalize='none'
+                    />
+                    <TouchableOpacity
+                      onPress={handleSubmitComment}
+                      disabled={submittingComment || !newComment.trim()}
+                      style={[styles.commentSendButton]}
+                    >
+                      <IconSymbol
+                        name={'mail'}
+                        color={'currentColor'}
+                        size={20}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </KeyboardAvoidingView>
+          </View>
+        </Modal>
 
         <GestureDetector key={'cover'} gesture={coverPan}>
           <Animated.View style={[coverAnimatedStyles, styles.page_cover, {width: bookWidth, alignSelf: 'center', alignItems: 'center'}, {zIndex: 77500}]}>
@@ -545,33 +524,13 @@ const pan = Gesture.Pan()
                   source={{ uri: item.imageUrl }}
                   style={{ width: wid*imagePercent, height: wid*imagePercent, justifyContent: 'center', alignItems: 'center'}}
                 />
-                <Text style={{fontSize: 17, justifyContent: 'flex-start', width: wid*imagePercent}}>{item.content ?? JSON.stringify(item)}</Text>
+                <Text style={{fontFamily: 'ms', fontSize: 17, justifyContent: 'flex-start', width: wid*imagePercent, marginTop: 5, marginBottom: 5, maxHeight: 150}}>{item.content ?? JSON.stringify(item)}</Text>
 
                 <View style={[styles.post_action_box, {width: wid*imagePercent}]}>
                   <View style={styles.color_row}>
-                    <View style={[
-                        styles.color_box, BORDER_FRAME,
-                      { backgroundColor: '#312da2' }, // take user info to fill color
-                      ]}/>       
-
-                    <View style={[
-                        styles.color_box, BORDER_FRAME,
-                      { backgroundColor: '#687ad7' }, // take user info to fill color
-                      ]}/>       
-                    
-                    <View style={[
-                        styles.color_box, BORDER_FRAME,
-                      { backgroundColor: '#3ead3c' }, // take user info to fill color
-                      ]}/>       
-                    <View style={[
-                        styles.color_box, BORDER_FRAME,
-                      { backgroundColor: '#f798ec' }, // take user info to fill color
-                      ]}/>       
-                    
-                    <View style={[
-                        styles.color_box, BORDER_FRAME,
-                      { backgroundColor: '#a22d2d' }, // take user info to fill color
-                      ]}/> 
+                    {(item.colors ?? []).map((color: string, i: number) => (
+                      <View key={`${item.id}${color}${i}`} style={[BORDER_FRAME, styles.color_box_post, { backgroundColor: color ?? "#ffffff" }]} />
+                    ))}
                   </View>
 
                   <View style={styles.interact_box}>
@@ -593,9 +552,7 @@ const pan = Gesture.Pan()
                   </View>
                 </View> 
               </View>
-
             </Animated.View>
-            
           );
 
           if (isTop || isLast) {
@@ -609,10 +566,8 @@ const pan = Gesture.Pan()
           } 
           return null;
         })}
-
         </View>
       </GestureHandlerRootView>
-
     </View>
   );
 }
@@ -625,7 +580,7 @@ const styles = StyleSheet.create({
   },
   back_button: {
     marginTop: 56,
-    marginLeft: 15,
+    marginLeft: 30,
     alignSelf: 'flex-start',
   },
   profile_header: {
@@ -789,9 +744,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff8ce',
     borderWidth: 6,
     borderColor: '#3c0404',
-    // shadowColor: 'black',
-    // shadowOpacity: 0.9,
-    // elevation: 5,
   },
   
   page_cover: {
@@ -802,7 +754,6 @@ const styles = StyleSheet.create({
   },
   post_action_box: {
     display: 'flex',
-    // marginTop: 10,
     flexDirection: 'row',
     justifyContent: 'space-between'
   },
@@ -858,7 +809,6 @@ const styles = StyleSheet.create({
   no_post: {
     fontFamily: 'ms',
     fontSize: 25,
-    // justifyContent: 'center',
     alignContent: 'center',
     alignSelf: 'center'
   },
@@ -868,5 +818,13 @@ const styles = StyleSheet.create({
     width: '100%',
     alignContent: 'center',
     justifyContent: 'center'
-  }
+  },
+  color_box_post: {
+    height: 28,
+    width: 28,
+    margin: 2,
+    justifyContent: 'center',
+    alignContent: 'center',
+    alignSelf: 'center',
+  },
 });
