@@ -361,11 +361,38 @@ const Profile = () => {
           offset.set(withTiming(0, { duration: 0 }));
           coverOffset.value = withSpring(0, { duration: 300 })
       } else {
+        console.log('thi si sthe else')
         offset.set(withTiming(0, { duration: 300 }));
       }
     })
     
 
+  const lastPan = Gesture.Pan()
+    .onChange((event) => {
+      offset.set((value) => value += event.translationX*0.8) ;
+      offset.set((value) => value =  Math.min(0, Math.max(-92, offset.value))); 
+    })
+
+  .onFinalize((event) => {
+      console.log(`Finalize: ${offset.get()}`)
+      if (offset.get() < -80) return; 
+
+      offset.set((value) => withDecay({
+        velocity: event.velocityX * 0.3,
+        rubberBandEffect: true,
+        clamp: [-92,0],
+      }))
+    })
+
+   .onEnd(() => {
+      console.log(`😍${offset.value}`)
+      if (offset.get() === 0 && currentPageShared.value === 0) {
+        offset.set(withTiming(0, { duration: 0 }));
+        coverOffset.value = withSpring(0, { duration: 300 })
+      }
+    })
+    
+    
     
   const animatedStyles = useAnimatedStyle(() => ({
     opacity: fade.value,
@@ -620,9 +647,11 @@ const Profile = () => {
           </Animated.View>
         </GestureDetector>
         
-        <GestureDetector key={'last'} gesture={pan}>
+        <GestureDetector key={'last'} gesture={lastPan}>
           <View style={[styles.page, {width: bookWidth, alignSelf: 'center', alignItems: 'center'}]}>
-            {posts.length === 0 && !loading && (<Text style={styles.no_post}>No pix in sketchbook yet!</Text>)}
+            <View style={styles.last_page}>
+              {posts.length === 0 && !loading && (<Text style={styles.no_post}>No pix in sketchbook yet!</Text>)}
+            </View>
           </View>
         </GestureDetector>
 
@@ -1130,11 +1159,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row'
   },
   no_post: {
-    marginTop: 230,
     fontFamily: 'ms',
     fontSize: 25,
+    alignSelf: 'center'
+  },
+  last_page: {
+    width: '100%',    
+    height: '100%',
     justifyContent: 'center',
-    alignContent: 'center'
+    alignSelf: 'center'
   }
 });
 
