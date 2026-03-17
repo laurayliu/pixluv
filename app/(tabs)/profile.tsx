@@ -31,6 +31,7 @@ type Post = {
     comments?: number;
   };
   likedByMe?: boolean;
+  showLikes?: boolean;
   author?: {
     username?: string;
     profilePicture?: string | null;
@@ -130,7 +131,7 @@ const Profile = () => {
     pfpSheetY.value = withTiming(0, { duration: 300 });
     setPfpPostsLoading(true);
     try {
-      const fetched = await api.getPostsByUser(user?.id, token);
+      const fetched = await api.getPostsByUser(user?.id, token, user?.id);
       setPfpPosts(fetched);
     } catch {
     } finally {
@@ -447,7 +448,7 @@ const Profile = () => {
       if (!user?.id) return;
       setLoading(true);
       Promise.all([
-        api.getPostsByUser(user.id, token),
+        api.getPostsByUser(user.id, token, user.id),
         api.getUser(user.id),
       ])
         .then(([userPosts, fullUser]) => {
@@ -687,11 +688,15 @@ const Profile = () => {
 
                   <View style={styles.interact_box}>
                   <TouchableOpacity onPress={() => handleToggleLike(item.id)} style={styles.actionButton}>
-                    <IconSymbol
-                      name={item.likedByMe ? 'liked' : 'like'}
-                      color={'currentColor'}
-                      size={24}
-                    />
+                    <View style={styles.like_and_count}>
+                      <IconSymbol
+                        name={item.likedByMe ? 'liked' : 'like'}
+                        color={'currentColor'}
+                        size={24}
+                      />
+                      {item.showLikes && (<Text style={[styles.num_likes, {color: item.likedByMe ? '#ffffff' : '#ff004d'}]}>{(item._count?.likes ?? 0)}</Text>)}
+                    </View>
+                    
                   </TouchableOpacity>
 
                   <TouchableOpacity onPress={() => openComments(item)} style={styles.actionButton}>
@@ -980,6 +985,7 @@ const styles = StyleSheet.create({
   interact_box: {
     display: 'flex',
     flexDirection: 'row',
+    alignItems: 'center',
   },
   pickerOverlay: {
     backgroundColor: 'rgba(0,0,0,0.3)',
@@ -1156,7 +1162,22 @@ const styles = StyleSheet.create({
   },
   button_row: {
     display: 'flex',
-    flexDirection: 'row'
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  num_likes: {
+    fontFamily: 'ms',
+    position: 'absolute',
+    fontSize: 9,
+  },
+  like_and_count: {
+    position: 'relative',
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: -7,
+    marginLeft: -3,
   },
   no_post: {
     fontFamily: 'ms',
