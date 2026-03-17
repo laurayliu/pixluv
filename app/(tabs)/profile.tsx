@@ -31,6 +31,7 @@ type Post = {
     comments?: number;
   };
   likedByMe?: boolean;
+  showLikes?: boolean;
   author?: {
     username?: string;
     profilePicture?: string | null;
@@ -657,11 +658,14 @@ const Profile = () => {
 
                   <View style={styles.interact_box}>
                   <TouchableOpacity onPress={() => handleToggleLike(item.id)} style={styles.actionButton}>
-                    <IconSymbol
-                      name={item.likedByMe ? 'liked' : 'like'}
-                      color={'currentColor'}
-                      size={24}
-                    />
+                    <View style={styles.like_and_count}>
+                      {item.showLikes && (<Text style={[styles.num_likes, {color: item.likedByMe ? '#ffffff' : '#ff004d'}]}>{(item._count?.likes ?? 0)}</Text>)}
+                      <IconSymbol
+                        name={item.likedByMe ? 'liked' : 'like'}
+                        color={'currentColor'}
+                        size={24}
+                      />
+                    </View>
                   </TouchableOpacity>
 
                   <TouchableOpacity onPress={() => openComments(item)} style={styles.actionButton}>
@@ -1127,7 +1131,19 @@ const styles = StyleSheet.create({
   button_row: {
     display: 'flex',
     flexDirection: 'row'
-  }
+  },
+  num_likes: {
+    fontFamily: 'ms',
+    position: 'absolute',
+    fontSize: 8,
+  },
+  like_and_count: {
+    position: 'relative',
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
 });
 
 export default Profile;
