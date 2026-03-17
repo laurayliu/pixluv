@@ -11,9 +11,8 @@ import {
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import Logo from '@/assets/logo.svg';
-
 export default function SignupScreen() {
-  const { signup } = useAuth();
+  const { signup, updateUser } = useAuth();
   const router = useRouter();
 
   const [username, setUsername] = useState('');
@@ -29,6 +28,7 @@ export default function SignupScreen() {
     setLoading(true);
     try {
       await signup(username, email, password);
+      await updateUser({ stickers: ['FIRST_ACCOUNT'] });
       router.replace('/(tabs)');
     } catch (e) {
       Alert.alert('signup failed', 'could not create account, please try again.');
@@ -80,6 +80,7 @@ export default function SignupScreen() {
       <TouchableOpacity onPress={() => router.replace('/login')}>
         <Text style={styles.link}>already have an account? log in!</Text>
       </TouchableOpacity>
+
     </View>
   );
 }

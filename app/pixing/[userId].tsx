@@ -6,6 +6,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { api } from '@/services/api';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { unlockSticker } from '@/utils/unlockSticker';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const ITEM_SIZE = (SCREEN_WIDTH - 48) / 3;
@@ -24,7 +25,7 @@ type Message = {
 export default function PixingThread() {
   const { userId } = useLocalSearchParams<{ userId: string }>();
   const { username } = useLocalSearchParams<{ username: string }>();
-  const { token, user } = useAuth();
+  const { token, user, updateUser } = useAuth();
 
   const [otherUserPfp, setOtherUserPfp] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -83,6 +84,7 @@ export default function PixingThread() {
     await api.sendPix(userId, undefined, imageUrl, token);
     await fetchMessages();
     setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 100);
+    await unlockSticker('SEND_PIX', user?.stickers ?? [], updateUser);
   };
 
   const handleSend = async () => {
@@ -94,6 +96,7 @@ export default function PixingThread() {
       setInputText('');
       await fetchMessages();
       setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 100);
+      await unlockSticker('SEND_PIX', user?.stickers ?? [], updateUser);
     } finally {
       setSending(false);
     }
@@ -206,6 +209,7 @@ export default function PixingThread() {
         </Animated.View>
         </View>
       </Modal>
+
     </SafeAreaView>
   );
 }

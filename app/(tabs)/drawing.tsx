@@ -9,6 +9,7 @@ import Toolbar, { ALL_TOOL_NAMES } from '@/components/toolbar';
 import { ReactNativeZoomableView } from '@openspacelabs/react-native-zoomable-view';
 import { useLocalSearchParams , useRouter } from 'expo-router';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { unlockSticker } from '@/utils/unlockSticker';
 
 
 const DEFAULT_COLOR = "#fff";
@@ -49,7 +50,7 @@ const BORDER_FRAME = {
 } as const;
 
 export default function CreatePix() {
-  const { token } = useAuth();
+  const { token, user, updateUser } = useAuth();
 
   const router = useRouter()
   const params = useLocalSearchParams();
@@ -79,11 +80,18 @@ export default function CreatePix() {
 
   const [caption, setCaption] = useState<string>('');
 
+  
   const gridRef = useRef<View>(null);
+  const gridRef2 = useRef<string[]>(Array(Number(size) * Number(size)).fill(DEFAULT_COLOR));
+
   const exportRef = useRef<View>(null);
 
   const [prevGrid, setPrevGrid] = useState<string[][]>([Array(Number(size) * Number(size)).fill(DEFAULT_COLOR)]); // need the brackets!!
   const [prevColor, setPrevColor] = useState<string>('rgb(217, 216, 216)')
+
+
+  const isPinching = useRef(false);
+  const storePosition = useRef<{pageX: number, pageY: number} | null>(null);
 
   const index = useRef(0);
   const zoomState = useRef({
@@ -135,29 +143,31 @@ export default function CreatePix() {
       const newGrid = [...currentGrid];
       newGrid[cellIndex] = drawingColor;
       drawnCells.current[cellIndex] = activeTool.current !== 'erase';
+
+      gridRef2.current = newGrid;
       return newGrid;
     });
   };
 
-  const isPinching = useRef(false);
+  const setGridAndRef = (newGrid: string[]) => {
+    gridRef2.current = newGrid;
+    setGrid(newGrid);
+  };
 
   const panResponder = PanResponder.create({
   onStartShouldSetPanResponder: (evt) => evt.nativeEvent.touches.length === 1,
   onMoveShouldSetPanResponder: (evt) => {
-    if (evt.nativeEvent.touches.length > 1) {
+    if (evt.nativeEvent.touches.length > 1) { // user pinched to zoom; stored position not needed
       isPinching.current = true; 
+      storePosition.current = null;
       return false; 
     }
-    return true;
+    return true; 
   },
   onPanResponderGrant: (evt) => { // runs once you touch screen for the first time
     if (evt.nativeEvent.touches.length > 1) return; 
     isPinching.current = false;
-    
-    const { pageX, pageY } = evt.nativeEvent; // capture whatever pageX/pageY is
-    gridRef.current?.measure((x, y, width, height, gridOriginX, gridOriginY) => { // gives updated gridOriginX/gridOriginY
-      colorCellAtPosition(pageX, pageY, gridOriginX, gridOriginY); // callback with updated values 
-    });
+    storePosition.current = { pageX: evt.nativeEvent.pageX, pageY: evt.nativeEvent.pageY }; // store the position you clicked at
   },
 
   onPanResponderMove: (evt) => {
@@ -166,34 +176,63 @@ export default function CreatePix() {
     }
     if (!isPinching.current) {
       const { pageX, pageY } = evt.nativeEvent;
-      gridRef.current?.measure((x, y, width, height, gridOriginX, gridOriginY) => {
-      colorCellAtPosition(pageX, pageY, gridOriginX, gridOriginY);
-    });
+      if (storePosition.current) { // color the cell at stored position
+        const { pageX: grantX, pageY: grantY } = storePosition.current;
+        storePosition.current = null;
+        gridRef.current?.measure((x, y, width, height, gridOriginX, gridOriginY) => {
+          colorCellAtPosition(grantX, grantY, gridOriginX, gridOriginY);
+        });
+      }
+      gridRef.current?.measure((x, y, width, height, gridOriginX, gridOriginY) => { // color cell where your finger moved
+        colorCellAtPosition(pageX, pageY, gridOriginX, gridOriginY);
+      });
     }
-   
   },
 
-  onPanResponderRelease: (evt) => {
-    //if (evt.nativeEvent.touches.length > 0) return; 
+   onPanResponderRelease: (evt) => {
     if (isPinching.current) {
-      isPinching.current = false;
+      isPinching.current = false; // zoom is done
+      storePosition.current = null;
       return;
     }
-    if (activeTool.current === 'dropper') return; // don't call setPrevGrid if using dropper 
+
+    if (storePosition.current) {
+      const { pageX, pageY } = storePosition.current;
+      storePosition.current = null;
+      
+      gridRef.current?.measure((x, y, width, height, gridOriginX, gridOriginY) => {
+        colorCellAtPosition(pageX, pageY, gridOriginX, gridOriginY);
+
+        if (activeTool.current !== 'dropper') {
+           setPrevGrid((prevHistory) => {
+            const newGrid = prevHistory.slice(0, index.current + 1); // prevents weird things if someone undos then starts drawing again
+            const updatedGrid = [...newGrid, [...gridRef2.current]];  // takes saved states and adds on current grid at the end
+            index.current = updatedGrid.length - 1;
+            return updatedGrid;
+          });
+        }
+      });
+
+      recentColor.current = selectedColor
+      return;
+    }
+
+    if (activeTool.current === 'dropper') return; // don't call setPrevGrid if using dropper
 
     setPrevGrid((prevHistory) => {
       const newGrid = prevHistory.slice(0, index.current + 1); // prevents weird things if someone undos then starts drawing again
-      const updatedGrid = [...newGrid, [...grid]];  // takes saved states and adds on current grid at the end
+      const updatedGrid = [...newGrid, [...gridRef2.current]];  // takes saved states and adds on current grid at the end
       index.current = updatedGrid.length - 1;
       return updatedGrid;
     });
 
-     recentColor.current = selectedColor
+    recentColor.current = selectedColor;
   }
 });
 
+
   const handleClear = () => {
-    setGrid(Array(gridSize * gridSize).fill(DEFAULT_COLOR))
+    setGridAndRef(Array(gridSize * gridSize).fill(DEFAULT_COLOR))
     setPrevGrid([Array(gridSize * gridSize).fill(DEFAULT_COLOR)])
     index.current = 0;
     drawnCells.current = Array(gridSize * gridSize).fill(false);
@@ -225,6 +264,8 @@ export default function CreatePix() {
         .map(([color]) => color);
       await api.createPost({ content: caption, imageUrl: publicUrl, showLikes, colors: topColors }, token);
 
+      await unlockSticker('FIRST_POST', user?.stickers ?? [], updateUser);
+
       handleClear(); // make sure to clear canvas
       setSelectedColor(DEFAULT_SELECTED_COLOR);
       setPrevColor('rgb(217, 216, 216)');
@@ -246,7 +287,7 @@ export default function CreatePix() {
   const handleUndo = () => {
     if (index.current > 0) {
       const prevIndex = index.current - 1;
-      setGrid(prevGrid[prevIndex]);
+      setGridAndRef(prevGrid[prevIndex]);
       index.current = prevIndex;
     }
   }
@@ -254,7 +295,7 @@ export default function CreatePix() {
   const handleRedo = () => {
     if (index.current < prevGrid.length - 1) {
       const nextIndex = index.current + 1;
-      setGrid(prevGrid[nextIndex]);
+      setGridAndRef(prevGrid[nextIndex]);
       index.current = nextIndex;
     }
   }
@@ -292,6 +333,7 @@ export default function CreatePix() {
           neighborCells.push(currentCell + 1); // right neighbor cell
         } 
       }
+      gridRef2.current = newGrid;
       return newGrid;
     });
 
@@ -353,6 +395,7 @@ export default function CreatePix() {
 
 
   return (
+    <>
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
     <View style={styles.container}>
       <Pressable style={styles.backButton} onPress={() => router.replace('/create')}>
@@ -373,7 +416,7 @@ export default function CreatePix() {
         
           <View style = {styles.zoomable}>
           <ReactNativeZoomableView
-            maxZoom={4} 
+            maxZoom={8} 
             minZoom={1} 
             initialZoom={1} 
             bindToBorders={true}
@@ -533,6 +576,8 @@ export default function CreatePix() {
 
       </View>
     </TouchableWithoutFeedback>
+
+    </>
   );
 };
 

@@ -9,6 +9,8 @@ import DefaultColorPanel from '../../components/color_picker';
 
 
 import { useRouter } from 'expo-router';
+import { unlockSticker } from '@/utils/unlockSticker';
+import { STICKER_DEFS } from '@/constants/stickers';
 import {
   Gesture,
   GestureDetector,
@@ -29,6 +31,7 @@ type Post = {
     comments?: number;
   };
   likedByMe?: boolean;
+  showLikes?: boolean;
   author?: {
     username?: string;
     profilePicture?: string | null;
@@ -45,8 +48,13 @@ type Comment = {
   };
 };
 
-const DEFAULT_COLOR = "#fff";
-const DEFAULT_SELECTED_COLOR = "#ff0000"
+type ColorProp = {
+  color: string;
+  index: number;
+}
+
+const DEFAULT_COLOR = "#FF0000";
+const DEFAULT_SELECTED_COLOR = "#FF0000"
 
 const ITEM_SIZE = (Dimensions.get('window').width - 48) / 3;
 const SHEET_HEIGHT = Dimensions.get('window').height * 0.5;
@@ -71,7 +79,7 @@ const BORDER_FRAME = {
 
   const { width: wid, height: hei } = Dimensions.get('window')
   const bookWidth = wid - 60;
-  const bookHeight = hei -380
+  const bookHeight = hei - 400
 
 const Profile = () => {
 
@@ -102,8 +110,9 @@ const Profile = () => {
   const [savingProfile, setSavingProfile] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [EditPallete, setEditPallete] = useState(false);
-
+  const [selectedPaletteIndex, setSelectedPaletteIndex] = useState<number | null>(null);
   const [selectedColor, setSelectedColor] = useState<string>(DEFAULT_SELECTED_COLOR);
+  const [savedPallete, setSavedPallete] = useState<string[]>(defaultPallette);
 
   const [editColor, setEditColor]  = useState<string>(DEFAULT_SELECTED_COLOR);
 
@@ -122,7 +131,7 @@ const Profile = () => {
     pfpSheetY.value = withTiming(0, { duration: 300 });
     setPfpPostsLoading(true);
     try {
-      const fetched = await api.getPostsByUser(user?.id, token);
+      const fetched = await api.getPostsByUser(user?.id, token, user?.id);
       setPfpPosts(fetched);
     } catch {
     } finally {
@@ -130,17 +139,26 @@ const Profile = () => {
     }
   };
 
-  const handlePallette = async () => {
-    if (EditPallete) {
-      setEditPallete(false)
-    } else {
-      setEditPallete(true)
-    }
-  }
+  const handlePallette = () => {
+    setSavedPallete([...colorPallete]);
+    setEditPallete(true);
+  };
 
-  const handleColor = async () => {
-    setEditColor(selectedColor);
-  }
+  const handlePalletteCancel = () => {
+    setColorPallete([...savedPallete]);
+    setEditPallete(false);
+  };
+
+  const handlePalletteDone = async () => {
+    await updateUser({ colorPalette: colorPallete });
+    setEditPallete(false);
+  };
+
+  const handleColor = (props: ColorProp) => {
+    const updated = [...colorPallete];
+    updated[props.index] = selectedColor;
+    setColorPallete(updated);
+  };
 
   const enterEditMode = () => {
     setEditBio(user?.bio ?? '');
@@ -254,7 +272,7 @@ const Profile = () => {
         const created = await api.createComment(activePost.id, body, token);
         setComments((prev) => [...prev, created]);
         setNewComment('');
-  
+
         // optionally bump comment count on the post list
         setPosts((prev) =>
           prev.map((p) =>
@@ -269,6 +287,8 @@ const Profile = () => {
               : p,
           ),
         );
+
+        await unlockSticker('FIRST_COMMENT', user?.stickers ?? [], updateUser);
       } finally {
         setSubmittingComment(false);
       }
@@ -342,11 +362,38 @@ const Profile = () => {
           offset.set(withTiming(0, { duration: 0 }));
           coverOffset.value = withSpring(0, { duration: 300 })
       } else {
+        console.log('thi si sthe else')
         offset.set(withTiming(0, { duration: 300 }));
       }
     })
     
 
+  const lastPan = Gesture.Pan()
+    .onChange((event) => {
+      offset.set((value) => value += event.translationX*0.8) ;
+      offset.set((value) => value =  Math.min(0, Math.max(-92, offset.value))); 
+    })
+
+  .onFinalize((event) => {
+      console.log(`Finalize: ${offset.get()}`)
+      if (offset.get() < -80) return; 
+
+      offset.set((value) => withDecay({
+        velocity: event.velocityX * 0.3,
+        rubberBandEffect: true,
+        clamp: [-92,0],
+      }))
+    })
+
+   .onEnd(() => {
+      console.log(`😍${offset.value}`)
+      if (offset.get() === 0 && currentPageShared.value === 0) {
+        offset.set(withTiming(0, { duration: 0 }));
+        coverOffset.value = withSpring(0, { duration: 300 })
+      }
+    })
+    
+    
     
   const animatedStyles = useAnimatedStyle(() => ({
     opacity: fade.value,
@@ -401,14 +448,14 @@ const Profile = () => {
       if (!user?.id) return;
       setLoading(true);
       Promise.all([
-        api.getPostsByUser(user.id, token),
+        api.getPostsByUser(user.id, token, user.id),
         api.getUser(user.id),
       ])
         .then(([userPosts, fullUser]) => {
           setPosts(userPosts);
           setFollowerCount(fullUser._count?.followers ?? 0);
           setFollowingCount(fullUser._count?.following ?? 0);
-          setColorPallete(fullUser?.colors ?? defaultPallette)
+          setColorPallete(fullUser?.colorPalette?.length ? fullUser.colorPalette : defaultPallette)
         })
         .catch((err: Error) => setError(err.message))
         .finally(() => setLoading(false));
@@ -450,7 +497,7 @@ const Profile = () => {
               autoFocus
             />
           ) : (
-            <Text style={styles.texts}>{user?.bio ?? 'Welcome to Pixluv!'}</Text>
+            <Text style={styles.texts}>{user?.bio ?? 'No bio yet!'}</Text>
           )}
           <View style={styles.action_container}>
             {editMode ? (
@@ -477,22 +524,27 @@ const Profile = () => {
       </View>
 
       <View style={styles.favorite_container}>
-        <View style={styles.sticker_container}>
+        <Pressable style={styles.sticker_container} onPress={() => router.push(`/sticker-collection/${user?.id}` as any)}>
           <Text style={[styles.texts, {textAlign: 'center' }]}>Sticker Collection</Text>
           <View style={styles.sticker_box}>
-            <View style={[styles.sticker,  BORDER_FRAME, {backgroundColor: '#B7E3FF'}]}>
-              <IconSymbol name="sticker2" size={70} color={'currentColor'} />
-              {/* use image here to display the sticker */}
-              {/* <Image
-                source={{ uri: item.imageUrl }}
-              /> */}
-            </View>
-
-            <View style={[styles.sticker, BORDER_FRAME, {backgroundColor: '#ffffff'}]}>
-              <IconSymbol name="sticker1" size={70} color={'currentColor'} />
-            </View>
+            {(user?.stickers ?? []).length === 0 ? (
+              <>
+                <View style={[styles.sticker, BORDER_FRAME, {backgroundColor: '#e0e0e0', opacity: 0.5}]} />
+                <View style={[styles.sticker, BORDER_FRAME, {backgroundColor: '#e0e0e0', opacity: 0.5}]} />
+              </>
+            ) : (
+              (user?.stickers ?? []).slice(0, 2).map((stickerId) => {
+                const def = STICKER_DEFS.find(s => s.id === stickerId);
+                if (!def) return null;
+                return (
+                  <View key={stickerId} style={[styles.sticker, BORDER_FRAME, {backgroundColor: '#ffffff'}]}>
+                    <IconSymbol name={def.iconName as any} size={70} color={'currentColor'} />
+                  </View>
+                );
+              })
+            )}
           </View>
-        </View>
+        </Pressable>
 
         <View style={styles.main_color}>
           <Text style={[styles.texts, {textAlign: 'center'}]}>Favorite Colors</Text>
@@ -500,105 +552,35 @@ const Profile = () => {
 
         <Pressable onPress={handlePallette}>
           <View style={styles.pallete_box}>
-            <View style={styles.color_row}>
-              {/* {colorPallete.map((item, index) => (
+            <View style={styles.color_pallette}>
+              {colorPallete.map((item, index) => (
                 <View key={index} style={[ styles.color_box, BORDER_FRAME, { backgroundColor: item }]}/>
-              )
-              )} */}
-              
-              {/* <View style={[
-                  styles.color_box, BORDER_FRAME,
-                { backgroundColor: '#9b3b00' }, // take user info to fill color
-                ]}/>       
-
-              <View style={[
-                  styles.color_box, BORDER_FRAME,
-                { backgroundColor: '#b74caf' }, // take user info to fill color
-                ]}/>       
-              
-              <View style={[
-                  styles.color_box, BORDER_FRAME,
-                { backgroundColor: '#3400f1' }, // take user info to fill color
-                ]}/>       
-            </View>
-
-            <View style={styles.color_row}> */}
-              <View style={[
-                  styles.color_box, BORDER_FRAME,
-                { backgroundColor: '#9b3b00' }, // take user info to fill color
-                ]}/>       
-
-              <View style={[
-                  styles.color_box, BORDER_FRAME,
-                { backgroundColor: '#b74caf' }, // take user info to fill color
-                ]}/>       
-              
-              <View style={[
-                  styles.color_box, BORDER_FRAME,
-                { backgroundColor: '#3400f1' }, // take user info to fill color
-                ]}/>       
+              ))}
             </View>
           </View>
         </Pressable>
   
-        <Modal visible={EditPallete} transparent animationType="none" >
+        <Modal style={styles.pallete_modal} visible={EditPallete} transparent animationType="none" >
           <View style={styles.pallete_edit}>
-            <View>
-              <View style={styles.color_row}>
-              <Pressable onPress={handleColor} id='1'>
-                <View style={[
-                  styles.color_box_edit, BORDER_FRAME,
-                { backgroundColor: selectedColor }, // take user info to fill color
-                ]}/>       
-              </Pressable>
-
-              <Pressable onPress={handleColor} id='2'>
-                <View style={[
-                  styles.color_box_edit, BORDER_FRAME,
-                { backgroundColor: selectedColor }, // take user info to fill color
-                ]}/>       
-              </Pressable>
-
-              <Pressable id='3'>
-                <View style={[
-                  styles.color_box_edit, BORDER_FRAME,
-                { backgroundColor: '#9b3b00' }, // take user info to fill color
-                ]}/>       
-              </Pressable>
+            <View style={styles.small_pallete_edit}>
+              {colorPallete.map((item, index) => (
+                <Pressable key={index} onPress={() => handleColor({color: item, index})} style={[ styles.color_box, BORDER_FRAME, { backgroundColor: item , width: 70, height: 70, margin: 10 }]}/>  
+              ))}
             </View>
-
-            <View style={styles.color_row}>
-              <Pressable>
-                <View style={[
-                  styles.color_box_edit, BORDER_FRAME,
-                { backgroundColor: '#9b3b00' }, // take user info to fill color
-                ]}/>       
-              </Pressable>     
-
-              <Pressable>
-                <View style={[
-                  styles.color_box_edit, BORDER_FRAME,
-                { backgroundColor: '#9b3b00' }, // take user info to fill color
-                ]}/>       
-              </Pressable>    
-              
-              <View style={[
-                  styles.color_box_edit, BORDER_FRAME,
-                { backgroundColor: '#3400f1' }, // take user info to fill color
-                ]}/>       
-            </View>
-            </View>
-
-
 
           <View style={{ width: '100%' }}>
               <DefaultColorPanel value={selectedColor} onColorChange={setSelectedColor}/>
           </View>
-          <Pressable onPress={handlePallette} style={[styles.actionButton, {backgroundColor: '#c14848', padding: 15}]}>
-            <Text>Done</Text>
-          </Pressable>
-          </View>
 
+          <View style={styles.button_row}>
+            <Pressable onPress={handlePalletteCancel} style={[styles.actionButton, {backgroundColor: '#fff396', padding: 15}]}>
+              <Text>Cancel</Text>
+            </Pressable>
+            <Pressable onPress={handlePalletteDone} style={[styles.actionButton, {backgroundColor: '#998be8', padding: 15}]}>
+              <Text>Done</Text>
+            </Pressable>
+          </View>
+        </View>
         </Modal>
 
         </View>
@@ -611,7 +593,6 @@ const Profile = () => {
     <GestureHandlerRootView style={styles.container}>
       <View style={styles.book_container}>
         {loading && <ActivityIndicator size="large" />}
-        {posts.length === 0 && !loading && (<Text>No post yet</Text>)}
             <Modal visible={commentsVisible} animationType="fade" transparent={true} onRequestClose={closeComments}>
               <View style={styles.commentsOverlay}>
                 <Pressable style={styles.backdrop} onPress={closeComments} />
@@ -667,8 +648,13 @@ const Profile = () => {
           </Animated.View>
         </GestureDetector>
         
-          <View style={[styles.page, {width: bookWidth, alignSelf: 'center', alignItems: 'center'}]}/>
-
+        <GestureDetector key={'last'} gesture={lastPan}>
+          <View style={[styles.page, {width: bookWidth, alignSelf: 'center', alignItems: 'center'}]}>
+            <View style={styles.last_page}>
+              {posts.length === 0 && !loading && (<Text style={styles.no_post}>No pix in sketchbook yet!</Text>)}
+            </View>
+          </View>
+        </GestureDetector>
 
         {posts.slice(0, 100).map((item, index) => {
           const isLast = index === currentPage;
@@ -691,22 +677,26 @@ const Profile = () => {
                   source={{ uri: item.imageUrl }}
                   style={{ width: wid*imagePercent, height: wid*imagePercent, justifyContent: 'center', alignItems: 'center'}}
                 />
-                <Text style={{fontSize: 17, justifyContent: 'flex-start', width: wid*imagePercent}}>{item.content ?? JSON.stringify(item)}</Text>
+                <Text style={{fontFamily: 'ms', fontSize: 17, justifyContent: 'flex-start', width: wid*imagePercent}}>{item.content ?? JSON.stringify(item)}</Text>
 
                 <View style={[styles.post_action_box, {width: wid*imagePercent}]}>
                   <View style={styles.color_row}>
                     {(item.colors ?? []).map((color: string, i: number) => (
-                      <View key={`${item.id}${color}${i}`} style={[BORDER_FRAME, styles.color_box, { backgroundColor: color ?? "#ffffff" }]} />
+                      <View key={`${item.id}${color}${i}`} style={[BORDER_FRAME, styles.color_box_post, { backgroundColor: color ?? "#ffffff" }]} />
                     ))}
                   </View>
 
                   <View style={styles.interact_box}>
                   <TouchableOpacity onPress={() => handleToggleLike(item.id)} style={styles.actionButton}>
-                    <IconSymbol
-                      name={item.likedByMe ? 'liked' : 'like'}
-                      color={'currentColor'}
-                      size={24}
-                    />
+                    <View style={styles.like_and_count}>
+                      <IconSymbol
+                        name={item.likedByMe ? 'liked' : 'like'}
+                        color={'currentColor'}
+                        size={24}
+                      />
+                      {item.showLikes && (<Text style={[styles.num_likes, {color: item.likedByMe ? '#ffffff' : '#ff004d'}]}>{(item._count?.likes ?? 0)}</Text>)}
+                    </View>
+                    
                   </TouchableOpacity>
 
                   <TouchableOpacity onPress={() => openComments(item)} style={styles.actionButton}>
@@ -789,6 +779,7 @@ const Profile = () => {
           </Animated.View>
         </View>
       </Modal>
+
     </View>
   );
 };
@@ -802,7 +793,7 @@ const styles = StyleSheet.create({
   },
   profile_header: {
     display: 'flex',
-    marginTop: 45,
+    marginTop: 80,
     flexDirection: 'row',
     paddingLeft: 30,
     paddingRight: 30,
@@ -902,13 +893,27 @@ const styles = StyleSheet.create({
     backgroundColor: '#d0d0d0',
     height: 75,
     width: 110,
+    justifyContent: 'center',
+    alignContent: 'center'
+  },
+
+  color_pallette: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    alignContent: 'center',
     justifyContent: 'center'
   },
   color_box: {
+    display: 'flex',
+    flexWrap: 'wrap',
     height: 28,
     width: 28,
     margin: 2,
-    backgroundColor: '#a14c67',
+  },
+  color_box_post: {
+    height: 28,
+    width: 28,
+    margin: 2,
     justifyContent: 'center',
     alignContent: 'center',
     alignSelf: 'center',
@@ -980,6 +985,7 @@ const styles = StyleSheet.create({
   interact_box: {
     display: 'flex',
     flexDirection: 'row',
+    alignItems: 'center',
   },
   pickerOverlay: {
     backgroundColor: 'rgba(0,0,0,0.3)',
@@ -1130,13 +1136,59 @@ const styles = StyleSheet.create({
     fontFamily: 'ms',
   },
   pallete_edit: {
+    marginTop: 200,
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center', 
     alignSelf: 'center',
-    backgroundColor: '#ffcdea',
+    backgroundColor: '#ffc5e7',
     width: '80%',
-    height: '80%'
+    height: '50%'
+  },
+  small_pallete_edit: {
+    backgroundColor: '#6260c392',
+    display: 'flex',
+    width: 300,
+    height: 200,
+    flexWrap: 'wrap',
+    alignContent: 'center',
+    justifyContent: 'center'
+  }, 
+  pallete_modal: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignContent: 'center'
+  },
+  button_row: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  num_likes: {
+    fontFamily: 'ms',
+    position: 'absolute',
+    fontSize: 9,
+  },
+  like_and_count: {
+    position: 'relative',
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: -7,
+    marginLeft: -3,
+  },
+  no_post: {
+    fontFamily: 'ms',
+    fontSize: 25,
+    alignSelf: 'center'
+  },
+  last_page: {
+    width: '100%',    
+    height: '100%',
+    justifyContent: 'center',
+    alignSelf: 'center'
   }
 });
 

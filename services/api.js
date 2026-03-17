@@ -43,7 +43,11 @@ async function del(path, token) {
 
 export const api = {
   hello: () => get('/'),
-  getPostsByUser: (userId, token) => get(`/posts/user/${userId}`, token),
+  getPostsByUser: (profileUserId, token, viewerId) =>
+    get(
+      `/posts/user/${profileUserId}${viewerId ? `?userId=${encodeURIComponent(viewerId)}` : ''}`,
+      token
+    ),
   getPosts: (userId, token) => get(`/posts${userId ? `?userId=${encodeURIComponent(userId)}` : ''}`, token),
   getUser: (id) => get(`/users/${id}`),
   updateUser: (id, data, token) => put(`/users/${id}`, data, token),

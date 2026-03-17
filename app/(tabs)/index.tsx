@@ -23,6 +23,7 @@ import { ProfileAvatar } from '@/components/ui/profile-avatar';
 import { useRouter } from 'expo-router';
 
 import Logo from '@/assets/logo.svg';
+import { unlockSticker } from '@/utils/unlockSticker';
 
 type Post = {
   id: string;
@@ -72,7 +73,7 @@ const HomeScreen = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { token, user } = useAuth();
+  const { token, user, updateUser } = useAuth();
   const router = useRouter();
 
   const [commentsVisible, setCommentsVisible] = useState(false);
@@ -181,6 +182,8 @@ const HomeScreen = () => {
             : p,
         ),
       );
+
+      await unlockSticker('FIRST_COMMENT', user?.stickers ?? [], updateUser);
     } finally {
       setSubmittingComment(false);
     }
@@ -307,6 +310,7 @@ const HomeScreen = () => {
                     </TouchableWithoutFeedback>
               </View>
       </Modal>
+
     </View>
   );
 };
