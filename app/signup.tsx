@@ -25,13 +25,17 @@ export default function SignupScreen() {
       Alert.alert('missing fields', 'please fill in all fields');
       return;
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      Alert.alert('invalid email', 'please enter a valid email address');
+      return;
+    }
     setLoading(true);
     try {
       await signup(username, email, password);
       await updateUser({ stickers: ['FIRST_ACCOUNT'] });
       router.replace('/(tabs)');
     } catch (e) {
-      Alert.alert('signup failed', 'could not create account, please try again.');
+      Alert.alert('signup failed', 'could not create account, please try again');
     } finally {
       setLoading(false);
     }
