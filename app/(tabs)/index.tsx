@@ -36,7 +36,9 @@ type Post = {
     comments?: number;
   };
   likedByMe?: boolean;
+  authorId?: string;
   author?: {
+    id?: string;
     username?: string;
     profilePicture?: string | null;
   };
@@ -243,12 +245,18 @@ const HomeScreen = () => {
                     <Text style={styles.commentCount}>({(item._count?.comments ?? 0)})</Text>
                   </View>
                 </View>
-                <View style={styles.postAuthor}>
+                <TouchableOpacity
+                  style={styles.postAuthor}
+                  onPress={() => {
+                    const id = item.author?.id ?? item.authorId;
+                    if (id) router.push(`/profile/${id}` as any);
+                  }}
+                >
                   <ProfileAvatar imageUrl={item.author?.profilePicture} size={36} />
                   {item.author?.username && (
                     <Text style={styles.postUsername}>{item.author.username}</Text>
                   )}
-                </View>
+                </TouchableOpacity>
               </View>
               <Text style={styles.caption}>{item.content ?? JSON.stringify(item)}</Text>
             </View>
