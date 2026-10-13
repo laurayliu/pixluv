@@ -1,0 +1,69 @@
+import { Router } from 'express';
+import * as Posts from './controllers/post_controller.js';
+import * as Users from './controllers/user_controller.js';
+import * as Auth from './controllers/auth_controller.js';
+import * as Challenges from './controllers/challenge_controller.js';
+import * as Pixing from './controllers/pixing_controller.js';
+import requireAuth from './middleware/auth.js';
+
+const router = Router();
+
+router.get('/', (req, res) => {
+  res.json({ message: 'welcome to the pixluv api!' });
+});
+
+router.post('/auth/signup', Auth.signup);
+router.post('/auth/login', Auth.login);
+
+router.route('/users')
+  .get(requireAuth, Users.getUsers);
+
+router.route('/users/:id')
+  .get(Users.getUser)
+  .put(requireAuth, Users.updateUser)
+  .delete(requireAuth, Users.deleteUser);
+
+router.post('/users/:id/follow', requireAuth, Users.followUser);
+router.delete('/users/:id/follow', requireAuth, Users.unfollowUser);
+router.get('/users/:id/followers', Users.getFollowers);
+router.get('/users/:id/following', Users.getFollowing);
+
+router.get('/posts/user/:userId', Posts.getPostsByUser);
+router.get('/posts/challenge/today', requireAuth, Posts.getTodayChallengePosts);
+router.get('/posts/challenge/:date', requireAuth, Posts.getChallengePosts);
+
+router.route('/posts')
+  .get(Posts.getPosts)
+  .post(requireAuth, Posts.createPost);
+
+router.route('/posts/:id')
+  .get(Posts.getPost)
+  .put(requireAuth, Posts.updatePost)
+  .delete(requireAuth, Posts.deletePost);
+
+router.route('/posts/:id/like')
+  .post(requireAuth, Posts.toggleLike);
+
+router.route('/posts/:id/comments')
+  .get(Posts.getComments)
+  .post(requireAuth, Posts.createComment);
+
+router.route('/sign-s3')
+  .get(requireAuth, Posts.getSignedS3Url);
+
+router.get('/challenges/today', Challenges.getTodayChallenge);
+router.route('/challenges')
+  .get(Challenges.getChallenges)
+  .post(requireAuth, Challenges.createChallenge);
+router.route('/challenges/:id')
+  .get(Challenges.getChallenge)
+  .put(requireAuth, Challenges.updateChallenge)
+  .delete(requireAuth, Challenges.deleteChallenge);
+
+router.route('/pixing')
+  .get(requireAuth, Pixing.getConversations)
+  .post(requireAuth, Pixing.sendMessage);
+
+router.get('/pixing/:otherUserId', requireAuth, Pixing.getMessages);
+
+export default router;

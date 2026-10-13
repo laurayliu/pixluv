@@ -1,0 +1,28 @@
+{
+  "name": "pixluv-api",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Pixluv API - pixel art social media platform",
+  "main": "src/server.js",
+  "scripts": {
+    "build": "prisma generate",
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "test": "npx cypress run"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1000.0",
+    "@aws-sdk/s3-request-presigner": "^3.1000.0",
+    "@prisma/client": "6.19.2",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "cypress": "^14.0.0",
+    "prisma": "6.19.2"
+  }
+}

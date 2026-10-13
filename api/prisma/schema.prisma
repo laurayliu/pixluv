@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  posts            Post[]
+  sentMessages     Chat[]  @relation("sender")
+  receivedMessages Chat[]  @relation("receiver")
+  password         String
+  profilePicture   String?
+  bio              String?
+  colorPalette     String[]
+  stickers         String[]
+
+  likes    Like[]
+  comments Comment[]
+
+  followers Follow[] @relation("following")
+  following Follow[] @relation("followers")
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+
+  followerId  String
+  followingId String
+  follower    User     @relation("followers", fields: [followerId], references: [id])
+  following   User     @relation("following", fields: [followingId], references: [id])
+
+  @@unique([followerId, followingId])
+}
+
+model Post {
+  id            String    @id @default(cuid())
+  title         String?
+  tags          String?
+  content       String
+  imageUrl      String?
+  colors        String[]
+  challengeDate DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  showLikes     Boolean   @default(false)
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+
+  likes    Like[]
+  comments Comment[]
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  userId String
+  postId String
+  user   User   @relation(fields: [userId], references: [id])
+  post   Post   @relation(fields: [postId], references: [id])
+
+  @@unique([userId, postId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  body      String
+  createdAt DateTime @default(now())
+
+  userId String
+  postId String
+  user   User   @relation(fields: [userId], references: [id])
+  post   Post   @relation(fields: [postId], references: [id])
+}
+
+model Chat {
+  id        String   @id @default(cuid())
+  message   String?
+  imageUrl  String?
+  createdAt DateTime @default(now())
+
+  senderId   String
+  receiverId String
+  sender     User   @relation("sender", fields: [senderId], references: [id])
+  receiver   User   @relation("receiver", fields: [receiverId], references: [id])
+}
+
+model DailyChallenge {
+  id            String   @id @default(cuid())
+  prompt        String
+  date          DateTime @unique
+  allowedColors String[]
+  allowedTools  String[]
+  createdAt     DateTime @default(now())
+}
