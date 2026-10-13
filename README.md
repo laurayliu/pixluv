@@ -2,7 +2,7 @@
 
 A social app for pixel art: draw on a pixel canvas, share it to a feed, take on a daily drawing challenge, and message other artists. For lovers of pixels and creativity!
 
-Built by a team of five for CS52 (Full-Stack Web Development) at Dartmouth. This repo combines the original client and API repos into one, with the full commit history kept.
+Built by a team of five for CS52 (Full-Stack Web Development) at Dartmouth. This repo combines the original client and API repos into one, with the full commit history kept. We worked in feature branches with pull requests; merge commits in the history reference the original PR numbers.
 
 # Demo
 
