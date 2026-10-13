@@ -4,7 +4,17 @@ A social app for pixel art: draw on a pixel canvas, share it to a feed, take on 
 
 Built by a team of five for CS52 (Full-Stack Web Development) at Dartmouth. This repo combines the original client and API repos into one, with the full commit history kept.
 
-<img src="app/assets/images/login.jpg" alt="login" width="150"> <img src="app/assets/images/feed.jpg" alt="feed" width="150"> <img src="app/assets/images/canvas.jpg" alt="canvas" width="150"> <img src="app/assets/images/daily-challenge.jpg" alt="daily challenge" width="150"> <img src="app/assets/images/messaging.jpg" alt="messaging" width="150"> <img src="app/assets/images/profile.jpg" alt="profile" width="150">
+# Demo
+
+
+https://github.com/user-attachments/assets/a337b9c5-bdaa-4d2a-87a2-7a70a37135c8
+
+## Screenshots
+
+  <img src="app/assets/images/login.jpg" alt="login" width="125"> <img src="app/assets/images/feed.jpg" alt="feed" width="125"> <img 
+  src="app/assets/images/canvas.jpg" alt="canvas" width="125"> <img src="app/assets/images/daily-challenge.jpg" alt="daily challenge" 
+  width="125"> <img src="app/assets/images/messaging.jpg" alt="messaging" width="125"> <img src="app/assets/images/profile.jpg" 
+  alt="profile" width="125">
 
 ## Features
 
